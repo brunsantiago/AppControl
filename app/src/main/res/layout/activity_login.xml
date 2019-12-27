@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/fondo_conexiones"
+    tools:context=".LoginActivity">
+
+
+    <ImageView
+        android:layout_width="134dp"
+        android:layout_height="127dp"
+        android:layout_above="@+id/recuadro"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
+        app:srcCompat="@drawable/logo" />
+
+    <FrameLayout
+        android:id="@+id/recuadro"
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:layout_centerInParent="true"
+        android:alpha="0.5"
+        android:background="@drawable/shapenegro">
+
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="75dp"
+        android:layout_height="31dp"
+        android:layout_alignTop="@id/recuadro"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:contentDescription="TODO"
+        app:srcCompat="@drawable/sab5" />
+
+    <EditText
+        android:id="@+id/nrolegajo"
+        android:layout_width="200dp"
+        android:layout_height="40dp"
+        android:layout_alignTop="@id/recuadro"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="60dp"
+        android:background="@drawable/shapeblanco"
+        android:drawableStart="@drawable/ic_person_black_24dp"
+        android:ems="10"
+        android:fontFamily="@font/hpsimplified_rg"
+        android:hint="Numero de Legajo"
+        android:inputType="number"
+        android:paddingStart="5dp"
+        android:textColor="@android:color/white" />
+
+    <EditText
+        android:id="@+id/clave"
+        android:layout_width="200dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/nrolegajo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/shapeblanco"
+        android:drawableStart="@drawable/ic_lock_black_24dp"
+        android:ems="10"
+        android:fontFamily="@font/hpsimplified_rg"
+        android:hint="Clave"
+        android:inputType="numberPassword"
+        android:paddingStart="5dp"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:id="@+id/ingresar"
+        android:layout_width="200dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/clave"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/shapegris"
+        android:fontFamily="@font/hpsimplified_rg"
+        android:gravity="center"
+        android:text="Ingresar"
+        android:textColor="@android:color/white"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/sinDatos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:alpha="0.6"
+        android:text="No recuerdo los datos de acceso"
+        android:textColor="@android:color/background_light" />
+
+
+</RelativeLayout>

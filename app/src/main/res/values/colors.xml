@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#000000</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorBordo">#B13630</color>
+    <color name="colorBordoOscuro">#8B140C</color>
+    <color name="negroTransparente">#A0090909</color>
+    <color name="colorNaranja">#FFBB33</color>
+    <color name="colorBlanco">#FFFFFF</color>
+    <color name="bg_row_background">#FA315B</color>
+    <color name="item_name">#181818</color>
+    <color name="description">#E6D9D9</color>
+    <color name="holo_green_light">#99CC00</color>
+</resources>

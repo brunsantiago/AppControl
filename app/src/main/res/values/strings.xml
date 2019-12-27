@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">AppControl</string>
+    <string name="button_sure_default">Confirmar </string>
+    <string name="button_sure">Confirmar (%1$d)</string>
+    <string name="my_cart">Imagenes Seleccionadas</string>
+    <string name="action_settings">Eliminar Todas</string>
+    <string name="delete">Eliminar</string>
+    <string name="spinner_title">Seleccione un Puesto ...</string>
+</resources>
