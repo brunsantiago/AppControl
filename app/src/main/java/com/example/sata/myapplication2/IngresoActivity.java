@@ -189,15 +189,17 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             ingreso.put(TIMESTAMP, FieldValue.serverTimestamp());
             ingreso.put(TURNO_NOCHE,prefs.getBoolean(TURNO_NOCHE,false));
 
-            database.collection("clientes")
+        DocumentReference docRef = database.collection("clientes")
                     .document(prefs.getString(CLIENTE,""))
                     .collection("objetivos")
                     .document(prefs.getString(OBJETIVO,""))
                     .collection("cobertura")
-                    .document(prefs.getString(FECHA_PUESTO,""))
-                    .collection("puestos")
+                    .document(prefs.getString(FECHA_PUESTO,""));
+
+                    docRef.collection("puestos")
                     .add(ingreso)
                     .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
                             String path = prefs.getString(CLIENTE,"")+"/"+
@@ -209,6 +211,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                             subirArchivoImageView(path);
                             vencimientoSesion(prefs.getBoolean(TURNO_NOCHE,false),prefs.getString(FECHA_PUESTO,""),prefs.getString(EGRESO_PUESTO,""));
                             showRegisterAlert();
+                            cargarFecha(docRef,prefs.getString(FECHA_PUESTO,""));
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -218,6 +221,27 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                             Toast.makeText(IngresoActivity.this, "Error al cargar ingreso", Toast.LENGTH_SHORT).show();
                         }
                     });
+
+    }
+
+    private void cargarFecha(DocumentReference docRef,String fecha){
+
+        Map<String, Object> docData = new HashMap<>();
+        docData.put("fecha", armarDate(fecha,"00:00"));
+
+        docRef.set(docData)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error writing document", e);
+                    }
+                });
 
     }
 
@@ -337,7 +361,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             progressDialog.dismiss();
         }
     }
-
 
     public void buscarEsquema(Date fechaHoraIngreso){
 
