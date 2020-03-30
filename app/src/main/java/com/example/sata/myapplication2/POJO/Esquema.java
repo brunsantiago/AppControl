@@ -1,32 +1,35 @@
 package com.example.sata.myapplication2.POJO;
 
+import java.util.Date;
+
 public class Esquema {
 
-    private String fechaDesde;
-    private String fechaHasta;
+    private Date fechaDesde;
+    private Date fechaHasta;
     private boolean vigente;
+
 
     public Esquema() {}
 
-    public Esquema(String fechaDesde, String fechaHasta, boolean vigente) {
+    public Esquema(boolean vigente,Date fechaDesde,Date fechaHasta) {
         this.fechaDesde = fechaDesde;
         this.fechaHasta = fechaHasta;
         this.vigente = vigente;
     }
 
-    public String getFechaDesde() {
+    public Date getFechaDesde() {
         return fechaDesde;
     }
 
-    public void setFechaDesde(String fechaDesde) {
+    public void setFechaDesde(Date fechaDesde) {
         this.fechaDesde = fechaDesde;
     }
 
-    public String getFechaHasta() {
+    public Date getFechaHasta() {
         return fechaHasta;
     }
 
-    public void setFechaHasta(String fechaHasta) {
+    public void setFechaHasta(Date fechaHasta) {
         this.fechaHasta = fechaHasta;
     }
 

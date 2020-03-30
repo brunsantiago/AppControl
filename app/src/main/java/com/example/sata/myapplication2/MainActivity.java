@@ -113,18 +113,12 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
 
         getIMEI(this);
 
-//        Button btnIngreso = findViewById(R.id.buttonSign);
-//        Button btnEgreso = findViewById(R.id.buttonLogout);
-//        Button btnNovedad = findViewById(R.id.buttonNews);
-//        Button btnLlamar = findViewById(R.id.buttonCall);
         Button btnPanico = findViewById(R.id.buttonPanic);
 
         CardView btnIngreso = findViewById(R.id.cardViewIngresar);
         CardView btnEgreso = findViewById(R.id.cardViewEgresar);
         CardView btnNovedad = findViewById(R.id.cardViewNovedad);
         CardView btnLlamar = findViewById(R.id.cardViewCall);
-
-
 
         backgroundCounter = findViewById(R.id.backgroundCounter);
         textViewStatus = findViewById(R.id.textViewStatus);

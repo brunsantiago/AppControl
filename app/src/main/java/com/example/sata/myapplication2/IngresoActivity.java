@@ -95,6 +95,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String TURNO_NOCHE = "turnoNoche";
     private static final String IMAGE_PATH = "imagePath";
     private static final String NRO_LEGAJO = "nroLegajo";
+    //private static final String HORA_INGRESO_MILLISEC = "horaIngresoMillisec";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
 
@@ -188,6 +189,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             ingreso.put(FECHA_PUESTO,prefs.getString(FECHA_PUESTO,""));
             ingreso.put(TIMESTAMP, FieldValue.serverTimestamp());
             ingreso.put(TURNO_NOCHE,prefs.getBoolean(TURNO_NOCHE,false));
+
 
         DocumentReference docRef = database.collection("clientes")
                     .document(prefs.getString(CLIENTE,""))
@@ -389,7 +391,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Esquema esquema = document.toObject(Esquema.class);
-                                if(dentroEsquema(esquema.getFechaDesde(),esquema.getFechaHasta(),fechaHoraIngreso)){
+                                if(dentroEsquema2(esquema.getFechaDesde(),esquema.getFechaHasta(),fechaHoraIngreso)){
                                     cargarPuestos(fechaHoraIngreso,document.getId());
                                     esquemaEncontrado=true;
                                 } else{
@@ -418,7 +420,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     }
 
     public void cargarPuestos(Date fechaHoraIngreso, String documentoVigenteID){
-
+    //Carga la lista de puestos a seleccionar por el Usuario
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String fechaIngreso = dateFormat.format(fechaHoraIngreso);
@@ -620,7 +622,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         return imageFile;
     }
 
-
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
@@ -708,12 +709,12 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                 TrueTimeAsyncTask trueTime = new TrueTimeAsyncTask(this,this);
                 trueTime.execute();
             } else {
-                Date date = TrueTime.now();
+                Date date = TrueTime.now(); // Obtengo la hora desde Internet
                 //setFechaLoginSharedPreferences(date);
                 buscarEsquema(date);
             }
         } else{
-            Toast.makeText(this, "No esta conectado", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No esta conectado a Internet", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -905,6 +906,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         myAlert.show(getSupportFragmentManager(),"Puesto Vencido Alert");
     }
 
+    //Funcion modificada
     private boolean dentroEsquema(String fechaDesde,String fechaHasta,Date dateHoy){
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         Date dateDesde=null;
@@ -920,6 +922,17 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         }
         Toast.makeText(this, "El esquema actual no contiene alguna de sus fechas limites", Toast.LENGTH_SHORT).show();
         return false;
+    }
+
+    private boolean dentroEsquema2(Date fechaDesde,Date fechaHasta,Date fechaHoy){
+
+        if( fechaDesde != null && fechaHasta != null && fechaHoy != null){
+            return fechaHoy.getTime() > fechaDesde.getTime() && fechaHoy.getTime() < fechaHasta.getTime();
+        } else {
+            Toast.makeText(this, "El esquema actual no contiene alguna de sus fechas limites", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
     }
 
     public void buscarEsquemaActual(Date fechaHoraIngreso){
@@ -943,7 +956,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Esquema esquema = document.toObject(Esquema.class);
-                                if(dentroEsquema(esquema.getFechaDesde(),esquema.getFechaHasta(),fechaHoraIngreso)){
+                                if(dentroEsquema2(esquema.getFechaDesde(),esquema.getFechaHasta(),fechaHoraIngreso)){
                                     cargarPuestos(fechaHoraIngreso,document.getId());
                                     cambiarVigencia(document.getId(),true);
                                     esquemaEncontrado=true;
