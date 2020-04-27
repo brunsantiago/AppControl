@@ -208,7 +208,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                           prefs.getString(OBJETIVO,"")+"/"+ "CAPTURAS"+"/"+
                                           prefs.getString(FECHA_PUESTO,"")+"/"+ documentReference.getId();
 
-                            documentReference.update(IMAGE_PATH,path+"/"+prefs.getString(NRO_LEGAJO,"")+"_INGRESO.jpg");
+                            documentReference.update(IMAGE_PATH,path+"/");
                             actualizarEstadoPersonal(documentReference.getId());
                             subirArchivoImageView(path);
                             vencimientoSesion(prefs.getBoolean(TURNO_NOCHE,false),prefs.getString(FECHA_PUESTO,""),prefs.getString(EGRESO_PUESTO,""));

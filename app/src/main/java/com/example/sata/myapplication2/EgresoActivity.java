@@ -67,7 +67,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private static final String SESION_ID = "sesionID";
     private static final String NOMBRE_PERSONAL = "nombre";
     private static final String NRO_LEGAJO = "nroLegajo";
-    private static final String IMAGE_PATH = "imagePath";
+//    private static final String IMAGE_PATH = "imagePath";
     private static final String NOMBRE_PUESTO = "nombrePuesto";
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final String EGRESO_PUESTO = "egresoPuesto";
@@ -140,12 +140,12 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                       prefs.getString(FECHA_PUESTO,"")+"/"+
                       prefs.getString(SESION_ID,"");
 
-        String imagePath = path+"/"+prefs.getString(NRO_LEGAJO,"")+"_EGRESO.jpg";
+//        String imagePath = path+"/"+prefs.getString(NRO_LEGAJO,"")+"_EGRESO.jpg";
 
         Map<String, Object> egreso = new HashMap<>();
         egreso.put(FECHA_EGRESO, fechaEgreso);
         egreso.put(HORA_EGRESO, horaEgreso);
-        egreso.put(IMAGE_PATH,imagePath);
+//        egreso.put(IMAGE_PATH,imagePath);
 
         DocumentReference reference = database.collection("clientes")
                 .document(prefs.getString(CLIENTE,""))
