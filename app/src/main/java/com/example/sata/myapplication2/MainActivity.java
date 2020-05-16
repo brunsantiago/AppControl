@@ -47,6 +47,9 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.instacart.library.truetime.TrueTime;
 
 import java.io.File;
@@ -296,21 +299,26 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
 
         String nroLegajo = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
 
-        DocumentReference referenceUser = database.collection("users").document(nroLegajo);
+        Query referenceUser = database.collection("users").whereEqualTo("idPersonal", nroLegajo);
 
-        referenceUser.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        referenceUser
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
-                    DocumentSnapshot doc = task.getResult();
-                    String nombre = (String) doc.get(NOMBRE);
-                    SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.putString(NOMBRE, nombre);
-                    editor.apply();
-                    nombrePersonal.setText(nombre.toUpperCase());
-
+                    for (QueryDocumentSnapshot doc : task.getResult()) {
+                        String nombre = (String) doc.get(NOMBRE);
+                        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putString(NOMBRE, nombre);
+                        editor.apply();
+                        nombrePersonal.setText(nombre.toUpperCase());
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, "No se pudo obtener el numero de legajo", Toast.LENGTH_SHORT).show();
                 }
+
             }
         })
                 .addOnFailureListener(new OnFailureListener() {
@@ -351,32 +359,38 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
     }
 
     private void chequearEstadoSesion() {
-        DocumentReference reference = database.collection("users")
-                .document(userAuth.getDisplayName());
 
-        reference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        Query reference = database.collection("users").whereEqualTo("idPersonal", userAuth.getDisplayName());
+
+        reference
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    Boolean estadoSesion = (Boolean) document.get(ESTADO_SESION);
-                    if (estadoSesion) {
-                        UltimaSesion ultimaSesion = new UltimaSesion((Map<String, Object>) document.get(ULTIMA_SESION));
-                        if(!cargaUltimaSesion(ultimaSesion)){
-                            reference.update(ESTADO_SESION, false);
-                            //reference.update(ULTIMA_SESION,"");
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Boolean estadoSesion = false;
+                        if(document.get(ESTADO_SESION)!=null){
+                            estadoSesion = (Boolean) document.get(ESTADO_SESION);
+                        }
+                        if (estadoSesion) {
+                            UltimaSesion ultimaSesion = new UltimaSesion((Map<String, Object>) document.get(ULTIMA_SESION));
+                            if(!cargaUltimaSesion(ultimaSesion)){
+                                database.collection("users").document(document.getId()).update(ESTADO_SESION, false);
+                                textViewStatus.setText("No registrado en el Objetivo");
+                                textViewStatus.setTextColor(Color.RED);
+                            }
+                        } else {
+                            SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putBoolean(ESTADO_SESION,false);
+                            editor.apply();
                             textViewStatus.setText("No registrado en el Objetivo");
                             textViewStatus.setTextColor(Color.RED);
                         }
-                    } else {
-                        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = prefs.edit();
-                        editor.putBoolean(ESTADO_SESION,false);
-                        editor.apply();
-                        textViewStatus.setText("No registrado en el Objetivo");
-                        textViewStatus.setTextColor(Color.RED);
+                        progressDialog.dismiss();
                     }
-                    progressDialog.dismiss();
+
                 } else {
                     Log.d("TAG", "No such document");
                 }

@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -34,12 +35,17 @@ import com.bumptech.glide.request.transition.Transition;
 import com.example.sata.myapplication2.AlertDialog.LoadPhotoAlert;
 import com.example.sata.myapplication2.AlertDialog.LoadPhotoAlertError;
 import com.example.sata.myapplication2.POJO.HoraRegistrada;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -140,12 +146,9 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                       prefs.getString(FECHA_PUESTO,"")+"/"+
                       prefs.getString(SESION_ID,"");
 
-//        String imagePath = path+"/"+prefs.getString(NRO_LEGAJO,"")+"_EGRESO.jpg";
-
         Map<String, Object> egreso = new HashMap<>();
         egreso.put(FECHA_EGRESO, fechaEgreso);
         egreso.put(HORA_EGRESO, horaEgreso);
-//        egreso.put(IMAGE_PATH,imagePath);
 
         DocumentReference reference = database.collection("clientes")
                 .document(prefs.getString(CLIENTE,""))
@@ -161,7 +164,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                     @Override
                     public void onSuccess(Void aVoid) {
                         actualizarEstadoPersonal(fechaEgreso,horaEgreso);
-                        //chequearEstadoSesion();
                         servicioFinalizado();
                         subirArchivoImageView(path);
                         showRegisterAlert();
@@ -176,8 +178,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     }
 
     private void actualizarEstadoPersonal(String fechaEgreso, String horaEgreso) {
-        DocumentReference reference = database.collection("users")
-                                              .document(userAuth.getDisplayName());
+
+        Query reference = database.collection("users").whereEqualTo("idPersonal", userAuth.getDisplayName());
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",Context.MODE_PRIVATE);
 
@@ -186,20 +188,38 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         editor.putString(HORA_EGRESO, horaEgreso);
         editor.apply();
 
-        reference.update(ESTADO_SESION, false);
-        reference.update("ultimaSesion.fechaEgreso",fechaEgreso);
-        reference.update("ultimaSesion.horaEgreso",horaEgreso);
-//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                        @Override
-//                        public void onSuccess(Void aVoid) {
-//                        }
-//                    })
-//                    .addOnFailureListener(new OnFailureListener() {
-//                        @Override
-//                        public void onFailure(@NonNull Exception e) {
-//                        // Habria que ver cargar el estado de sesion como abierta
-//                        }
-//                    });
+        reference.get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                database.collection("users").document(document.getId()).update(
+                                        ESTADO_SESION, false,
+                                        "ultimaSesion.fechaEgreso",fechaEgreso,
+                                        "ultimaSesion.horaEgreso",horaEgreso
+                                )
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(EgresoActivity.this, "No se pudo actualizar el estado de la sesion", Toast.LENGTH_SHORT).show();
+                                        // Habria que ver cargar el estado de sesion como cerrada
+                                    }
+                                });
+
+                            }
+
+                        } else {
+                            Log.d("TAG", "No such document");
+                        }
+                    }
+                });
+
     }
 
     private void chequearEstadoSesion(){

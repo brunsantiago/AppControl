@@ -42,6 +42,7 @@ import com.example.sata.myapplication2.POJO.Esquema;
 import com.example.sata.myapplication2.POJO.HoraRegistrada;
 import com.example.sata.myapplication2.POJO.Puesto;
 import com.example.sata.myapplication2.POJO.PuestoAdapter;
+import com.example.sata.myapplication2.POJO.UltimaSesion;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -51,6 +52,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -268,23 +270,39 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         ultimaSesion.put(FECHA_INGRESO, prefs.getString(FECHA_INGRESO,""));
         ultimaSesion.put(HORA_EGRESO,"");
 
-        DocumentReference reference = database.collection("users")
-                .document(userAuth.getDisplayName());
+        Query reference = database.collection("users").whereEqualTo("idPersonal", userAuth.getDisplayName());
 
-        reference.update(ESTADO_SESION, true);
-        reference.update(ULTIMA_SESION, ultimaSesion)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
+        reference.get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
-                    public void onSuccess(Void aVoid) {
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(IngresoActivity.this, "No se pudo actualizar el estado de la sesion", Toast.LENGTH_SHORT).show();
-                        // Habria que ver cargar el estado de sesion como cerrada
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                database.collection("users").document(document.getId()).update(
+                                        ESTADO_SESION, true,
+                                        ULTIMA_SESION, ultimaSesion
+                                )
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(IngresoActivity.this, "No se pudo actualizar el estado de la sesion", Toast.LENGTH_SHORT).show();
+                                        // Habria que ver cargar el estado de sesion como cerrada
+                                    }
+                                });
+
+                            }
+
+                        } else {
+                            Log.d("TAG", "No such document");
+                        }
                     }
                 });
+
 
     }
 
@@ -592,7 +610,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             editor.putString(EGRESO_PUESTO, puesto.getEgresoPuesto());
             editor.putString(HORAS_TURNO,puesto.getHorasTurno());
             editor.putString(FECHA_PUESTO,puesto.getFechaPuesto());
-            if(puesto.getTurnoNoche() != null){ editor.putBoolean(TURNO_NOCHE,puesto.getTurnoNoche()); }
+            if(puesto.getTurnoNoche() != null){
+                editor.putBoolean(TURNO_NOCHE,puesto.getTurnoNoche());
+            }
             editor.apply();
             puestoSeleccionado = true;
         } else {

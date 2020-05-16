@@ -36,7 +36,7 @@ public class Puesto {
 
 
     public String getNombrePuesto() {
-        return nombrePuesto;
+        return this.nombrePuesto;
     }
 
     public void setNombrePuesto(String nombrePuesto) {
@@ -44,7 +44,7 @@ public class Puesto {
     }
 
     public String getNombreTurno() {
-        return nombreTurno;
+        return this.nombreTurno;
     }
 
     public void setNombreTurno(String nombreTurno) {
@@ -52,7 +52,7 @@ public class Puesto {
     }
 
     public String getIngresoPuesto() {
-        return ingresoPuesto;
+        return this.ingresoPuesto;
     }
 
     public void setIngresoPuesto(String ingresoPuesto) {
@@ -60,7 +60,7 @@ public class Puesto {
     }
 
     public String getEgresoPuesto() {
-        return egresoPuesto;
+        return this.egresoPuesto;
     }
 
     public void setEgresoPuesto(String egresoPuesto) {
@@ -68,7 +68,7 @@ public class Puesto {
     }
 
     public String getHorasTurno() {
-        return horasTurno;
+        return this.horasTurno;
     }
 
     public void setHorasTurno(String cantidadHoras) {
@@ -76,7 +76,7 @@ public class Puesto {
     }
 
     public Boolean getTurnoNoche() {
-        return turnoNoche;
+        return this.turnoNoche;
     }
 
     public void setTurnoNoche(Boolean turnoNoche) {
@@ -84,7 +84,7 @@ public class Puesto {
     }
 
     public String getFechaPuesto() {
-        return fechaPuesto;
+        return this.fechaPuesto;
     }
 
     public void setFechaPuesto(String fecha) {
@@ -93,7 +93,7 @@ public class Puesto {
 
 
     public String getEstado() {
-        return estado;
+        return this.estado;
     }
 
     public void setEstado(String estado) {
