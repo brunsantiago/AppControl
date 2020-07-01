@@ -36,6 +36,7 @@ import com.example.sata.myapplication2.AlertDialog.SesionActivaAlert;
 import com.example.sata.myapplication2.AlertDialog.SesionVencidaAlert;
 import com.example.sata.myapplication2.AlertDialog.SesionVigenteAlert;
 import com.example.sata.myapplication2.POJO.Cliente;
+import com.example.sata.myapplication2.POJO.TurnoSesion;
 import com.example.sata.myapplication2.POJO.UltimaSesion;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -370,16 +371,18 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         Boolean estadoSesion = false;
+                        String userId = document.getId();
                         if(document.get(ESTADO_SESION)!=null){
                             estadoSesion = (Boolean) document.get(ESTADO_SESION);
                         }
                         if (estadoSesion) {
                             UltimaSesion ultimaSesion = new UltimaSesion((Map<String, Object>) document.get(ULTIMA_SESION));
-                            if(!cargaUltimaSesion(ultimaSesion)){
-                                database.collection("users").document(document.getId()).update(ESTADO_SESION, false);
-                                textViewStatus.setText("No registrado en el Objetivo");
-                                textViewStatus.setTextColor(Color.RED);
-                            }
+//                            if(!cargaUltimaSesion(ultimaSesion,userId)){
+//                                database.collection("users").document(document.getId()).update(ESTADO_SESION, false);
+//                                textViewStatus.setText("No registrado en el Objetivo");
+//                                textViewStatus.setTextColor(Color.RED);
+//                            }
+                            cargaUltimaSesion(ultimaSesion,userId);
                         } else {
                             SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
                             SharedPreferences.Editor editor = prefs.edit();
@@ -398,7 +401,8 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
         });
     }
 
-    private Boolean cargaUltimaSesion(UltimaSesion ultimaSesion){
+    private void cargaUltimaSesion(UltimaSesion ultimaSesion, String userId){
+
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
 
@@ -407,64 +411,92 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
 
         if (clienteDispositivo.equals(ultimaSesion.getCliente()) && objetivoDispositivo.equals(ultimaSesion.getObjetivo())){
 
-            Date fechaLogin = null;
-            Date fechaVence = null;
+            obtenerTurno(ultimaSesion,prefs,editor,userId);
 
-            fechaLogin = armarDate(prefs.getString(FECHA_INGRESO_LOGIN,""),prefs.getString(HORA_INGRESO_LOGIN,""));
-
-            if(ultimaSesion.getTurnoNoche()!=null && ultimaSesion.getTurnoNoche()){
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                Date hoy = null;
-                try {
-                    hoy = dateFormat.parse(ultimaSesion.getFechaPuesto());
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                Date diaPosterior = new Date(hoy.getTime()+86400000);
-                fechaVence = armarDate(dateFormat.format(diaPosterior),ultimaSesion.getEgresoPuesto());
-            }else if (ultimaSesion.getTurnoNoche()!=null && !ultimaSesion.getTurnoNoche()){
-                fechaVence = armarDate(ultimaSesion.getFechaPuesto(),ultimaSesion.getEgresoPuesto());
-            } else {
-                Toast.makeText(this, "Falta cargar si es Turno Noche en sesion del servidor", Toast.LENGTH_SHORT).show();
-            }
-
-            Configurador miConf = Configurador.getInstance();
-            miConf.setFinSesion(fechaVence);
-
-            if (comparaFechas(fechaLogin,fechaVence)==2){
-                showSesionVigenteAlert();
-                editor.putBoolean(ESTADO_SESION,true);
-                editor.putString(FECHA_PUESTO,ultimaSesion.getFechaPuesto());
-                editor.putString(INGRESO_PUESTO,ultimaSesion.getIngresoPuesto());
-                editor.putString(HORA_INGRESO,ultimaSesion.getHoraIngreso());
-                editor.putString(FECHA_INGRESO,ultimaSesion.getFechaIngreso());
-                editor.putString(HORA_EGRESO,ultimaSesion.getHoraEgreso());
-                editor.putString(EGRESO_PUESTO,ultimaSesion.getEgresoPuesto());
-                editor.putBoolean(TURNO_NOCHE,ultimaSesion.getTurnoNoche());
-                editor.putString(SESION_ID,ultimaSesion.getSesionID());
-                editor.putString(NOMBRE_PUESTO,ultimaSesion.getNombrePuesto());
-                editor.apply();
-                textViewStatus.setText("Registrado en el Objetivo");
-                textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
-                return true;
-            } else {
-                //Sesion Vencida
-                showSesionVencidaAlert();
-                editor.putBoolean(ESTADO_SESION,false);
-                editor.apply();
-                textViewStatus.setText("No registrado en el Objetivo");
-                textViewStatus.setTextColor(Color.RED);
-                return false;
-            }
         } else {
-            //showSesionActivaAlert(ultimaSesion);
+
             showObjetivoVencidoAlert(ultimaSesion.getCliente(),ultimaSesion.getObjetivo(),ultimaSesion.getFechaPuesto());
             editor.putBoolean(ESTADO_SESION,false);
             editor.apply();
+            database.collection("users").document(userId).update(ESTADO_SESION, false);
             textViewStatus.setText("No registrado en el Objetivo");
             textViewStatus.setTextColor(Color.RED);
-            return false;
         }
+    }
+
+    private void obtenerTurno(UltimaSesion ultimaSesion,SharedPreferences prefs,SharedPreferences.Editor editor, String userId){
+
+        DocumentReference docRef = database.document(ultimaSesion.getPathTurno());
+
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+
+                        TurnoSesion turnoSesion = new TurnoSesion((Map<String, Object>) document.getData());
+
+                        Date fechaLogin = null;
+                        Date fechaVence = null;
+
+                        fechaLogin = armarDate(prefs.getString(FECHA_INGRESO_LOGIN,""),prefs.getString(HORA_INGRESO_LOGIN,""));
+
+                        if(turnoSesion.getTurnoNoche()!=null && turnoSesion.getTurnoNoche()){
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                            Date hoy = null;
+                            try {
+                                hoy = dateFormat.parse(turnoSesion.getFechaPuesto());
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                            Date diaPosterior = new Date(hoy.getTime()+86400000);
+                            fechaVence = armarDate(dateFormat.format(diaPosterior),turnoSesion.getEgresoPuesto());
+                        }else if (turnoSesion.getTurnoNoche()!=null && !turnoSesion.getTurnoNoche()){
+                            fechaVence = armarDate(turnoSesion.getFechaPuesto(),turnoSesion.getEgresoPuesto());
+                        } else {
+                            //Toast.makeText(this, "Falta cargar si es Turno Noche en sesion del servidor", Toast.LENGTH_SHORT).show();
+                        }
+
+                        Configurador miConf = Configurador.getInstance();
+                        miConf.setFinSesion(fechaVence);
+
+                        if (comparaFechas(fechaLogin,fechaVence)==2){
+                            showSesionVigenteAlert();
+                            editor.putBoolean(ESTADO_SESION,true);
+                            editor.putString(FECHA_PUESTO,turnoSesion.getFechaPuesto());
+                            editor.putString(INGRESO_PUESTO,turnoSesion.getIngresoPuesto());
+                            editor.putString(HORA_INGRESO,turnoSesion.getHoraIngreso());
+                            editor.putString(FECHA_INGRESO,turnoSesion.getFechaIngreso());
+                            editor.putString(HORA_EGRESO,turnoSesion.getHoraEgreso());
+                            editor.putString(EGRESO_PUESTO,turnoSesion.getEgresoPuesto());
+                            editor.putBoolean(TURNO_NOCHE,turnoSesion.getTurnoNoche());
+                            editor.putString(SESION_ID,ultimaSesion.getSesionID());
+                            editor.putString(NOMBRE_PUESTO,turnoSesion.getNombrePuesto());
+                            editor.apply();
+                            textViewStatus.setText("Registrado en el Objetivo");
+                            textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
+                            //return true;
+                        } else {
+                            //Sesion Vencida
+                            showSesionVencidaAlert();
+                            editor.putBoolean(ESTADO_SESION,false);
+                            editor.apply();
+                            database.collection("users").document(userId).update(ESTADO_SESION, false);
+                            textViewStatus.setText("No registrado en el Objetivo");
+                            textViewStatus.setTextColor(Color.RED);
+                            //return false;
+                        }
+
+                    } else {
+                        Log.d(TAG, "No such document");
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+
     }
 
     @Override
@@ -498,12 +530,6 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
             return false;
         }
     }
-
-//    public void showSesionActivaAlert(UltimaSesion ultimaSesion){
-//        SesionActivaAlert myAlert = new SesionActivaAlert();
-//        myAlert.setUltimaSesion(ultimaSesion);
-//        myAlert.show(getSupportFragmentManager(),"Sesion Activa Alert");
-//    }
 
     public void showSesionVigenteAlert(){
         SesionVigenteAlert myAlert = new SesionVigenteAlert();

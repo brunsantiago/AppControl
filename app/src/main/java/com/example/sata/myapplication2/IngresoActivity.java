@@ -97,9 +97,11 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String TURNO_NOCHE = "turnoNoche";
     private static final String IMAGE_PATH = "imagePath";
     private static final String NRO_LEGAJO = "nroLegajo";
+    private static final String PATH_TURNO = "pathTurno";
     //private static final String HORA_INGRESO_MILLISEC = "horaIngresoMillisec";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
+
 
 
     private FirebaseFirestore database;
@@ -211,7 +213,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                           prefs.getString(FECHA_PUESTO,"")+"/"+ documentReference.getId();
 
                             documentReference.update(IMAGE_PATH,path+"/");
-                            actualizarEstadoPersonal(documentReference.getId());
+                            actualizarEstadoPersonal(documentReference);
                             subirArchivoImageView(path);
                             vencimientoSesion(prefs.getBoolean(TURNO_NOCHE,false),prefs.getString(FECHA_PUESTO,""),prefs.getString(EGRESO_PUESTO,""));
                             showRegisterAlert();
@@ -249,26 +251,19 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
     }
 
-    private void actualizarEstadoPersonal(String documentID) {
+    private void actualizarEstadoPersonal(DocumentReference documentReference) {
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",Context.MODE_PRIVATE);
 
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(SESION_ID,documentID);
+        editor.putString(SESION_ID,documentReference.getId());
         editor.apply();
 
         Map<String, Object> ultimaSesion = new HashMap<>();
         ultimaSesion.put(CLIENTE, prefs.getString(CLIENTE,""));
         ultimaSesion.put(OBJETIVO, prefs.getString(OBJETIVO,""));
-        ultimaSesion.put(FECHA_PUESTO, prefs.getString(FECHA_PUESTO,""));
-        ultimaSesion.put(NOMBRE_PUESTO,prefs.getString(NOMBRE_PUESTO,""));
-        ultimaSesion.put(SESION_ID, documentID);
-        ultimaSesion.put(INGRESO_PUESTO, prefs.getString(INGRESO_PUESTO,""));
-        ultimaSesion.put(EGRESO_PUESTO,prefs.getString(EGRESO_PUESTO,""));
-        ultimaSesion.put(TURNO_NOCHE,prefs.getBoolean(TURNO_NOCHE,false));
-        ultimaSesion.put(HORA_INGRESO,prefs.getString(HORA_INGRESO,""));
-        ultimaSesion.put(FECHA_INGRESO, prefs.getString(FECHA_INGRESO,""));
-        ultimaSesion.put(HORA_EGRESO,"");
+        ultimaSesion.put(SESION_ID, documentReference.getId());
+        ultimaSesion.put(PATH_TURNO,documentReference.getPath ());
 
         Query reference = database.collection("users").whereEqualTo("idPersonal", userAuth.getDisplayName());
 

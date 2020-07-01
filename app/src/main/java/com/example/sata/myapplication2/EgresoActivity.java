@@ -195,10 +195,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 database.collection("users").document(document.getId()).update(
-                                        ESTADO_SESION, false,
-                                        "ultimaSesion.fechaEgreso",fechaEgreso,
-                                        "ultimaSesion.horaEgreso",horaEgreso
-                                )
+                                        ESTADO_SESION, false)
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {

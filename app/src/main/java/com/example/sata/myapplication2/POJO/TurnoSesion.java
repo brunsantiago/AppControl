@@ -2,12 +2,9 @@ package com.example.sata.myapplication2.POJO;
 
 import java.util.Map;
 
-public class UltimaSesion {
+public class TurnoSesion {
 
-    private String cliente;
     private String fechaPuesto;
-    private String objetivo;
-    private String sesionID;
     private String nombrePuesto;
     private String egresoPuesto;
     private String ingresoPuesto;
@@ -16,13 +13,8 @@ public class UltimaSesion {
     private String horaEgreso;
     private Boolean turnoNoche;
 
-    private String pathTurno;
-
-    public UltimaSesion(String cliente, String fechaPuesto, String objetivo, String sesionID, String nombrePuesto, String egresoPuesto, String ingresoPuesto, String horaIngreso, String fechaIngreso, String horaEgreso, Boolean turnoNoche) {
-        this.cliente = cliente;
+    public TurnoSesion(String fechaPuesto, String nombrePuesto, String egresoPuesto, String ingresoPuesto, String horaIngreso, String fechaIngreso, String horaEgreso, Boolean turnoNoche) {
         this.fechaPuesto = fechaPuesto;
-        this.objetivo = objetivo;
-        this.sesionID = sesionID;
         this.nombrePuesto = nombrePuesto;
         this.egresoPuesto = egresoPuesto;
         this.ingresoPuesto = ingresoPuesto;
@@ -32,11 +24,8 @@ public class UltimaSesion {
         this.turnoNoche = turnoNoche;
     }
 
-    public UltimaSesion(Map<String, Object> map) {
-        this.cliente = (String) map.get("cliente");
+    public TurnoSesion(Map<String, Object> map) {
         this.fechaPuesto = (String) map.get("fechaPuesto");
-        this.objetivo = (String) map.get("objetivo");
-        this.sesionID = (String) map.get("sesionID");
         this.nombrePuesto = (String) map.get("nombrePuesto");
         this.egresoPuesto = (String) map.get("egresoPuesto");
         this.ingresoPuesto = (String) map.get("ingresoPuesto");
@@ -44,7 +33,6 @@ public class UltimaSesion {
         this.fechaIngreso = (String) map.get("fechaIngreso");
         this.horaEgreso = (String) map.get("horaEgreso");
         this.turnoNoche = (Boolean) map.get("turnoNoche");
-        this.pathTurno = (String) map.get("pathTurno");
     }
 
     public String getFechaIngreso() {
@@ -79,36 +67,12 @@ public class UltimaSesion {
         this.horaEgreso = horaEgreso;
     }
 
-    public String getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(String cliente) {
-        this.cliente = cliente;
-    }
-
     public String getFechaPuesto() {
         return fechaPuesto;
     }
 
     public void setFechaPuesto(String fechaPuesto) {
         this.fechaPuesto = fechaPuesto;
-    }
-
-    public String getObjetivo() {
-        return objetivo;
-    }
-
-    public void setObjetivo(String objetivo) {
-        this.objetivo = objetivo;
-    }
-
-    public String getSesionID() {
-        return sesionID;
-    }
-
-    public void setSesionID(String sesionID) {
-        this.sesionID = sesionID;
     }
 
     public String getNombrePuesto() {
@@ -133,14 +97,6 @@ public class UltimaSesion {
 
     public void setTurnoNoche(Boolean turnoNoche) {
         this.turnoNoche = turnoNoche;
-    }
-
-    public String getPathTurno() {
-        return pathTurno;
-    }
-
-    public void setPathTurno(String pathTurno) {
-        this.pathTurno = pathTurno;
     }
 
 }
