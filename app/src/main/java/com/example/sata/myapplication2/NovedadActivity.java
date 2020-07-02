@@ -76,8 +76,8 @@ public class NovedadActivity extends AppCompatActivity implements AdapterView.On
     private static final String CANT_HORAS = "cantidadHoras";
 
     private static final String IMEI = "imei";
-    private static final String CLIENTE = "cliente";
-    private static final String OBJETIVO = "objetivo";
+    private static final String NOMBRE_CLIENTE = "nombreCliente";
+    private static final String NOMBRE_OBJETIVO = "nombreObjetivo";
     private static final String SHARED_PREFERENCES_NAME = "MisPreferencias";
     private static final String TURNO_NOCHE = "turnoNoche";
     private static final String NUMERO_DIA ="numeroDia";
@@ -155,8 +155,8 @@ public class NovedadActivity extends AppCompatActivity implements AdapterView.On
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
-        String cliente = prefs.getString(CLIENTE,"").toUpperCase();
-        String objetivo = prefs.getString(OBJETIVO,"").toUpperCase();
+        String cliente = prefs.getString(NOMBRE_CLIENTE,"").toUpperCase();
+        String objetivo = prefs.getString(NOMBRE_OBJETIVO,"").toUpperCase();
         String nombre = prefs.getString(NOMBRE,"").toUpperCase();
         boolean sesionVigente = prefs.getBoolean(ESTADO_SESION,false);
 
@@ -257,8 +257,8 @@ public class NovedadActivity extends AppCompatActivity implements AdapterView.On
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
         Map<String, Object> data = new HashMap<>();
-        data.put("idCliente", prefs.getString(CLIENTE,""));
-        data.put("idObjetivo", prefs.getString(OBJETIVO,""));
+        data.put("idCliente", prefs.getString(NOMBRE_CLIENTE,""));
+        data.put("idObjetivo", prefs.getString(NOMBRE_OBJETIVO,""));
         data.put("nroLegajo", prefs.getString(NRO_LEGAJO,""));
         data.put("timestamp", FieldValue.serverTimestamp());
         data.put("asunto", asunto);

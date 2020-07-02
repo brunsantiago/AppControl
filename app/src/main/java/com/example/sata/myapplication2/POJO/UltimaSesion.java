@@ -4,9 +4,9 @@ import java.util.Map;
 
 public class UltimaSesion {
 
-    private String cliente;
+    private String nombreCliente;
+    private String nombreObjetivo;
     private String fechaPuesto;
-    private String objetivo;
     private String sesionID;
     private String nombrePuesto;
     private String egresoPuesto;
@@ -18,10 +18,10 @@ public class UltimaSesion {
 
     private String pathTurno;
 
-    public UltimaSesion(String cliente, String fechaPuesto, String objetivo, String sesionID, String nombrePuesto, String egresoPuesto, String ingresoPuesto, String horaIngreso, String fechaIngreso, String horaEgreso, Boolean turnoNoche) {
-        this.cliente = cliente;
+    public UltimaSesion(String nombreCliente, String fechaPuesto, String nombreObjetivo, String sesionID, String nombrePuesto, String egresoPuesto, String ingresoPuesto, String horaIngreso, String fechaIngreso, String horaEgreso, Boolean turnoNoche) {
+        this.nombreCliente = nombreCliente;
         this.fechaPuesto = fechaPuesto;
-        this.objetivo = objetivo;
+        this.nombreObjetivo = nombreObjetivo;
         this.sesionID = sesionID;
         this.nombrePuesto = nombrePuesto;
         this.egresoPuesto = egresoPuesto;
@@ -33,9 +33,9 @@ public class UltimaSesion {
     }
 
     public UltimaSesion(Map<String, Object> map) {
-        this.cliente = (String) map.get("cliente");
+        this.nombreCliente = (String) map.get("nombreCliente");
         this.fechaPuesto = (String) map.get("fechaPuesto");
-        this.objetivo = (String) map.get("objetivo");
+        this.nombreObjetivo = (String) map.get("nombreObjetivo");
         this.sesionID = (String) map.get("sesionID");
         this.nombrePuesto = (String) map.get("nombrePuesto");
         this.egresoPuesto = (String) map.get("egresoPuesto");
@@ -45,6 +45,22 @@ public class UltimaSesion {
         this.horaEgreso = (String) map.get("horaEgreso");
         this.turnoNoche = (Boolean) map.get("turnoNoche");
         this.pathTurno = (String) map.get("pathTurno");
+    }
+
+    public String getNombreCliente() {
+        return nombreCliente;
+    }
+
+    public void setNombreCliente(String nombreCliente) {
+        this.nombreCliente = nombreCliente;
+    }
+
+    public String getNombreObjetivo() {
+        return nombreObjetivo;
+    }
+
+    public void setNombreObjetivo(String nombreObjetivo) {
+        this.nombreObjetivo = nombreObjetivo;
     }
 
     public String getFechaIngreso() {
@@ -79,28 +95,12 @@ public class UltimaSesion {
         this.horaEgreso = horaEgreso;
     }
 
-    public String getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(String cliente) {
-        this.cliente = cliente;
-    }
-
     public String getFechaPuesto() {
         return fechaPuesto;
     }
 
     public void setFechaPuesto(String fechaPuesto) {
         this.fechaPuesto = fechaPuesto;
-    }
-
-    public String getObjetivo() {
-        return objetivo;
-    }
-
-    public void setObjetivo(String objetivo) {
-        this.objetivo = objetivo;
     }
 
     public String getSesionID() {

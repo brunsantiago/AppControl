@@ -67,8 +67,10 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private static final String ESTADO_SESION = "estadoSesion";
     private static final String ULTIMA_SESION = "ultimaSesion";
     private static final String FECHA_EGRESO = "fechaEgreso";
-    private static final String OBJETIVO = "objetivo";
-    private static final String CLIENTE = "cliente";
+    private static final String NOMBRE_OBJETIVO = "nombreObjetivo";
+    private static final String NOMBRE_CLIENTE = "nombreCliente";
+    private static final String ID_CLIENTE = "idCliente";
+    private static final String ID_OBJETIVO = "idObjetivo";
     private static final String FECHA_PUESTO = "fechaPuesto";
     private static final String SESION_ID = "sesionID";
     private static final String NOMBRE_PERSONAL = "nombre";
@@ -91,12 +93,21 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private ImageView imageViewCamara;
     private String currentPhotoPath;
 
+    private String idCliente;
+    private String idObjetivo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_egreso);
 
         synchronizeClock();
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+        idCliente = prefs.getString(ID_CLIENTE,"");
+        idObjetivo = prefs.getString(ID_OBJETIVO,"");
+
+        Toast.makeText(this, idCliente+" - "+idObjetivo, Toast.LENGTH_SHORT).show();
 
         database = FirebaseFirestore.getInstance();
         userAuth = FirebaseAuth.getInstance().getCurrentUser();
@@ -126,8 +137,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
             }
         });
 
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-
         chequearEstadoSesion();
     }
 
@@ -141,8 +150,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",Context.MODE_PRIVATE);
 
-        String path = prefs.getString(CLIENTE,"")+"/"+
-                      prefs.getString(OBJETIVO,"")+"/"+"CAPTURAS"+"/"+
+        String path = prefs.getString(NOMBRE_CLIENTE,"")+"/"+
+                      prefs.getString(NOMBRE_OBJETIVO,"")+"/"+"CAPTURAS"+"/"+
                       prefs.getString(FECHA_PUESTO,"")+"/"+
                       prefs.getString(SESION_ID,"");
 
@@ -150,10 +159,12 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         egreso.put(FECHA_EGRESO, fechaEgreso);
         egreso.put(HORA_EGRESO, horaEgreso);
 
+        Toast.makeText(this, prefs.getString(FECHA_PUESTO,"")+" - "+prefs.getString(SESION_ID,""), Toast.LENGTH_SHORT).show();
+
         DocumentReference reference = database.collection("clientes")
-                .document(prefs.getString(CLIENTE,""))
+                .document(idCliente)
                 .collection("objetivos")
-                .document(prefs.getString(OBJETIVO,""))
+                .document(idObjetivo)
                 .collection("cobertura")
                 .document(prefs.getString(FECHA_PUESTO,""))
                 .collection("puestos")
@@ -245,8 +256,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         TextView textViewHoraRegistrada = findViewById(R.id.textViewHoraRegistrada);
         TextView textViewHoraEgreso = findViewById(R.id.textViewHoraEgreso);
 
-        //Toast.makeText(this, " Hora Egreso: "+horaEgreso+" Egreso Puesto: "+egresoPuesto+" Fecha Egreso: "+fechaEgreso+" Fecha Puesto: "+fechaPuesto+"Turno Noche: "+turnoNoche, Toast.LENGTH_SHORT).show();
-
         btnRegistrarSalida.setAlpha(0.5f);
         btnRegistrarSalida.setClickable(false);
         textViewStatus.setText("Servicio Finalizado");
@@ -301,8 +310,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
-        String cliente = prefs.getString(CLIENTE,"").toUpperCase();
-        String objetivo = prefs.getString(OBJETIVO,"").toUpperCase();
+        String cliente = prefs.getString(NOMBRE_CLIENTE,"").toUpperCase();
+        String objetivo = prefs.getString(NOMBRE_OBJETIVO,"").toUpperCase();
         String nombre = prefs.getString(NOMBRE_PERSONAL,"").toUpperCase();
         String nombrePuesto = prefs.getString(NOMBRE_PUESTO,"");
         String ingresoPuesto = prefs.getString(INGRESO_PUESTO,"");
@@ -349,7 +358,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         currentPhotoPath = imageFile.getAbsolutePath();
         return imageFile;
     }
-
 
     private void dispatchTakePictureIntent() {
 

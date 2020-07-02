@@ -19,7 +19,7 @@ public class SesionActivaAlert extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         String mensaje = "Se informa que Ud. no registro la salida del siguiente objetivo: ";
-        String servicio = "Servicio: "+ultimaSesion.getCliente()+" - "+ultimaSesion.getObjetivo();
+        String servicio = "Servicio: "+ultimaSesion.getNombreCliente()+" - "+ultimaSesion.getNombreObjetivo();
         String fecha = "Fecha: "+ultimaSesion.getFechaPuesto();
         String puesto = "Puesto: "+ultimaSesion.getNombrePuesto();
 

@@ -6,15 +6,23 @@ public class Esquema {
 
     private Date fechaDesde;
     private Date fechaHasta;
-    private boolean vigente;
+    private String estado;
 
 
     public Esquema() {}
 
-    public Esquema(boolean vigente,Date fechaDesde,Date fechaHasta) {
+    public Esquema(Date fechaDesde,Date fechaHasta, String estado) {
         this.fechaDesde = fechaDesde;
         this.fechaHasta = fechaHasta;
-        this.vigente = vigente;
+        this.estado = estado;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
     public Date getFechaDesde() {
@@ -33,11 +41,4 @@ public class Esquema {
         this.fechaHasta = fechaHasta;
     }
 
-    public boolean isVigente() {
-        return vigente;
-    }
-
-    public void setVigente(boolean vigente) {
-        this.vigente = vigente;
-    }
 }

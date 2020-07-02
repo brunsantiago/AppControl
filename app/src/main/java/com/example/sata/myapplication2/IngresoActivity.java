@@ -42,7 +42,6 @@ import com.example.sata.myapplication2.POJO.Esquema;
 import com.example.sata.myapplication2.POJO.HoraRegistrada;
 import com.example.sata.myapplication2.POJO.Puesto;
 import com.example.sata.myapplication2.POJO.PuestoAdapter;
-import com.example.sata.myapplication2.POJO.UltimaSesion;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -81,8 +80,10 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String TIPO_CUBRIMIENTO = "tipoCubrimiento";
     private static final String ESTADO_SESION = "estadoSesion";
     private static final String ULTIMA_SESION = "ultimaSesion";
-    private static final String CLIENTE = "cliente";
-    private static final String OBJETIVO = "objetivo";
+    private static final String NOMBRE_CLIENTE = "nombreCliente";
+    private static final String NOMBRE_OBJETIVO = "nombreObjetivo";
+    private static final String ID_CLIENTE = "idCliente";
+    private static final String ID_OBJETIVO = "idObjetivo";
     private static final String FECHA_EGRESO = "fechaEgreso";
     private static final String HORA_EGRESO = "horaEgreso";
     private static final String INGRESO_PUESTO = "ingresoPuesto" ;
@@ -98,11 +99,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String IMAGE_PATH = "imagePath";
     private static final String NRO_LEGAJO = "nroLegajo";
     private static final String PATH_TURNO = "pathTurno";
-    //private static final String HORA_INGRESO_MILLISEC = "horaIngresoMillisec";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
-
-
 
     private FirebaseFirestore database;
     private FirebaseStorage storage;
@@ -116,7 +114,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private PuestoAdapter puestoAdapter;
     private Boolean puestoSeleccionado;
     private ProgressDialog progressDialog=null;
-    private ResultListener<Date> resultListener;
+
+    private String idCliente;
+    private String idObjetivo;
 
 
     @Override
@@ -125,6 +125,10 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         setContentView(R.layout.activity_ingreso);
 
         synchronizeClock();
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+        idCliente = prefs.getString(ID_CLIENTE,"");
+        idObjetivo = prefs.getString(ID_OBJETIVO,"");
 
         nombrePuestos = new ArrayList<>();
         listaDePuestos = new ArrayList<>();
@@ -196,9 +200,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
 
         DocumentReference docRef = database.collection("clientes")
-                    .document(prefs.getString(CLIENTE,""))
+                    .document(idCliente)
                     .collection("objetivos")
-                    .document(prefs.getString(OBJETIVO,""))
+                    .document(idObjetivo)
                     .collection("cobertura")
                     .document(prefs.getString(FECHA_PUESTO,""));
 
@@ -208,8 +212,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                         
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
-                            String path = prefs.getString(CLIENTE,"")+"/"+
-                                          prefs.getString(OBJETIVO,"")+"/"+ "CAPTURAS"+"/"+
+                            String path = prefs.getString(NOMBRE_CLIENTE,"")+"/"+
+                                          prefs.getString(NOMBRE_OBJETIVO,"")+"/"+ "CAPTURAS"+"/"+
                                           prefs.getString(FECHA_PUESTO,"")+"/"+ documentReference.getId();
 
                             documentReference.update(IMAGE_PATH,path+"/");
@@ -260,8 +264,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         editor.apply();
 
         Map<String, Object> ultimaSesion = new HashMap<>();
-        ultimaSesion.put(CLIENTE, prefs.getString(CLIENTE,""));
-        ultimaSesion.put(OBJETIVO, prefs.getString(OBJETIVO,""));
+        ultimaSesion.put(NOMBRE_CLIENTE, prefs.getString(NOMBRE_CLIENTE,""));
+        ultimaSesion.put(NOMBRE_OBJETIVO, prefs.getString(NOMBRE_OBJETIVO,""));
         ultimaSesion.put(SESION_ID, documentReference.getId());
         ultimaSesion.put(PATH_TURNO,documentReference.getPath ());
 
@@ -333,8 +337,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
-        String cliente = prefs.getString(CLIENTE,"").toUpperCase();
-        String objetivo = prefs.getString(OBJETIVO,"").toUpperCase();
+        String cliente = prefs.getString(NOMBRE_CLIENTE,"").toUpperCase();
+        String objetivo = prefs.getString(NOMBRE_OBJETIVO,"").toUpperCase();
         String nombre = prefs.getString(NOMBRE_PERSONAL,"").toUpperCase();
         String nombrePuesto = prefs.getString(NOMBRE_PUESTO,"");
         String horaIngreso = prefs.getString(HORA_INGRESO,"");
@@ -388,14 +392,14 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
         listaDePuestos.add(puestoInicial);
 
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+        Toast.makeText(this, idCliente+" - "+idObjetivo, Toast.LENGTH_SHORT).show();
 
         database.collection("clientes")
-                .document(prefs.getString(CLIENTE,""))
+                .document("DIA")
                 .collection("objetivos")
-                .document(prefs.getString(OBJETIVO,""))
+                .document("TIENDA 143")
                 .collection("cubrimiento")
-                .whereEqualTo("vigente",true)
+                .whereEqualTo("estado","VIGENTE")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -408,11 +412,14 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                     cargarPuestos(fechaHoraIngreso,document.getId());
                                     esquemaEncontrado=true;
                                 } else{
-                                    cambiarVigencia(document.getId(),false);
+                                    cambiarVigencia(document.getId(),"CADUCADO");
                                     if(!esquemaEncontrado){ buscarEsquemaActual(fechaHoraIngreso); }
                                 }
                             }
-                            if(!esquemaEncontrado){ buscarEsquemaActual(fechaHoraIngreso); }
+                            if(!esquemaEncontrado){
+                                Toast.makeText(IngresoActivity.this, "NO Entro al FOR Se encontro un estado VIGENTE", Toast.LENGTH_SHORT).show();
+                                buscarEsquemaActual(fechaHoraIngreso);
+                            }
                         } else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
@@ -421,15 +428,15 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
     }
 
-    private void cambiarVigencia(String documentId, boolean vigencia){
+    private void cambiarVigencia(String documentId, String estado){
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
         database.collection("clientes")
-                .document(prefs.getString(CLIENTE,""))
+                .document(idCliente)
                 .collection("objetivos")
-                .document(prefs.getString(OBJETIVO,""))
+                .document(idObjetivo)
                 .collection("cubrimiento")
                 .document(documentId)
-                .update("vigente",vigencia);
+                .update("estado",estado);
     }
 
     public void cargarPuestos(Date fechaHoraIngreso, String documentoVigenteID){
@@ -442,9 +449,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
 
                 database.collection("clientes")
-                .document(prefs.getString(CLIENTE,""))
+                .document(idCliente)
                 .collection("objetivos")
-                .document(prefs.getString(OBJETIVO,""))
+                .document(idObjetivo)
                 .collection("cubrimiento")
                 .document(documentoVigenteID)
                 .collection("esquema")
@@ -538,9 +545,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         int diaSemana = ayer.getDay();
 
         database.collection("clientes")
-                .document(prefs.getString(CLIENTE,""))
+                .document(idCliente)
                 .collection("objetivos")
-                .document(prefs.getString(OBJETIVO,""))
+                .document(idObjetivo)
                 .collection("cubrimiento")
                 .document(documentoVigenteID)
                 .collection("esquema")
@@ -620,7 +627,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     public void onNothingSelected(AdapterView<?> adapterView) {
 
     }
-
 
     private File createImageFile() throws IOException {
         // Create an image file name
@@ -921,25 +927,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         myAlert.show(getSupportFragmentManager(),"Puesto Vencido Alert");
     }
 
-    //Funcion modificada
-    private boolean dentroEsquema(String fechaDesde,String fechaHasta,Date dateHoy){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        Date dateDesde=null;
-        Date dateHasta=null;
-        try {
-            dateDesde = dateFormat.parse(fechaDesde);
-            dateHasta = dateFormat.parse(fechaHasta);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        if( dateDesde != null && dateHasta != null && dateHoy != null){
-            return dateHoy.getTime() > dateDesde.getTime() && dateHoy.getTime() < dateHasta.getTime();
-        }
-        Toast.makeText(this, "El esquema actual no contiene alguna de sus fechas limites", Toast.LENGTH_SHORT).show();
-        return false;
-    }
-
     private boolean dentroEsquema2(Date fechaDesde,Date fechaHasta,Date fechaHoy){
+
+        Toast.makeText(this, fechaDesde+" - "+fechaHasta+" - "+fechaHoy, Toast.LENGTH_SHORT).show();
 
         if( fechaDesde != null && fechaHasta != null && fechaHoy != null){
             return fechaHoy.getTime() > fechaDesde.getTime() && fechaHoy.getTime() < fechaHasta.getTime();
@@ -956,12 +946,12 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         listaDePuestos = new ArrayList<>();
         nombrePuestos.add("No Disponible");
 
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+        //SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
         database.collection("clientes")
-                .document(prefs.getString(CLIENTE,""))
+                .document(idCliente)
                 .collection("objetivos")
-                .document(prefs.getString(OBJETIVO,""))
+                .document(idObjetivo)
                 .collection("cubrimiento")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -973,7 +963,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                 Esquema esquema = document.toObject(Esquema.class);
                                 if(dentroEsquema2(esquema.getFechaDesde(),esquema.getFechaHasta(),fechaHoraIngreso)){
                                     cargarPuestos(fechaHoraIngreso,document.getId());
-                                    cambiarVigencia(document.getId(),true);
+                                    cambiarVigencia(document.getId(),"VIGENTE");
                                     esquemaEncontrado=true;
                                 }
                             }

@@ -32,7 +32,6 @@ import android.widget.Toast;
 
 import com.example.sata.myapplication2.AlertDialog.ExitAlert;
 import com.example.sata.myapplication2.AlertDialog.LogOutAlert;
-import com.example.sata.myapplication2.AlertDialog.SesionActivaAlert;
 import com.example.sata.myapplication2.AlertDialog.SesionVencidaAlert;
 import com.example.sata.myapplication2.AlertDialog.SesionVigenteAlert;
 import com.example.sata.myapplication2.POJO.Cliente;
@@ -64,8 +63,10 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements ResultListener<Date> {
 
-    private static final String CLIENTE = "cliente";
-    private static final String OBJETIVO = "objetivo";
+    private static final String NOMBRE_CLIENTE = "nombreCliente";
+    private static final String NOMBRE_OBJETIVO = "nombreObjetivo";
+    private static final String ID_CLIENTE = "idCliente";
+    private static final String ID_OBJETIVO = "idObjetivo";
     private static final String IMEI = "imei";
     private static final String NOMBRE = "nombre";
     private static final String ESTADO_SESION = "estadoSesion";
@@ -226,18 +227,22 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot doc = task.getResult();
-                    String cliente = (String) doc.get(CLIENTE);
-                    String objetivo = (String) doc.get(OBJETIVO);
+                    String nombreCliente = (String) doc.get(NOMBRE_CLIENTE);
+                    String nombreObjetivo = (String) doc.get(NOMBRE_OBJETIVO);
+                    String idCliente = (String) doc.get(ID_CLIENTE);
+                    String idObjetivo = (String) doc.get(ID_OBJETIVO);
 
                     SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
 
                     SharedPreferences.Editor editor = prefs.edit();
-                    editor.putString(CLIENTE, cliente);
-                    editor.putString(OBJETIVO, objetivo);
+                    editor.putString(NOMBRE_CLIENTE, nombreCliente);
+                    editor.putString(NOMBRE_OBJETIVO, nombreObjetivo);
+                    editor.putString(ID_CLIENTE, idCliente);
+                    editor.putString(ID_OBJETIVO, idObjetivo);
                     editor.putString(IMEI, imei);
                     editor.apply();
 
-                    cargarDatosPantallaPrincipal(cliente,objetivo);
+                    cargarDatosPantallaPrincipal(nombreCliente,nombreObjetivo);
                 }
             }
         })
@@ -271,7 +276,6 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
         NetworkInfo ni = cm.getActiveNetworkInfo();
         return ni != null && ni.isConnectedOrConnecting();
     }
-
 
     private void setFechaLoginSharedPreferences(Date fecha){
 
@@ -354,6 +358,7 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
         LogOutAlert myAlert = new LogOutAlert();
         myAlert.show(getSupportFragmentManager(),"Log Out Alert");
     }
+
     public void showExitAlert(){
         ExitAlert myAlert = new ExitAlert();
         myAlert.show(getSupportFragmentManager(),"Exit Alert");
@@ -377,11 +382,6 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
                         }
                         if (estadoSesion) {
                             UltimaSesion ultimaSesion = new UltimaSesion((Map<String, Object>) document.get(ULTIMA_SESION));
-//                            if(!cargaUltimaSesion(ultimaSesion,userId)){
-//                                database.collection("users").document(document.getId()).update(ESTADO_SESION, false);
-//                                textViewStatus.setText("No registrado en el Objetivo");
-//                                textViewStatus.setTextColor(Color.RED);
-//                            }
                             cargaUltimaSesion(ultimaSesion,userId);
                         } else {
                             SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
@@ -406,16 +406,16 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
 
-        String clienteDispositivo = prefs.getString(CLIENTE,"").toUpperCase();
-        String objetivoDispositivo = prefs.getString(OBJETIVO,"").toUpperCase();
+        String clienteDispositivo = prefs.getString(NOMBRE_CLIENTE,"").toUpperCase();
+        String objetivoDispositivo = prefs.getString(NOMBRE_OBJETIVO,"").toUpperCase();
 
-        if (clienteDispositivo.equals(ultimaSesion.getCliente()) && objetivoDispositivo.equals(ultimaSesion.getObjetivo())){
-
+        if (clienteDispositivo.equals(ultimaSesion.getNombreCliente()) && objetivoDispositivo.equals(ultimaSesion.getNombreObjetivo())){
             obtenerTurno(ultimaSesion,prefs,editor,userId);
-
         } else {
-
-            showObjetivoVencidoAlert(ultimaSesion.getCliente(),ultimaSesion.getObjetivo(),ultimaSesion.getFechaPuesto());
+            //////////////////////////////////////////////////////////
+            // Falta caragr la fecha del puesto en la ultima sesion //
+            //////////////////////////////////////////////////////////
+            showObjetivoVencidoAlert(ultimaSesion.getNombreCliente(),ultimaSesion.getNombreObjetivo(),ultimaSesion.getFechaPuesto());
             editor.putBoolean(ESTADO_SESION,false);
             editor.apply();
             database.collection("users").document(userId).update(ESTADO_SESION, false);
@@ -476,7 +476,6 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
                             editor.apply();
                             textViewStatus.setText("Registrado en el Objetivo");
                             textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
-                            //return true;
                         } else {
                             //Sesion Vencida
                             showSesionVencidaAlert();
@@ -485,7 +484,6 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
                             database.collection("users").document(userId).update(ESTADO_SESION, false);
                             textViewStatus.setText("No registrado en el Objetivo");
                             textViewStatus.setTextColor(Color.RED);
-                            //return false;
                         }
 
                     } else {
@@ -670,8 +668,8 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
         Map<String, Object> data = new HashMap<>();
-        data.put("idCliente", prefs.getString(CLIENTE,""));
-        data.put("idObjetivo", prefs.getString(OBJETIVO,""));
+        data.put("idCliente", prefs.getString(NOMBRE_CLIENTE,""));
+        data.put("idObjetivo", prefs.getString(NOMBRE_OBJETIVO,""));
         data.put("nroLegajo", prefs.getString(NRO_LEGAJO,""));
         data.put("timestamp", FieldValue.serverTimestamp());
         data.put("latitud", "-34.543225");
