@@ -75,7 +75,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private static final String SESION_ID = "sesionID";
     private static final String NOMBRE_PERSONAL = "nombre";
     private static final String NRO_LEGAJO = "nroLegajo";
-//    private static final String IMAGE_PATH = "imagePath";
     private static final String NOMBRE_PUESTO = "nombrePuesto";
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final String EGRESO_PUESTO = "egresoPuesto";
@@ -106,8 +105,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
         idCliente = prefs.getString(ID_CLIENTE,"");
         idObjetivo = prefs.getString(ID_OBJETIVO,"");
-
-        Toast.makeText(this, idCliente+" - "+idObjetivo, Toast.LENGTH_SHORT).show();
 
         database = FirebaseFirestore.getInstance();
         userAuth = FirebaseAuth.getInstance().getCurrentUser();
@@ -158,8 +155,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         Map<String, Object> egreso = new HashMap<>();
         egreso.put(FECHA_EGRESO, fechaEgreso);
         egreso.put(HORA_EGRESO, horaEgreso);
-
-        Toast.makeText(this, prefs.getString(FECHA_PUESTO,"")+" - "+prefs.getString(SESION_ID,""), Toast.LENGTH_SHORT).show();
 
         DocumentReference reference = database.collection("clientes")
                 .document(idCliente)

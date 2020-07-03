@@ -118,7 +118,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private String idCliente;
     private String idObjetivo;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -392,12 +391,10 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
         listaDePuestos.add(puestoInicial);
 
-        Toast.makeText(this, idCliente+" - "+idObjetivo, Toast.LENGTH_SHORT).show();
-
         database.collection("clientes")
-                .document("DIA")
+                .document(idCliente)
                 .collection("objetivos")
-                .document("TIENDA 143")
+                .document(idObjetivo)
                 .collection("cubrimiento")
                 .whereEqualTo("estado","VIGENTE")
                 .get()
@@ -928,8 +925,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     }
 
     private boolean dentroEsquema2(Date fechaDesde,Date fechaHasta,Date fechaHoy){
-
-        Toast.makeText(this, fechaDesde+" - "+fechaHasta+" - "+fechaHoy, Toast.LENGTH_SHORT).show();
 
         if( fechaDesde != null && fechaHasta != null && fechaHoy != null){
             return fechaHoy.getTime() > fechaDesde.getTime() && fechaHoy.getTime() < fechaHasta.getTime();
