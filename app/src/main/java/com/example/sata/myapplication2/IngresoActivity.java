@@ -99,6 +99,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String IMAGE_PATH = "imagePath";
     private static final String NRO_LEGAJO = "nroLegajo";
     private static final String PATH_TURNO = "pathTurno";
+    private static final String HORA_INGRESO_PARAM = "hip";
+    private static final String HORA_EGRESO_PARAM = "hep";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
 
@@ -182,20 +184,28 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
             SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
+            String horaIngreso = prefs.getString(HORA_INGRESO,"");
+            String ingresoPuesto = prefs.getString(INGRESO_PUESTO,"");
+            String fechaIngreso = prefs.getString(FECHA_INGRESO,"");
+            String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
+
+
             Map<String, Object> ingreso = new HashMap<>();
-            ingreso.put(FECHA_INGRESO, prefs.getString(FECHA_INGRESO,""));
-            ingreso.put(HORA_INGRESO, prefs.getString(HORA_INGRESO,""));
+            ingreso.put(FECHA_INGRESO, fechaIngreso);
+            ingreso.put(HORA_INGRESO, horaIngreso);
             ingreso.put(FECHA_EGRESO, "");
             ingreso.put(HORA_EGRESO, "");
             ingreso.put(ID_PERSONAL, userAuth.getDisplayName());
-            ingreso.put(TIPO_CUBRIMIENTO, "titular");
+            //ingreso.put(TIPO_CUBRIMIENTO, "titular");
             ingreso.put(NOMBRE_PUESTO, prefs.getString(NOMBRE_PUESTO,""));
-            ingreso.put(INGRESO_PUESTO, prefs.getString(INGRESO_PUESTO,""));
+            ingreso.put(INGRESO_PUESTO, ingresoPuesto);
             ingreso.put(EGRESO_PUESTO, prefs.getString(EGRESO_PUESTO,""));
             ingreso.put(HORAS_TURNO,prefs.getString(HORAS_TURNO,""));
-            ingreso.put(FECHA_PUESTO,prefs.getString(FECHA_PUESTO,""));
-            ingreso.put(TIMESTAMP, FieldValue.serverTimestamp());
+            ingreso.put(FECHA_PUESTO,fechaPuesto);
+            //ingreso.put(TIMESTAMP, FieldValue.serverTimestamp());
             ingreso.put(TURNO_NOCHE,prefs.getBoolean(TURNO_NOCHE,false));
+            ingreso.put(HORA_INGRESO_PARAM,HoraRegistrada.ingresoParametrizadoDate(ingresoPuesto,fechaPuesto,horaIngreso,fechaIngreso));
+            ingreso.put(HORA_EGRESO_PARAM,"");
 
 
         DocumentReference docRef = database.collection("clientes")

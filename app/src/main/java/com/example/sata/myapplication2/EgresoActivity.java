@@ -81,6 +81,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private static final String TURNO_NOCHE = "turnoNoche";
     private static final String INGRESO_PUESTO = "ingresoPuesto";
     private static final String IMAGE_PATH = "imagePath";
+    private static final String HORA_EGRESO_PARAM = "hep";
+    private static final String HORA_EGRESO_PARAM_ = "hep";
 
 
     private FirebaseFirestore database;
@@ -153,10 +155,15 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                       prefs.getString(FECHA_PUESTO,"")+"/"+
                       prefs.getString(SESION_ID,"");
 
+        String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
+        String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
+        Boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE,false);
+
         Map<String, Object> egreso = new HashMap<>();
         egreso.put(FECHA_EGRESO, fechaEgreso);
         egreso.put(HORA_EGRESO, horaEgreso);
         egreso.put(IMAGE_PATH, path+"/");
+        egreso.put(HORA_EGRESO_PARAM, HoraRegistrada.egresoParametrizadoDate(egresoPuesto,fechaPuesto,horaEgreso,fechaEgreso,turnoNoche));
 
         DocumentReference reference = database.collection("clientes")
                 .document(idCliente)
