@@ -9,7 +9,9 @@
         android:id="@+id/textViewNombrePuesto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingStart="6dp"
         android:paddingTop="5dp"
+        android:paddingEnd="12dp"
         android:paddingBottom="3dp"
         android:fontFamily="@font/hpsimplified_rg"
         android:textColor="@android:color/white"
@@ -19,6 +21,9 @@
         android:id="@+id/textViewHorario"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingStart="6dp"
+        android:paddingBottom="6dp"
+        android:paddingEnd="12dp"
         android:fontFamily="@font/hpsimplified_rg"
         android:textColor="@android:color/white" />
 

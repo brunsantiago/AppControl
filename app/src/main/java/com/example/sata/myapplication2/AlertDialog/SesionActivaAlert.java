@@ -21,13 +21,13 @@ public class SesionActivaAlert extends DialogFragment {
         String mensaje = "Se informa que Ud. no registro la salida del siguiente objetivo: ";
         String servicio = "Servicio: "+ultimaSesion.getNombreCliente()+" - "+ultimaSesion.getNombreObjetivo();
         String fecha = "Fecha: "+ultimaSesion.getFechaPuesto();
-        String puesto = "Puesto: "+ultimaSesion.getNombrePuesto();
+        //String puesto = "Puesto: "+ultimaSesion.getNombrePuesto();
 
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Atencion")
                 .setIcon(R.drawable.danger)
-                .setMessage(mensaje +"\n"+ servicio +"\n"+ fecha+"\n"+ puesto +"\n")
+                .setMessage(mensaje +"\n"+ servicio +"\n"+ fecha+"\n")
                 .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                     }

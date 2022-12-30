@@ -52,27 +52,36 @@
         android:paddingStart="5dp"
         android:textColor="@android:color/white" />
 
-    <EditText
-        android:id="@+id/clave"
-        android:layout_width="200dp"
-        android:layout_height="40dp"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/password_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/nrolegajo"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="25dp"
-        android:background="@drawable/shapeblanco"
-        android:drawableStart="@drawable/ic_lock_black_24dp"
-        android:ems="10"
-        android:fontFamily="@font/hpsimplified_rg"
-        android:hint="Clave"
-        android:inputType="numberPassword"
-        android:paddingStart="5dp"
-        android:textColor="@android:color/white" />
+        app:hintEnabled="false"
+        app:passwordToggleEnabled="true"
+        android:fontFamily="@font/hpsimplified_rg">
+
+        <EditText
+            android:id="@+id/clave"
+            android:layout_width="200dp"
+            android:layout_height="40dp"
+            android:ems="10"
+            android:textColor="@android:color/white"
+            android:inputType="textPassword"
+            android:drawableStart="@drawable/ic_lock_black_24dp"
+            android:hint="@string/clave"
+            android:paddingStart="5dp"
+            android:background="@drawable/shapeblanco"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/ingresar"
         android:layout_width="200dp"
         android:layout_height="40dp"
-        android:layout_below="@+id/clave"
+        android:layout_below="@+id/password_layout"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="25dp"
         android:background="@drawable/shapegris"
@@ -83,15 +92,13 @@
         android:textSize="18sp" />
 
     <TextView
-        android:id="@+id/sinDatos"
+        android:id="@+id/registrarse"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
-        android:alpha="0.6"
-        android:text="No recuerdo los datos de acceso"
-        android:textColor="@android:color/background_light" />
-
+        android:layout_marginBottom="18dp"
+        android:text="Registrarse"
+        android:textColor="@color/gris" />
 
 </RelativeLayout>

@@ -91,7 +91,6 @@ public class Puesto {
         this.fechaPuesto = fecha;
     }
 
-
     public String getEstado() {
         return this.estado;
     }

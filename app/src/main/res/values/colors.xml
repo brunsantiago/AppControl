@@ -3,6 +3,8 @@
     <color name="colorPrimary">#000000</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
     <color name="colorBordo">#B13630</color>
     <color name="colorBordoOscuro">#8B140C</color>
     <color name="negroTransparente">#A0090909</color>
@@ -12,4 +14,5 @@
     <color name="item_name">#181818</color>
     <color name="description">#E6D9D9</color>
     <color name="holo_green_light">#99CC00</color>
+    <color name="gris">#80FFFFFF</color>
 </resources>

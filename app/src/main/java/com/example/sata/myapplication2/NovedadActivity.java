@@ -71,11 +71,13 @@ public class NovedadActivity extends AppCompatActivity implements AdapterView.On
 
     private static final String INGRESO_PUESTO = "ingresoPuesto" ;
     private static final String EGRESO_PUESTO = "egresoPuesto";
-    private static final String NOMBRE = "nombre";
+    private static final String NOMBRE_PERSONAL = "an";
     private static final String NOMBRE_CORTO = "nombreCorto";
     private static final String CANT_HORAS = "cantidadHoras";
 
     private static final String IMEI = "imei";
+    private static final String ID_CLIENTE = "idCliente";
+    private static final String ID_OBJETIVO = "idObjetivo";
     private static final String NOMBRE_CLIENTE = "nombreCliente";
     private static final String NOMBRE_OBJETIVO = "nombreObjetivo";
     private static final String SHARED_PREFERENCES_NAME = "MisPreferencias";
@@ -83,12 +85,12 @@ public class NovedadActivity extends AppCompatActivity implements AdapterView.On
     private static final String NUMERO_DIA ="numeroDia";
     private static final String TOTAL_HORAS = "totalHoras";
     private static final String NOMBRE_PUESTO = "nombrePuesto";
-    private static final String ESTADO_SESION = "estadoSesion";
+    private static final String ESTADO_SESION = "es";
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int REQUEST_IMAGE_SELECT = 2;
     private static final int REQUEST_CODE_CHOOSE = 300;
     public static final int REQUEST_CODE = 100;
-    private static final String NRO_LEGAJO = "nroLegajo";
+    private static final String NRO_LEGAJO = "nl";
     private String imei;
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID;
 
@@ -157,7 +159,7 @@ public class NovedadActivity extends AppCompatActivity implements AdapterView.On
 
         String cliente = prefs.getString(NOMBRE_CLIENTE,"").toUpperCase();
         String objetivo = prefs.getString(NOMBRE_OBJETIVO,"").toUpperCase();
-        String nombre = prefs.getString(NOMBRE,"").toUpperCase();
+        String nombre = prefs.getString(NOMBRE_PERSONAL,"").toUpperCase();
         boolean sesionVigente = prefs.getBoolean(ESTADO_SESION,false);
 
         TextView nombrePersonal = findViewById(R.id.textViewName);
@@ -257,8 +259,10 @@ public class NovedadActivity extends AppCompatActivity implements AdapterView.On
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
         Map<String, Object> data = new HashMap<>();
-        data.put("idCliente", prefs.getString(NOMBRE_CLIENTE,""));
-        data.put("idObjetivo", prefs.getString(NOMBRE_OBJETIVO,""));
+        data.put("idCliente", prefs.getString(ID_CLIENTE,""));
+        data.put("idObjetivo", prefs.getString(ID_OBJETIVO,""));
+        data.put("nombreCliente", prefs.getString(NOMBRE_CLIENTE,""));
+        data.put("nombreObjetivo", prefs.getString(NOMBRE_OBJETIVO,""));
         data.put("nroLegajo", prefs.getString(NRO_LEGAJO,""));
         data.put("timestamp", FieldValue.serverTimestamp());
         data.put("asunto", asunto);

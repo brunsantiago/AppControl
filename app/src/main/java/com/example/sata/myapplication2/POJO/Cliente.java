@@ -1,40 +1,23 @@
 package com.example.sata.myapplication2.POJO;
 
-import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Handler;
+public class Cliente {
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.Socket;
+    private int idCliente;
+    private String nombreCliente;
 
-public class Cliente extends AsyncTask {
-
-    Socket cliente;
-    PrintWriter writer;
-    String msg;
-    Context context;
-    Handler handler = new Handler();
-
-    public Cliente(Context context){
-        this.context=context;
+    public Cliente(){
     }
 
-
-    @Override
-    protected Object doInBackground(Object[] objects) {
-
-        try {
-            msg =(String) objects[0];
-            cliente = new Socket("37.59.77.107",19006);
-            writer = new PrintWriter(cliente.getOutputStream());
-            writer.write(msg);
-            writer.flush();
-            writer.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
+    public int getIdCliente() {
+        return idCliente;
+    }
+    public void setIdCliente(int idCliente) {
+        this.idCliente = idCliente;
+    }
+    public String getNombreCliente() {
+        return nombreCliente;
+    }
+    public void setNombreCliente(String nombreCliente) {
+        this.nombreCliente = nombreCliente;
     }
 }

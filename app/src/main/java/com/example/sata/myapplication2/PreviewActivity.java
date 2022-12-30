@@ -33,7 +33,6 @@ public class PreviewActivity extends AppCompatActivity implements RecyclerItemTo
     private ConstraintLayout constraintLayout;
     private List<Uri> uriList;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

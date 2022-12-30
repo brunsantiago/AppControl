@@ -20,7 +20,7 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-    <style name="ToolbarTheme" parent="ThemeOverlay.AppCompat.Dark.ActionBar" >
+    <style name="ToolbarTheme" parent="ThemeOverlay.AppCompat.Light" >
         <item name="colorControlNormal">@color/colorBlanco</item>
         <item name="android:fontFamily">@font/hpsimplified_rg</item>
     </style>

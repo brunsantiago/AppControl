@@ -1,3 +1,4 @@
+
 package com.example.sata.myapplication2;
 
 import android.app.ProgressDialog;
@@ -16,6 +17,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,81 +30,103 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-//import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
-//import com.bumptech.glide.request.transition.Transition;
 import com.bumptech.glide.request.transition.Transition;
-import com.example.sata.myapplication2.AlertDialog.LoadPhotoAlert;
+import com.example.sata.myapplication2.AlertDialog.RegisterAlert;
 import com.example.sata.myapplication2.AlertDialog.PuestoVencidoAlert;
-import com.example.sata.myapplication2.POJO.Esquema;
 import com.example.sata.myapplication2.POJO.HoraRegistrada;
-import com.example.sata.myapplication2.POJO.Puesto;
 import com.example.sata.myapplication2.POJO.PuestoAdapter;
-import com.google.android.gms.tasks.OnCompleteListener;
+import com.example.sata.myapplication2.POJO.PuestoDM;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.instacart.library.truetime.TrueTime;
-
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 
 public class IngresoActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,ResultListener<Date>{
 
+    //private static final String API_PATH = "http://192.168.1.8:3000/api/";
+    //private static final String API_PATH = "http://186.182.25.11:3000/api/";
+
     private static final String TAG = "Ingreso Activity";
-    private static final String FECHA_INGRESO = "fechaIngreso";
-    private static final String HORA_INGRESO = "horaIngreso";
-    private static final String ID_PERSONAL = "idPersonal";
-    private static final String TIPO_CUBRIMIENTO = "tipoCubrimiento";
-    private static final String ESTADO_SESION = "estadoSesion";
-    private static final String ULTIMA_SESION = "ultimaSesion";
+
     private static final String NOMBRE_CLIENTE = "nombreCliente";
     private static final String NOMBRE_OBJETIVO = "nombreObjetivo";
     private static final String ID_CLIENTE = "idCliente";
     private static final String ID_OBJETIVO = "idObjetivo";
-    private static final String FECHA_EGRESO = "fechaEgreso";
-    private static final String HORA_EGRESO = "horaEgreso";
-    private static final String INGRESO_PUESTO = "ingresoPuesto" ;
-    private static final String EGRESO_PUESTO = "egresoPuesto";
-    private static final String NOMBRE_PERSONAL = "nombre";
-    private static final String HORAS_TURNO = "horasTurno";
-    private static final String FECHA_PUESTO = "fechaPuesto";
-    private static final String SESION_ID = "sesionID";
-    private static final String NOMBRE_PUESTO = "nombrePuesto";
-    private static final String NOMBRE_TURNO = "nombreTurno";
-    private static final String TIMESTAMP = "timestamp";
-    private static final String TURNO_NOCHE = "turnoNoche";
-    private static final String IMAGE_PATH = "imagePath";
-    private static final String NRO_LEGAJO = "nroLegajo";
-    private static final String PATH_TURNO = "pathTurno";
+
+    //private static final String SESION_ID = "sesionID";
+
+    // Variables de Cobertura (Nuevas)
+    private static final String FECHA_INGRESO = "fi";
+    private static final String HORA_INGRESO = "hi";
+    //private static final String ID_PERSONAL = "nl";
+    //private static final String FECHA_EGRESO = "fe";
+    //private static final String HORA_EGRESO = "he";
+    private static final String INGRESO_PUESTO = "ip" ;
+    private static final String EGRESO_PUESTO = "ep";
+    //private static final String HORAS_TURNO = "ht";
+    private static final String FECHA_PUESTO = "fp";
+    private static final String NOMBRE_PUESTO = "np";
+    //private static final String NOMBRE_TURNO = "nt";
+    private static final String TURNO_NOCHE = "tn";
+    //private static final String IMAGE_PATH = "im";
     private static final String HORA_INGRESO_PARAM = "hip";
-    private static final String HORA_EGRESO_PARAM = "hep";
+    //private static final String HORA_EGRESO_PARAM = "hep";
+
+    private static final String NRO_LEGAJO = "nl";
+    private static final String NOMBRE_PERSONAL = "an";
+    private static final String ESTADO_SESION = "es";
+    //private static final String ULTIMA_SESION = "ul";
+    //private static final String UL_NOMBRE_CLIENTE = "nc";
+    //private static final String UL_NOMBRE_OBJETIVO = "no";
+    //private static final String UL_PATH_TURNO = "pt";
+    //private static final String UL_FECHA_PUESTO = "fp";
+    ///private static final String UL_SESION_ID = "si";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
+    private static final String ASIG_OBJE = "asig_obje";
+    private static final String ASIG_FECH = "asig_fech";
+    private static final String ASIG_DHOR = "asig_dhor";
+    private static final String ASIG_HHOR = "asig_hhor";
+    private static final String ASIG_VISA = "asig_visa";
+    private static final String ASIG_USUA = "asig_usua";
+    private static final String ASIG_TIME = "asig_time";
+    private static final String ASIG_PUES = "asig_pues";
+    private static final String ASIG_BLOQ = "asig_bloq";
+    private static final String ASIG_ESTA = "asig_esta";
+    private static final String ASIG_FACM = "asig_facm";
+    private static final String PERS_CODI = "pers_codi";
+    private static final String HORA_INGRESO_TIMESTAMP = "hit";
 
     private FirebaseFirestore database;
     private FirebaseStorage storage;
@@ -112,24 +136,32 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private String currentPhotoPath;
     private ImageView imageViewCamara;
     private ArrayList<String> nombrePuestos;
-    private ArrayList<Puesto> listaDePuestos;
-    private PuestoAdapter puestoAdapter;
+    private ArrayList<PuestoDM> listaDePuestos;
+
     private Boolean puestoSeleccionado;
     private ProgressDialog progressDialog=null;
 
     private String idCliente;
     private String idObjetivo;
+    private Spinner spinnerPuesto;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ingreso);
 
+        Toolbar toolbar = findViewById(R.id.toolbarIngreso);
+        setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
         synchronizeClock();
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
         idCliente = prefs.getString(ID_CLIENTE,"");
         idObjetivo = prefs.getString(ID_OBJETIVO,"");
+        spinnerPuesto = findViewById(R.id.spinnerPuesto);
 
         nombrePuestos = new ArrayList<>();
         listaDePuestos = new ArrayList<>();
@@ -140,11 +172,10 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         storage = FirebaseStorage.getInstance();
 
         btnRegistrarIngreso = findViewById(R.id.buttonRegistrarIngreso);
-        Button btnBack = findViewById(R.id.buttonBack);
         imageViewCamara = findViewById(R.id.imageViewCamara);
         imageViewCamara.setVisibility(View.INVISIBLE);
 
-        progressDialog= new ProgressDialog(this);
+        progressDialog = new ProgressDialog(this);
         progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         progressDialog.setCancelable(false);
 
@@ -163,15 +194,14 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             }
         });
 
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
-
         chequearEstadoSesion();
 
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
     @Override
@@ -180,143 +210,132 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         chequearEstadoSesionOnResume();
     }
 
-    public void registrarIngreso() {
+    private void registrarIngreso() {
 
-            SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
-            String horaIngreso = prefs.getString(HORA_INGRESO,"");
-            String ingresoPuesto = prefs.getString(INGRESO_PUESTO,"");
-            String fechaIngreso = prefs.getString(FECHA_INGRESO,"");
-            String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
+        try {
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+            String URL = Configurador.API_PATH + "asigvigi";
+            JSONObject jsonBody = new JSONObject();
+            jsonBody.put("asig_obje", prefs.getInt(ASIG_OBJE,0));
+            jsonBody.put("asig_vigi", prefs.getString(PERS_CODI,""));
+            jsonBody.put("asig_fech", prefs.getString(ASIG_FECH,""));
+            jsonBody.put("asig_dhor", prefs.getString(HORA_INGRESO_PARAM,""));
+            jsonBody.put("asig_hhor", "");
+            jsonBody.put("asig_ause", "");
+            jsonBody.put("asig_deta", "");
+            jsonBody.put("asig_visa", prefs.getInt(ASIG_VISA,0));
+            jsonBody.put("asig_obse", "");
+            jsonBody.put("asig_usua", prefs.getInt(ASIG_USUA,0));
+            jsonBody.put("asig_time", prefs.getString(HORA_INGRESO_TIMESTAMP,""));
+            jsonBody.put("asig_fact", "");
+            jsonBody.put("asig_pues", prefs.getInt(ASIG_PUES,0));
+            jsonBody.put("asig_bloq", prefs.getInt(ASIG_BLOQ,0));
+            jsonBody.put("asig_esta", prefs.getInt(ASIG_BLOQ,0));
+            jsonBody.put("asig_facm", prefs.getInt(ASIG_FACM,0));
 
+            final String requestBody = jsonBody.toString();
 
-            Map<String, Object> ingreso = new HashMap<>();
-            ingreso.put(FECHA_INGRESO, fechaIngreso);
-            ingreso.put(HORA_INGRESO, horaIngreso);
-            ingreso.put(FECHA_EGRESO, "");
-            ingreso.put(HORA_EGRESO, "");
-            ingreso.put(ID_PERSONAL, userAuth.getDisplayName());
-            //ingreso.put(TIPO_CUBRIMIENTO, "titular");
-            ingreso.put(NOMBRE_PUESTO, prefs.getString(NOMBRE_PUESTO,""));
-            ingreso.put(INGRESO_PUESTO, ingresoPuesto);
-            ingreso.put(EGRESO_PUESTO, prefs.getString(EGRESO_PUESTO,""));
-            ingreso.put(HORAS_TURNO,prefs.getString(HORAS_TURNO,""));
-            ingreso.put(FECHA_PUESTO,fechaPuesto);
-            //ingreso.put(TIMESTAMP, FieldValue.serverTimestamp());
-            ingreso.put(TURNO_NOCHE,prefs.getBoolean(TURNO_NOCHE,false));
-            ingreso.put(HORA_INGRESO_PARAM,HoraRegistrada.ingresoParametrizadoDate(ingresoPuesto,fechaPuesto,horaIngreso,fechaIngreso));
-            ingreso.put(HORA_EGRESO_PARAM,"");
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    showRegisterAlert();
+                    registrarUltimaSesion();
+                    String path = "CAPTURAS/"+
+                                          prefs.getString(ID_CLIENTE,"")+"/"+
+                                          prefs.getString(ID_OBJETIVO,"")+"/"+
+                                          prefs.getString(FECHA_PUESTO,"")+"/"+
+                                          prefs.getString(HORA_INGRESO_TIMESTAMP,"");
+                    subirArchivoImageView(path);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Toast.makeText(IngresoActivity.this, "Error al cargar ingreso", Toast.LENGTH_SHORT).show();
+                }
+            }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
 
-
-        DocumentReference docRef = database.collection("clientes")
-                    .document(idCliente)
-                    .collection("objetivos")
-                    .document(idObjetivo)
-                    .collection("cobertura")
-                    .document(prefs.getString(FECHA_PUESTO,""));
-
-                    docRef.collection("puestos")
-                    .add(ingreso)
-                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                        
-                        @Override
-                        public void onSuccess(DocumentReference documentReference) {
-                            String path = prefs.getString(NOMBRE_CLIENTE,"")+"/"+
-                                          prefs.getString(NOMBRE_OBJETIVO,"")+"/"+ "CAPTURAS"+"/"+
-                                          prefs.getString(FECHA_PUESTO,"")+"/"+ documentReference.getId();
-
-                            documentReference.update(IMAGE_PATH,path+"/");
-                            actualizarEstadoPersonal(documentReference);
-                            subirArchivoImageView(path);
-                            vencimientoSesion(prefs.getBoolean(TURNO_NOCHE,false),prefs.getString(FECHA_PUESTO,""),prefs.getString(EGRESO_PUESTO,""));
-                            showRegisterAlert();
-                            cargarFecha(docRef,prefs.getString(FECHA_PUESTO,""));
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w(TAG, "Error adding document", e);
-                            Toast.makeText(IngresoActivity.this, "Error al cargar ingreso", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
+                @Override
+                public byte[] getBody() {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        return null;
+                    }
+                }
+            };
+            requestQueue.add(jsonObjectRequest);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void cargarFecha(DocumentReference docRef,String fecha){
+    private void registrarUltimaSesion() {
 
-        Map<String, Object> docData = new HashMap<>();
-        docData.put("fecha", armarDate(fecha,"00:00"));
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
-        docRef.set(docData)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "DocumentSnapshot successfully written!");
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        String URL = Configurador.API_PATH + "last_session";
+        JSONObject jsonBody = new JSONObject();
+
+        try {
+            jsonBody.put("last_cper", prefs.getString(PERS_CODI,"")); // Primary Key
+            jsonBody.put("last_ccli", prefs.getInt(ASIG_OBJE,0));
+            jsonBody.put("last_cobj", prefs.getString(ID_OBJETIVO,""));
+            jsonBody.put("last_fech", prefs.getString(ASIG_FECH,""));
+            jsonBody.put("last_dhor", prefs.getString(ASIG_DHOR,""));
+            jsonBody.put("last_hhor", prefs.getString(ASIG_HHOR,""));
+            jsonBody.put("last_usua", prefs.getInt(ASIG_USUA,0));
+            jsonBody.put("last_time", prefs.getString(HORA_INGRESO_TIMESTAMP,""));
+            jsonBody.put("last_pues", prefs.getInt(ASIG_PUES,0));
+            jsonBody.put("last_npue", prefs.getString(NOMBRE_PUESTO,""));
+            jsonBody.put("last_esta", true);
+            jsonBody.put("last_ncli", prefs.getString(NOMBRE_CLIENTE,""));
+            jsonBody.put("last_nobj", prefs.getString(NOMBRE_OBJETIVO,""));
+            jsonBody.put("last_dhre", prefs.getString(HORA_INGRESO,""));
+            final String requestBody = jsonBody.toString();
+
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    //showRegisterAlert();
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Toast.makeText(IngresoActivity.this, "Error al cargar ultima sesion", Toast.LENGTH_SHORT).show();
+                }
+            }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        return null;
                     }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error writing document", e);
-                    }
-                });
-
-    }
-
-    private void actualizarEstadoPersonal(DocumentReference documentReference) {
-
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",Context.MODE_PRIVATE);
-
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(SESION_ID,documentReference.getId());
-        editor.apply();
-
-        Map<String, Object> ultimaSesion = new HashMap<>();
-        ultimaSesion.put(NOMBRE_CLIENTE, prefs.getString(NOMBRE_CLIENTE,""));
-        ultimaSesion.put(NOMBRE_OBJETIVO, prefs.getString(NOMBRE_OBJETIVO,""));
-        ultimaSesion.put(SESION_ID, documentReference.getId());
-        ultimaSesion.put(PATH_TURNO,documentReference.getPath ());
-
-        Query reference = database.collection("users").whereEqualTo("idPersonal", userAuth.getDisplayName());
-
-        reference.get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                database.collection("users").document(document.getId()).update(
-                                        ESTADO_SESION, true,
-                                        ULTIMA_SESION, ultimaSesion
-                                )
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(IngresoActivity.this, "No se pudo actualizar el estado de la sesion", Toast.LENGTH_SHORT).show();
-                                        // Habria que ver cargar el estado de sesion como cerrada
-                                    }
-                                });
-
-                            }
-
-                        } else {
-                            Log.d("TAG", "No such document");
-                        }
-                    }
-                });
-
-
+                }
+            };
+            requestQueue.add(jsonObjectRequest);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void chequearEstadoSesion() {
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-        Boolean estadoSesion = prefs.getBoolean(ESTADO_SESION,false);
+        boolean estadoSesion = prefs.getBoolean(ESTADO_SESION,false);
                     if (estadoSesion) {
                         btnRegistrarIngreso.setAlpha(0.5f);
                         btnRegistrarIngreso.setClickable(false);
@@ -349,12 +368,12 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         String cliente = prefs.getString(NOMBRE_CLIENTE,"").toUpperCase();
         String objetivo = prefs.getString(NOMBRE_OBJETIVO,"").toUpperCase();
         String nombre = prefs.getString(NOMBRE_PERSONAL,"").toUpperCase();
-        String nombrePuesto = prefs.getString(NOMBRE_PUESTO,"");
-        String horaIngreso = prefs.getString(HORA_INGRESO,"");
-        String ingresoPuesto = prefs.getString(INGRESO_PUESTO,"");
-        String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
-        String fechaIngreso = prefs.getString(FECHA_INGRESO,"");
-        String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
+        String nombrePuesto = prefs.getString(NOMBRE_PUESTO,""); // NOMBRE_PUESTO CARGAR
+        String horaIngreso = prefs.getString(HORA_INGRESO,""); // OK
+        String ingresoPuesto = prefs.getString(INGRESO_PUESTO,""); // INGRESO_PUESTO
+        String egresoPuesto = prefs.getString(EGRESO_PUESTO,""); // EGRESO_PUESTO
+        String fechaIngreso = prefs.getString(FECHA_INGRESO,""); //OK
+        String fechaPuesto = prefs.getString(FECHA_PUESTO,""); // FECHA_PUESTO
 
         TextView nombrePersonal = findViewById(R.id.textViewName);
         TextView nombreObjetivo = findViewById(R.id.textViewObjetive);
@@ -382,225 +401,58 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         } else {
             textViewStatus.setText("No registrado en el Objetivo");
             textViewStatus.setTextColor(Color.RED);
-            spinnerPuesto.setVisibility(View.VISIBLE);
-            PuestoAdapter puestoAdapter = new PuestoAdapter(this,listaDePuestos);
-            spinnerPuesto.setAdapter(puestoAdapter);
-            spinnerPuesto.setOnItemSelectedListener(this);
+            if(listaDePuestos.size()==1 || listaDePuestos.size()==0){
+                puestoSeleccionado.setText("No Disponibles");
+                puestoSeleccionado.setVisibility(View.VISIBLE);
+                spinnerPuesto.setVisibility(View.GONE);
+            }else{
+                spinnerPuesto.setVisibility(View.VISIBLE);
+                PuestoAdapter puestoAdapter = new PuestoAdapter(this,listaDePuestos);
+                spinnerPuesto.setAdapter(puestoAdapter);
+                spinnerPuesto.setOnItemSelectedListener(this);
+            }
             progressDialog.dismiss();
         }
     }
 
-    public void buscarEsquema(Date fechaHoraIngreso){
 
-        nombrePuestos = new ArrayList<>();
-        listaDePuestos = new ArrayList<>();
-        nombrePuestos.add("No Disponible");
-
-        Puesto puestoInicial = new Puesto();
-        puestoInicial.setNombrePuesto("Seleccione un Puesto ...");
-
-        listaDePuestos.add(puestoInicial);
-
-        database.collection("clientes")
-                .document(idCliente)
-                .collection("objetivos")
-                .document(idObjetivo)
-                .collection("cubrimiento")
-                .whereEqualTo("estado","VIGENTE")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        boolean esquemaEncontrado=false;
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Esquema esquema = document.toObject(Esquema.class);
-                                if(dentroEsquema2(esquema.getFechaDesde(),esquema.getFechaHasta(),fechaHoraIngreso)){
-                                    cargarPuestos(fechaHoraIngreso,document.getId());
-                                    esquemaEncontrado=true;
-                                } else{
-                                    cambiarVigencia(document.getId(),"CADUCADO");
-                                    if(!esquemaEncontrado){ buscarEsquemaActual(fechaHoraIngreso); }
-                                }
-                            }
-                            if(!esquemaEncontrado){
-                                Toast.makeText(IngresoActivity.this, "NO Entro al FOR Se encontro un estado VIGENTE", Toast.LENGTH_SHORT).show();
-                                buscarEsquemaActual(fechaHoraIngreso);
-                            }
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
-
-    }
-
-    private void cambiarVigencia(String documentId, String estado){
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-        database.collection("clientes")
-                .document(idCliente)
-                .collection("objetivos")
-                .document(idObjetivo)
-                .collection("cubrimiento")
-                .document(documentId)
-                .update("estado",estado);
-    }
-
-    public void cargarPuestos(Date fechaHoraIngreso, String documentoVigenteID){
-    //Carga la lista de puestos a seleccionar por el Usuario
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        String fechaIngreso = dateFormat.format(fechaHoraIngreso);
-
-        int diaSemana = fechaHoraIngreso.getDay();
-
-
-                database.collection("clientes")
-                .document(idCliente)
-                .collection("objetivos")
-                .document(idObjetivo)
-                .collection("cubrimiento")
-                .document(documentoVigenteID)
-                .collection("esquema")
-                .whereEqualTo("documentData.numeroDia",diaSemana)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-
-                            if( task.getResult().isEmpty()) {
-
-                            } else {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    if (document.exists()) {
-                                        Map<String, Object> datos = document.getData();
-                                        //Recorro el Documento campo por campo (Puesto por Puesto)
-                                        for (Map.Entry<String, Object> entry : datos.entrySet()) {
-                                            String k = entry.getKey();//Nombre del Campo
-                                            Object v = entry.getValue();// Contenido del Campo
-                                            if (!k.equals("documentData")) {
-                                                Puesto nuevoPuesto = new Puesto((Map<String, Object>) v); // Creo el Puesto con los datos obtenidos del Documento
-                                                nuevoPuesto.setFechaPuesto(fechaIngreso);
-                                                addPuestos(nuevoPuesto, fechaHoraIngreso); // Funcion que agrega el puesto si cumple con las condiciones
-                                            }
-                                        }
-                                    } else {
-                                        Log.d(TAG, "No such document");
-                                    }
-                                }
-                            }
-                        } else {
-                            Log.d(TAG, "get failed with ", task.getException());
-                        }
-                        obtenerListaPuestosFiltrados(fechaHoraIngreso,documentoVigenteID);
-                    }
-                });
-
-    }
-
-    public void addPuestos(Puesto nuevoPuesto,Date fechaHoraIngreso){
-
-        SimpleDateFormat hourFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    public void addPuestos(PuestoDM nuevoPuesto, Date fechaHoraIngreso){
+        SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
         Date ingresoPuesto = null;
         Date egresoPuesto = null;
-        Date horaIngreso = null;
 
-        String fechaIngreso = dateFormat.format(fechaHoraIngreso);
-        String horaIngresoStr = hourFormat.format(fechaHoraIngreso);
+        String fechaIngreso = dayFormat.format(fechaHoraIngreso);
 
         try {
-            ingresoPuesto = hourFormat.parse(nuevoPuesto.getIngresoPuesto());
-            egresoPuesto = hourFormat.parse(nuevoPuesto.getEgresoPuesto());
-            horaIngreso = hourFormat.parse(horaIngresoStr);
+            ingresoPuesto = dateFormat.parse(nuevoPuesto.getPUES_FECH()+" "+nuevoPuesto.getPUES_DHOR());
+            egresoPuesto = dateFormat.parse(nuevoPuesto.getPUES_FECH()+" "+nuevoPuesto.getPUES_HHOR());
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-        if(nuevoPuesto.getTurnoNoche()!=null && nuevoPuesto.getTurnoNoche()){
+        if(esTurnoNoche(nuevoPuesto.getPUES_DHOR(),nuevoPuesto.getPUES_HHOR())){
+            egresoPuesto = new Date(egresoPuesto.getTime() + (1000 * 60 * 60 * 24));
             //Si el Ingreso Real es mayor al Ingreso Puesto y los dias son iguales (Ingreso y Puesto)
-            if(horaIngreso.getTime() > ingresoPuesto.getTime()-60*60*1000 && nuevoPuesto.getFechaPuesto().equals(fechaIngreso)) {
+            if(fechaHoraIngreso.getTime() > ingresoPuesto.getTime()-60*60*1000 && nuevoPuesto.getPUES_FECH().equals(fechaIngreso)) {
+                Log.d(TAG, "addPuestos: ENTRO POR EL PRIMERO");
                 listaDePuestos.add(nuevoPuesto);
             }
             // Si el Ingreso Real es menor al ingreso Puesto y los dias son distintos (Ingreso y Puesto)
-            else if (horaIngreso.getTime() < egresoPuesto.getTime()&& !(nuevoPuesto.getFechaPuesto().equals(fechaIngreso))){
+            else if (fechaHoraIngreso.getTime() < egresoPuesto.getTime() && !nuevoPuesto.getPUES_FECH().equals(fechaIngreso)){
+                Log.d(TAG, "addPuestos: ENTRO POR EL SEGUNDO");
+                Log.d(TAG, "fechaHoraIngreso: "+fechaHoraIngreso);
+                Log.d(TAG, "egresoPuesto: "+egresoPuesto);
+                Log.d(TAG, "nuevoPuesto.getPUES_FECH(): " + nuevoPuesto.getPUES_FECH());
+                Log.d(TAG, "fechaIngreso: " + fechaIngreso);
+                Log.d(TAG, "esTurnoNoche: "+esTurnoNoche(nuevoPuesto.getPUES_DHOR(),nuevoPuesto.getPUES_HHOR()));
                 listaDePuestos.add(nuevoPuesto);
             }
-        } else if (horaIngreso.getTime() < egresoPuesto.getTime() && horaIngreso.getTime() > ingresoPuesto.getTime()-60*60*1000) {
+        } else if (fechaHoraIngreso.getTime() > ingresoPuesto.getTime()-60*60*1000  && fechaHoraIngreso.getTime() < egresoPuesto.getTime()) {
+            Log.d(TAG, "addPuestos: ENTRO POR EL TERCERO");
             listaDePuestos.add(nuevoPuesto);
         }
-    }
-
-    public void obtenerListaPuestosFiltrados(Date fechaHoraIngreso,String documentoVigenteID) {
-
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
-        String hoyStr = dateFormat.format(fechaHoraIngreso);
-        Date hoy = null;
-        try {
-            hoy = dateFormat.parse(hoyStr);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        Date ayer = new Date(hoy.getTime()-86400000);
-        String fechaPuesto = dateFormat.format(ayer);
-        int diaSemana = ayer.getDay();
-
-        database.collection("clientes")
-                .document(idCliente)
-                .collection("objetivos")
-                .document(idObjetivo)
-                .collection("cubrimiento")
-                .document(documentoVigenteID)
-                .collection("esquema")
-                .whereEqualTo("documentData.numeroDia",diaSemana)
-                .whereEqualTo("documentData.turnoNoche",true)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            if( task.getResult().isEmpty()) {
-                            } else {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    if (document.exists()) {
-                                        Map<String, Object> datos = document.getData();
-                                        //Recorro el Documento campo por campo (Puesto por Puesto)
-                                        for (Map.Entry<String, Object> entry : datos.entrySet()) {
-                                            String k = entry.getKey();//Nombre del Campo
-                                            Object v = entry.getValue();// Contenido del Campo
-                                            if(!k.equals("documentData")){
-                                                Puesto nuevoPuesto = new Puesto((Map<String, Object>) v); // Creo el Puesto con los datos obtenidos del Documento
-                                                //if(nuevoPuesto.getTurnoNoche() && (nuevoPuesto.getTurnoNoche() != null)){
-                                                if(nuevoPuesto.getTurnoNoche() != null){
-                                                    nuevoPuesto.setFechaPuesto(fechaPuesto);
-                                                    nuevoPuesto.setNombrePuesto(nuevoPuesto.getNombrePuesto());
-                                                    addPuestos(nuevoPuesto,fechaHoraIngreso); // Funcion que agrega el puesto si cumple con las condiciones
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        Log.d(TAG, "No such document");
-                                    }
-                                }
-                            }
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-                        for(Puesto unPuesto : listaDePuestos) {
-                            if(nombrePuestos.size()==1){
-                                nombrePuestos.set(0, "Seleccione un puesto ...");
-                            }
-                            nombrePuestos.add(unPuesto.getNombrePuesto());
-                        }
-                        cargarDatosPantallaIngreso(false);
-                    }
-                });
     }
 
     @Override
@@ -608,20 +460,27 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
         if(i>0){
             // On selecting a spinner item
-            Puesto puesto = listaDePuestos.get(i);
+            PuestoDM puesto = listaDePuestos.get(i);
 
             SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
 
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putString(NOMBRE_PUESTO, puesto.getNombrePuesto());
-            editor.putString(NOMBRE_TURNO, puesto.getNombreTurno());
-            editor.putString(INGRESO_PUESTO, puesto.getIngresoPuesto());
-            editor.putString(EGRESO_PUESTO, puesto.getEgresoPuesto());
-            editor.putString(HORAS_TURNO,puesto.getHorasTurno());
-            editor.putString(FECHA_PUESTO,puesto.getFechaPuesto());
-            if(puesto.getTurnoNoche() != null){
-                editor.putBoolean(TURNO_NOCHE,puesto.getTurnoNoche());
-            }
+
+            editor.putInt(ASIG_OBJE, puesto.getPUES_OBJE());
+            editor.putString(ASIG_FECH, puesto.getPUES_FECH());
+            editor.putString(ASIG_DHOR, puesto.getPUES_DHOR());
+            editor.putString(ASIG_HHOR, puesto.getPUES_HHOR());
+            editor.putInt(ASIG_VISA, 0);
+            editor.putInt(ASIG_USUA, 999);
+            editor.putInt(ASIG_PUES, puesto.getPUES_CODI());
+            editor.putInt(ASIG_BLOQ, 0);
+            editor.putInt(ASIG_ESTA, 0);
+            editor.putInt(ASIG_FACM, 0);
+            editor.putString(NOMBRE_PUESTO, puesto.getPUES_NOMB());
+            editor.putString(FECHA_PUESTO, puesto.getPUES_FECH());
+            editor.putString(INGRESO_PUESTO, puesto.getPUES_DHOR());
+            editor.putString(EGRESO_PUESTO, puesto.getPUES_HHOR());
+            editor.putBoolean(TURNO_NOCHE, esTurnoNoche(puesto.getPUES_DHOR(),puesto.getPUES_HHOR()));
             editor.apply();
             puestoSeleccionado = true;
         } else {
@@ -697,7 +556,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     }
 
     public void showRegisterAlert(){
-        LoadPhotoAlert myAlert = new LoadPhotoAlert();
+        RegisterAlert myAlert = new RegisterAlert();
         myAlert.setTipoRegistro("ingreso");
         myAlert.show(getSupportFragmentManager(),"Register Alert");
     }
@@ -727,9 +586,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         ;
     }
 
-    /**
-     * init the TrueTime using a AsyncTask.
-     */
     //Carga la fecha y hora desde Internet
     public void initTrueTime() {
         if (isNetworkConnected()) {
@@ -738,10 +594,10 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                 trueTime.execute();
             } else {
                 Date date = TrueTime.now(); // Obtengo la hora desde Internet
-                //setFechaLoginSharedPreferences(date);
-                buscarEsquema(date);
+                buscarPuestos(date);
             }
         } else{
+            disableButtonRegistrarIngreso();
             Toast.makeText(this, "No esta conectado a Internet", Toast.LENGTH_SHORT).show();
         }
     }
@@ -753,23 +609,30 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     }
 
     @Override
-    public void finish(Date resultado) {
-        //setFechaLoginSharedPreferences(resultado);
-        buscarEsquema(resultado);
+    public void finish(Date date) {
+        buscarPuestos(date);
     }
 
-    private void setFechaLoginSharedPreferences(Date fecha){
+    private void setFechaHoraIngresoSharedPreferences(Date fecha){
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat hourFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+
+        String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
+        String ingresoPuesto = prefs.getString(INGRESO_PUESTO,"");
 
         String fechaIngreso = dateFormat.format(fecha);
         String horaIngreso = hourFormat.format(fecha);
+        String horaIngresoTimestamp = timestampFormat.format(fecha);
 
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(FECHA_INGRESO,fechaIngreso);
         editor.putString(HORA_INGRESO,horaIngreso);
+        editor.putString(HORA_INGRESO_PARAM, HoraRegistrada.ingresoParametrizado(ingresoPuesto,fechaPuesto,horaIngreso,fechaIngreso));
+        editor.putString(HORA_INGRESO_TIMESTAMP,horaIngresoTimestamp);
         editor.apply();
 
     }
@@ -792,29 +655,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                 initTrueTime();
             }
         }
-    }
-
-    public void vencimientoSesion(Boolean turnoNoche,String fechaPuesto, String egresoPuesto){
-        Date fechaVence=null;
-        if(turnoNoche!=null && turnoNoche){
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Date hoy = null;
-            try {
-                hoy = dateFormat.parse(fechaPuesto);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            Date diaPosterior = new Date(hoy.getTime()+86400000);
-            fechaVence = armarDate(dateFormat.format(diaPosterior),egresoPuesto);
-        }else if (turnoNoche!=null && !turnoNoche){
-            fechaVence = armarDate(fechaPuesto,egresoPuesto);
-        } else {
-            Toast.makeText(this, "Falta cargar si es Turno Noche en sesion del servidor", Toast.LENGTH_SHORT).show();
-        }
-
-        Configurador miConf = Configurador.getInstance();
-        miConf.setFinSesion(fechaVence);
-
     }
 
     public Date armarDate(String fecha, String hora){
@@ -871,10 +711,11 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private boolean sesionVigente(){
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
         boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE,false);
-        String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
-        String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
+        String fechaPuesto = prefs.getString(ASIG_FECH,"");
+        String egresoPuesto = prefs.getString(ASIG_HHOR,"");
 
         Date fechaVence;
+
         if(turnoNoche){
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             Date hoy = null;
@@ -888,6 +729,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         }else{
             fechaVence = armarDate(fechaPuesto,egresoPuesto);
         }
+
+        Configurador miConf = Configurador.getInstance();
+        miConf.setFinSesion(fechaVence);
 
         return initTrueTimeVigente(fechaVence);
 
@@ -904,7 +748,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             } else {
                 Date fechaAhora = TrueTime.now();
                 if (comparaFechas(fechaAhora,fechaVence)==2){
-                    setFechaLoginSharedPreferences(fechaAhora);
+                    setFechaHoraIngresoSharedPreferences(fechaAhora);
                     return true;
                 } else {
                     //Sesion Vencida
@@ -932,55 +776,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     public void showSesionVencidaAlert(){
         PuestoVencidoAlert myAlert = new PuestoVencidoAlert();
         myAlert.show(getSupportFragmentManager(),"Puesto Vencido Alert");
-    }
-
-    private boolean dentroEsquema2(Date fechaDesde,Date fechaHasta,Date fechaHoy){
-
-        if( fechaDesde != null && fechaHasta != null && fechaHoy != null){
-            return fechaHoy.getTime() > fechaDesde.getTime() && fechaHoy.getTime() < fechaHasta.getTime();
-        } else {
-            Toast.makeText(this, "El esquema actual no contiene alguna de sus fechas limites", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-    }
-
-    public void buscarEsquemaActual(Date fechaHoraIngreso){
-
-        nombrePuestos = new ArrayList<>();
-        listaDePuestos = new ArrayList<>();
-        nombrePuestos.add("No Disponible");
-
-        //SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-
-        database.collection("clientes")
-                .document(idCliente)
-                .collection("objetivos")
-                .document(idObjetivo)
-                .collection("cubrimiento")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        boolean esquemaEncontrado=false;
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Esquema esquema = document.toObject(Esquema.class);
-                                if(dentroEsquema2(esquema.getFechaDesde(),esquema.getFechaHasta(),fechaHoraIngreso)){
-                                    cargarPuestos(fechaHoraIngreso,document.getId());
-                                    cambiarVigencia(document.getId(),"VIGENTE");
-                                    esquemaEncontrado=true;
-                                }
-                            }
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-                        if(!esquemaEncontrado){
-                            Toast.makeText(IngresoActivity.this, "No hay un esquema disponible", Toast.LENGTH_SHORT).show();
-                            progressDialog.dismiss();
-                        }
-                    }
-                });
     }
 
     @Override
@@ -1011,6 +806,113 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         } else if(dir!= null && dir.isFile()) {
             return dir.delete();
         } else {
+            return false;
+        }
+    }
+
+    public void disableButtonRegistrarIngreso(){
+        btnRegistrarIngreso.setEnabled(false);
+    }
+
+    public void buscarPuestos(Date date){
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        String idClienteLocal = prefs.getString(ID_CLIENTE,"");
+        String idObjetivoLocal = prefs.getString(ID_OBJETIVO,"");
+
+        RequestQueue requestQueue = Volley.newRequestQueue(IngresoActivity.this);
+        String url = Configurador.API_PATH + "puestos/" + idClienteLocal + "/" + idObjetivoLocal;
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                if (response != null) {
+
+                    PuestoDM puestoInicial = new PuestoDM();
+                    puestoInicial.setPUES_NOMB("Seleccione un Puesto ...");
+                    listaDePuestos.add(puestoInicial);
+
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+                    //Date hoy = new Date();
+                    Date ayer = new Date(date.getTime()-86400000);
+                    String diaSemanaHoy = campoSemana(date);
+                    String diaSemanaAyer = campoSemana(ayer);
+
+                    for (int i = 0; i < response.length(); i++) {
+                        try {
+                            JSONObject jsonObject = response.getJSONObject(i);
+                            JSONObject dayHoyJSONObject = jsonObject.getJSONObject(diaSemanaHoy);
+                            JSONObject dayAyerJSONObject = jsonObject.getJSONObject(diaSemanaAyer);
+                            JSONArray dataHoy = dayHoyJSONObject.getJSONArray("data");
+                            JSONArray dataAyer = dayAyerJSONObject.getJSONArray("data");
+                            if(dataHoy.getInt(0)==1){
+                                PuestoDM puesto = new PuestoDM();
+                                puesto.setPUES_CODI(jsonObject.getInt("PUES_CODI"));
+                                puesto.setPUES_NOMB(jsonObject.getString("PUES_NOMB"));
+                                puesto.setPUES_DHOR(jsonObject.getString("PUES_DHOR"));
+                                puesto.setPUES_HHOR(jsonObject.getString("PUES_HHOR"));
+                                puesto.setPUES_OBJE(jsonObject.getInt("PUES_OBJE"));
+                                puesto.setPUES_FECH(dateFormat.format(date));
+                                addPuestos(puesto,date);
+                            }
+                            if(dataAyer.getInt(0)==1 && esTurnoNoche(jsonObject.getString("PUES_DHOR"),jsonObject.getString("PUES_HHOR"))){
+                                PuestoDM puesto = new PuestoDM();
+                                puesto.setPUES_CODI(jsonObject.getInt("PUES_CODI"));
+                                puesto.setPUES_NOMB(jsonObject.getString("PUES_NOMB"));
+                                puesto.setPUES_DHOR(jsonObject.getString("PUES_DHOR"));
+                                puesto.setPUES_HHOR(jsonObject.getString("PUES_HHOR"));
+                                puesto.setPUES_OBJE(jsonObject.getInt("PUES_OBJE"));
+                                puesto.setPUES_FECH(dateFormat.format(ayer));
+                                addPuestos(puesto,date);
+                            }
+                        } catch (JSONException e) {
+                            Toast.makeText(IngresoActivity.this, "No se encontraron puestos", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    cargarDatosPantallaIngreso(false);
+                }else{
+                    cargarDatosPantallaIngreso(false);
+                    Toast.makeText(IngresoActivity.this, "No se encontraron puestos", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                cargarDatosPantallaIngreso(false);
+                Toast.makeText(IngresoActivity.this, "Error de conexion con el Servidor", Toast.LENGTH_SHORT).show();
+            }
+        });
+        requestQueue.add(jsonArrayRequest);
+    }
+
+    public String campoSemana(Date date){
+        ArrayList<String> dias = new ArrayList<>();
+        dias.add("PUES_DOMI");
+        dias.add("PUES_LUNE");
+        dias.add("PUES_MART");
+        dias.add("PUES_MIER");
+        dias.add("PUES_JUEV");
+        dias.add("PUES_VIER");
+        dias.add("PUES_SABA");
+        int diaSemana = date.getDay();
+        return dias.get(diaSemana);
+    }
+
+    public boolean esTurnoNoche(String horaIngreso, String horaEgreso) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+        Date dateIngreso = null;
+        Date dateEgreso = null;
+        try {
+            dateIngreso = dateFormat.parse("2022-01-01"+" "+horaIngreso);
+            dateEgreso = dateFormat.parse("2022-01-01"+" "+horaEgreso);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        if(dateIngreso == dateEgreso){
+            return true;
+        }else if (dateIngreso.getTime() > dateEgreso.getTime()){
+            return true;
+        }else{
             return false;
         }
     }

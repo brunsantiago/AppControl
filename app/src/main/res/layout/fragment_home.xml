@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivityFragment.HomeFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/panelInfo"
+        android:layout_width="254dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@drawable/shapenegro">
+
+        <TextView
+            android:id="@+id/textViewClock"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="4dp"
+            android:fontFamily="@font/hpsimplified_rg"
+            android:text="16:27"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="35sp"
+            app:layout_constraintEnd_toStartOf="@+id/textViewDay"
+            app:layout_constraintStart_toStartOf="@+id/panelInfo"
+            app:layout_constraintTop_toTopOf="@+id/panelInfo"
+            android:gravity="center_horizontal" />
+
+        <TextView
+            android:id="@+id/textViewDay"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="8dp"
+            android:alpha="0.5"
+            android:fontFamily="@font/hpsimplified_rg"
+            android:text="Lunes,"
+            android:textColor="@android:color/white"
+            app:layout_constraintEnd_toEndOf="@+id/panelInfo"
+            app:layout_constraintTop_toTopOf="@+id/panelInfo" />
+
+        <TextView
+            android:id="@+id/textViewDate"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:alpha="0.5"
+            android:fontFamily="@font/hpsimplified_rg"
+            android:text="24 de Septiembre"
+            android:textColor="@android:color/white"
+            app:layout_constraintStart_toStartOf="@+id/textViewDay"
+            app:layout_constraintTop_toBottomOf="@+id/textViewDay" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewCliente"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            app:cardBackgroundColor="#80272727"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintEnd_toEndOf="@+id/panelInfo"
+            app:layout_constraintStart_toStartOf="@+id/panelInfo"
+            app:layout_constraintTop_toBottomOf="@+id/textViewClock">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal|center_vertical"
+                    android:layout_marginStart="5dp"
+                    android:orientation="vertical"
+                    android:layout_marginLeft="5dp">
+
+                    <ImageView
+                        android:id="@+id/imageViewRegistro"
+                        android:layout_width="35dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginStart="2dp"
+                        android:alpha="0.5"
+                        app:srcCompat="@drawable/register"
+                        android:layout_marginLeft="2dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="7dp"
+                    android:layout_marginEnd="15dp"
+                    android:orientation="vertical"
+                    android:layout_marginLeft="7dp"
+                    android:layout_marginRight="15dp">
+
+                    <TextView
+                        android:id="@+id/textViewTitleName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="Personal"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorBlanco"
+                        android:alpha="0.5"
+                        android:textSize="14sp"
+                        android:gravity="center_horizontal" />
+
+                    <TextView
+                        android:id="@+id/textViewName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewObjetive"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:cardBackgroundColor="#80272727"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/panelInfo"
+            app:layout_constraintStart_toStartOf="@+id/panelInfo"
+            app:layout_constraintTop_toBottomOf="@+id/cardViewCliente">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal|center_vertical"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginLeft="5dp"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="35dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginStart="2dp"
+                        android:layout_marginLeft="2dp"
+                        android:alpha="0.5"
+                        app:srcCompat="@drawable/apartment_icon" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="7dp"
+                    android:layout_marginLeft="7dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginRight="15dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textViewTitleObjetive"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:gravity="center_horizontal"
+                        android:text="Objetivo"
+                        android:textColor="@color/colorBlanco"
+                        android:alpha="0.5"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textViewObjetiveHome"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textViewStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginBottom="5dp"
+                        android:fontFamily="@font/hpsimplified_rg"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/panelControl"
+        android:layout_width="254dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/panelInfo"
+        android:background="@drawable/shapenegro">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewIngresar"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="#80272727"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="2dp"
+            app:layout_constraintStart_toStartOf="@+id/panelControl"
+            app:layout_constraintTop_toTopOf="@+id/panelControl"
+            android:layout_marginLeft="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/imageViewEnter"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="5dp"
+                    app:srcCompat="@drawable/enter_icon" />
+
+                <TextView
+                    android:id="@+id/textViewIngreso"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:alpha="0.5"
+                    android:gravity="center_horizontal"
+                    android:text=" Ingreso"
+                    android:textColor="@color/colorBlanco" />
+
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewEgresar"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="20dp"
+            app:cardBackgroundColor="#80272727"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintEnd_toEndOf="@+id/panelControl"
+            app:layout_constraintTop_toTopOf="@+id/panelControl"
+            android:layout_marginRight="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/imageViewEgreso"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="5dp"
+                    app:srcCompat="@drawable/exit_icon" />
+
+                <TextView
+                    android:id="@+id/textViewEgreso"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:alpha="0.5"
+                    android:gravity="center_horizontal"
+                    android:text="Salida  "
+                    android:textColor="@color/colorBlanco" />
+
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewNovedad"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="32dp"
+            app:cardBackgroundColor="#80272727"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintStart_toStartOf="@+id/panelControl"
+            app:layout_constraintTop_toBottomOf="@+id/cardViewIngresar"
+            android:layout_marginLeft="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/imageViewNovedad"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="5dp"
+                    app:srcCompat="@drawable/talk_icon" />
+
+                <TextView
+                    android:id="@+id/textViewNovedad"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:alpha="0.5"
+                    android:gravity="center_horizontal"
+                    android:text="Novedad"
+                    android:textColor="@color/colorBlanco" />
+
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewCall"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="#80272727"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/panelControl"
+            app:layout_constraintTop_toBottomOf="@+id/cardViewEgresar">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/imageViewCall"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="5dp"
+                    app:srcCompat="@drawable/phone_icon" />
+
+                <TextView
+                    android:id="@+id/textViewCall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:alpha="0.5"
+                    android:gravity="center_horizontal"
+                    android:text="Llamar"
+                    android:textColor="@color/colorBlanco" />
+
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+        android:id="@+id/buttonPanic"
+        android:layout_width="254dp"
+        android:layout_height="68dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/shape_rosa"
+        android:fontFamily="@font/hpsimplified_rg"
+        android:text="BOTON DE PANICO"
+        android:textColor="@android:color/white"
+        android:textSize="24sp"
+        app:backgroundTint="@color/colorAccent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/panelControl" />
+
+    <Button
+        android:id="@+id/backgroundCounter"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.9"
+        android:background="@android:color/black"
+        android:fontFamily="@font/hpsimplified_rg"
+        android:textColor="@android:color/white"
+        android:textSize="60sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <ProgressBar
+        android:id="@+id/progress_circular"
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:translationZ="3dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

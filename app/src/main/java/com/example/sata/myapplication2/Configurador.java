@@ -7,7 +7,11 @@ import java.util.Date;
 
 public class Configurador {
 
+    //public static final String API_PATH = "http://192.168.1.8:3000/api/"; // Dev
+    public static final String API_PATH = "http://186.182.25.11:3000/api/"; // Pro
+
     private Date finSesion;
+
     private static Configurador miconfigurador;
 
     public  static Configurador getInstance() {

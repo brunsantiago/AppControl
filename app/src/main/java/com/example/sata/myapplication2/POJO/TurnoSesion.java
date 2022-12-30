@@ -4,99 +4,108 @@ import java.util.Map;
 
 public class TurnoSesion {
 
-    private String fechaPuesto;
-    private String nombrePuesto;
-    private String egresoPuesto;
-    private String ingresoPuesto;
-    private String horaIngreso;
-    private String fechaIngreso;
-    private String horaEgreso;
-    private Boolean turnoNoche;
+//    private String fechaPuesto;
+//    private String nombrePuesto;
+//    private String egresoPuesto;
+//    private String ingresoPuesto;
+//    private String horaIngreso;
+//    private String fechaIngreso;
+//    private String horaEgreso;
+//    private Boolean turnoNoche;
+
+    private String fp;
+    private String np;
+    private String ep;
+    private String ip;
+    private String hi;
+    private String fi;
+    private String he;
+    private Boolean tn;
 
     public TurnoSesion(String fechaPuesto, String nombrePuesto, String egresoPuesto, String ingresoPuesto, String horaIngreso, String fechaIngreso, String horaEgreso, Boolean turnoNoche) {
-        this.fechaPuesto = fechaPuesto;
-        this.nombrePuesto = nombrePuesto;
-        this.egresoPuesto = egresoPuesto;
-        this.ingresoPuesto = ingresoPuesto;
-        this.horaIngreso = horaIngreso;
-        this.fechaIngreso = fechaIngreso;
-        this.horaEgreso = horaEgreso;
-        this.turnoNoche = turnoNoche;
+        this.fp = fechaPuesto;
+        this.np = nombrePuesto;
+        this.ep = egresoPuesto;
+        this.ip = ingresoPuesto;
+        this.hi = horaIngreso;
+        this.fi = fechaIngreso;
+        this.he = horaEgreso;
+        this.tn = turnoNoche;
     }
 
     public TurnoSesion(Map<String, Object> map) {
-        this.fechaPuesto = (String) map.get("fechaPuesto");
-        this.nombrePuesto = (String) map.get("nombrePuesto");
-        this.egresoPuesto = (String) map.get("egresoPuesto");
-        this.ingresoPuesto = (String) map.get("ingresoPuesto");
-        this.horaIngreso = (String) map.get("horaIngreso");
-        this.fechaIngreso = (String) map.get("fechaIngreso");
-        this.horaEgreso = (String) map.get("horaEgreso");
-        this.turnoNoche = (Boolean) map.get("turnoNoche");
+        this.fp = (String) map.get("fp");
+        this.np = (String) map.get("np");
+        this.ep = (String) map.get("ep");
+        this.ip = (String) map.get("ip");
+        this.hi = (String) map.get("hi");
+        this.fi = (String) map.get("fi");
+        this.he = (String) map.get("he");
+        this.tn = (Boolean) map.get("tn");
     }
 
     public String getFechaIngreso() {
-        return fechaIngreso;
+        return fi;
     }
 
     public void setFechaIngreso(String fechaIngreso) {
-        this.fechaIngreso = fechaIngreso;
+        this.fi = fechaIngreso;
     }
 
     public String getIngresoPuesto() {
-        return ingresoPuesto;
+        return ip;
     }
 
     public void setIngresoPuesto(String ingresoPuesto) {
-        this.ingresoPuesto = ingresoPuesto;
+        this.ip = ingresoPuesto;
     }
 
     public String getHoraIngreso() {
-        return horaIngreso;
+        return hi;
     }
 
     public void setHoraIngreso(String horaIngreso) {
-        this.horaIngreso = horaIngreso;
+        this.hi = horaIngreso;
     }
 
     public String getHoraEgreso() {
-        return horaEgreso;
+        return he;
     }
 
     public void setHoraEgreso(String horaEgreso) {
-        this.horaEgreso = horaEgreso;
+        this.he = horaEgreso;
     }
 
     public String getFechaPuesto() {
-        return fechaPuesto;
+        return fp;
     }
 
     public void setFechaPuesto(String fechaPuesto) {
-        this.fechaPuesto = fechaPuesto;
+        this.fp = fechaPuesto;
     }
 
     public String getNombrePuesto() {
-        return nombrePuesto;
+        return np;
     }
 
     public void setNombrePuesto(String nombrePuesto) {
-        this.nombrePuesto = nombrePuesto;
+        this.np = nombrePuesto;
     }
 
     public String getEgresoPuesto() {
-        return egresoPuesto;
+        return ep;
     }
 
     public void setEgresoPuesto(String egresoPuesto) {
-        this.egresoPuesto = egresoPuesto;
+        this.ep = egresoPuesto;
     }
 
     public Boolean getTurnoNoche() {
-        return turnoNoche;
+        return tn;
     }
 
     public void setTurnoNoche(Boolean turnoNoche) {
-        this.turnoNoche = turnoNoche;
+        this.tn = turnoNoche;
     }
 
 }

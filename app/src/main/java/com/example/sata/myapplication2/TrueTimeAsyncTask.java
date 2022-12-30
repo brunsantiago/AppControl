@@ -16,7 +16,7 @@ public class TrueTimeAsyncTask extends AsyncTask<Void, Void, Date> {
     private Context context;
     private ResultListener<Date> dateResultListener;
 
-    protected TrueTimeAsyncTask(Context context, ResultListener<Date> dateResultListener){
+    public TrueTimeAsyncTask(Context context, ResultListener<Date> dateResultListener){
         this.context = context;
         this.dateResultListener = dateResultListener;
     }

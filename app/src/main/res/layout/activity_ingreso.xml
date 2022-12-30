@@ -5,74 +5,477 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/fondo_conexiones"
-    tools:context=".EgresoActivity">
+    tools:context=".IngresoActivity">
 
-    <ImageView
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:elevation="0dp"
+        android:background="@android:color/transparent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbarIngreso"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:theme="@style/ToolbarTheme"/>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/backgroundDates"
         android:layout_width="254dp"
-        android:layout_height="485dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="56dp"
         android:layout_marginEnd="8dp"
-        android:alpha="0.5"
+        android:paddingBottom="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/shapenegro" />
+        android:background="@drawable/shapenegro">
 
-    <TextView
-        android:id="@+id/textViewClock"
-        android:layout_width="110dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="4dp"
-        android:fontFamily="@font/hpsimplified_rg"
-        android:text="16:27"
-        android:textAlignment="center"
-        android:textColor="@android:color/white"
-        android:textSize="35sp"
-        app:layout_constraintEnd_toStartOf="@+id/textViewDate"
-        app:layout_constraintStart_toStartOf="@+id/backgroundDates"
-        app:layout_constraintTop_toTopOf="@+id/backgroundDates" />
+        <TextView
+            android:id="@+id/textViewClock"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="4dp"
+            android:fontFamily="@font/hpsimplified_rg"
+            android:text="16:27"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="35sp"
+            app:layout_constraintEnd_toStartOf="@+id/textViewDate"
+            app:layout_constraintStart_toStartOf="@+id/backgroundDates"
+            app:layout_constraintTop_toTopOf="@+id/backgroundDates" />
 
-    <TextView
-        android:id="@+id/textViewDay"
-        android:layout_width="110dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="8dp"
-        android:alpha="0.5"
-        android:fontFamily="@font/hpsimplified_rg"
-        android:text="Lunes,"
-        android:textColor="@android:color/white"
-        app:layout_constraintEnd_toEndOf="@+id/backgroundDates"
-        app:layout_constraintTop_toTopOf="@+id/backgroundDates" />
+        <TextView
+            android:id="@+id/textViewDay"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="8dp"
+            android:alpha="0.5"
+            android:fontFamily="@font/hpsimplified_rg"
+            android:text="Lunes,"
+            android:textColor="@android:color/white"
+            app:layout_constraintEnd_toEndOf="@+id/backgroundDates"
+            app:layout_constraintTop_toTopOf="@+id/backgroundDates" />
 
-    <TextView
-        android:id="@+id/textViewDate"
-        android:layout_width="110dp"
-        android:layout_height="wrap_content"
-        android:alpha="0.5"
-        android:fontFamily="@font/hpsimplified_rg"
-        android:text="24 de Septiembre"
-        android:textColor="@android:color/white"
-        app:layout_constraintStart_toStartOf="@+id/textViewDay"
-        app:layout_constraintTop_toBottomOf="@+id/textViewDay" />
+        <TextView
+            android:id="@+id/textViewDate"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:alpha="0.5"
+            android:fontFamily="@font/hpsimplified_rg"
+            android:text="24 de Septiembre"
+            android:textColor="@android:color/white"
+            app:layout_constraintStart_toStartOf="@+id/textViewDay"
+            app:layout_constraintTop_toBottomOf="@+id/textViewDay" />
 
-    <Button
-        android:id="@+id/buttonBack"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginEnd="16dp"
-        android:background="@drawable/ic_back"
-        android:textColor="@color/colorBlanco"
-        app:layout_constraintEnd_toStartOf="@+id/backgroundDates"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewCliente"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            app:cardBackgroundColor="#80272727"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintEnd_toEndOf="@+id/backgroundDates"
+            app:layout_constraintStart_toStartOf="@+id/backgroundDates"
+            app:layout_constraintTop_toBottomOf="@+id/textViewClock">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal|center_vertical"
+                    android:layout_marginStart="5dp"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="35dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginStart="2dp"
+                        android:alpha="0.4"
+                        app:srcCompat="@drawable/register" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="7dp"
+                    android:layout_marginEnd="15dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textViewTitleName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:alpha="0.5"
+                        android:text="Personal"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textViewName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewObjetive"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            app:cardBackgroundColor="#80272727"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintEnd_toEndOf="@+id/backgroundDates"
+            app:layout_constraintStart_toStartOf="@+id/backgroundDates"
+            app:layout_constraintTop_toBottomOf="@+id/cardViewCliente">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal|center_vertical"
+                    android:layout_marginStart="5dp"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="35dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginStart="2dp"
+                        android:alpha="0.4"
+                        app:srcCompat="@drawable/apartment_icon" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="7dp"
+                    android:layout_marginEnd="15dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textViewTitleObjetive"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:alpha="0.5"
+                        android:text="Objetivo"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textViewObjetive"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textViewStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginBottom="5dp"
+                        android:fontFamily="@font/hpsimplified_rg"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewUbicacion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            app:cardBackgroundColor="#80272727"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintEnd_toEndOf="@+id/backgroundDates"
+            app:layout_constraintStart_toStartOf="@+id/backgroundDates"
+            app:layout_constraintTop_toBottomOf="@+id/cardViewObjetive">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal|center_vertical"
+                    android:layout_marginStart="5dp"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="35dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginStart="2dp"
+                        android:alpha="0.4"
+                        app:srcCompat="@drawable/ubicacion" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="7dp"
+                    android:layout_marginEnd="15dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:alpha="0.5"
+                        android:text="Ubicacion"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textViewUbicacion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:text="Dentro de Rango"
+                        android:textColor="@android:color/holo_green_light"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewPuesto"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            app:cardBackgroundColor="#80272727"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintEnd_toEndOf="@+id/backgroundDates"
+            app:layout_constraintStart_toStartOf="@+id/backgroundDates"
+            app:layout_constraintTop_toBottomOf="@+id/cardViewUbicacion">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="5dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal|center_vertical"
+                    android:layout_marginStart="5dp"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="35dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginStart="2dp"
+                        android:alpha="0.4"
+                        app:srcCompat="@drawable/puesto_icon" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="7dp"
+                    android:layout_marginEnd="15dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textViewTitlePuesto"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:alpha="0.5"
+                        android:text="Puesto"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/puestoSeleccionado"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textViewHorario"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="14sp" />
+
+                    <Spinner
+                        android:id="@+id/spinnerPuesto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/spinner_style"
+                        android:popupBackground="@color/item_name"
+                        android:overlapAnchor="false"
+                        android:visibility="invisible" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewRegistro"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            app:cardBackgroundColor="#80272727"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintEnd_toEndOf="@+id/backgroundDates"
+            app:layout_constraintStart_toStartOf="@+id/backgroundDates"
+            app:layout_constraintTop_toBottomOf="@+id/cardViewPuesto">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal|center_vertical"
+                    android:layout_marginStart="5dp"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="35dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_horizontal"
+                        android:alpha="0.4"
+                        app:srcCompat="@drawable/enter_icon" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="193dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="-16dp"
+                    android:layout_marginEnd="15dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textViewTitleRegister"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="5dp"
+                        android:text="Hora Registrada"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textViewHoraRegistrada"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="--:--"
+                        android:textColor="@color/colorBlanco"
+                        android:textSize="30sp" />
+
+                    <TextView
+                        android:id="@+id/textViewHoraIngreso"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="--:--"
+                        android:textColor="@android:color/holo_green_light"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:id="@+id/textViewTitleHoraIngreso"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginBottom="5dp"
+                        android:text="Hora Ingreso Real"
+                        android:textAlignment="center"
+                        android:textColor="@android:color/holo_green_light"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+<!--    <Button-->
+<!--        android:id="@+id/buttonBack"-->
+<!--        android:layout_width="25dp"-->
+<!--        android:layout_height="25dp"-->
+<!--        android:layout_marginStart="28dp"-->
+<!--        android:layout_marginTop="40dp"-->
+<!--        android:layout_marginEnd="16dp"-->
+<!--        android:background="@drawable/ic_back"-->
+<!--        android:textColor="@color/colorBlanco"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/backgroundDates"-->
+<!--        app:layout_constraintHorizontal_bias="1.0"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
 
     <Button
         android:id="@+id/buttonRegistrarIngreso"
@@ -89,325 +492,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/backgroundDates" />
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardViewPersonal"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        app:cardBackgroundColor="#80272727"
-        app:cardCornerRadius="10dp"
-        app:layout_constraintEnd_toEndOf="@+id/backgroundDates"
-        app:layout_constraintStart_toStartOf="@+id/backgroundDates"
-        app:layout_constraintTop_toBottomOf="@+id/textViewClock">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|center_vertical"
-                android:layout_marginStart="5dp"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="35dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginStart="2dp"
-                    android:alpha="0.4"
-                    app:srcCompat="@drawable/register" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="7dp"
-                android:layout_marginEnd="15dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/textViewTitleName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:alpha="0.5"
-                    android:text="Personal"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorBlanco"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/textViewName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp"
-                    android:layout_marginBottom="5dp"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorBlanco"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
-
-
-        </LinearLayout>
-
-
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardViewObjetive"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        app:cardBackgroundColor="#80272727"
-        app:cardCornerRadius="10dp"
-        app:layout_constraintEnd_toEndOf="@+id/backgroundDates"
-        app:layout_constraintStart_toStartOf="@+id/backgroundDates"
-        app:layout_constraintTop_toBottomOf="@+id/cardViewPersonal">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|center_vertical"
-                android:layout_marginStart="5dp"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="35dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginStart="2dp"
-                    android:alpha="0.4"
-                    app:srcCompat="@drawable/apartment_icon" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="7dp"
-                android:layout_marginEnd="15dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/textViewTitleObjetive"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:alpha="0.5"
-                    android:text="Objetivo"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorBlanco"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/textViewObjetive"
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorBlanco"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/textViewStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginBottom="5dp"
-                    android:fontFamily="@font/hpsimplified_rg"
-                    android:textColor="@color/colorAccent"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
-
-
-        </LinearLayout>
-
-
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardViewPuesto"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        app:cardBackgroundColor="#80272727"
-        app:cardCornerRadius="10dp"
-        app:layout_constraintEnd_toEndOf="@+id/backgroundDates"
-        app:layout_constraintStart_toStartOf="@+id/backgroundDates"
-        app:layout_constraintTop_toBottomOf="@+id/cardViewObjetive">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|center_vertical"
-                android:layout_marginStart="5dp"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="35dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginStart="2dp"
-                    android:alpha="0.4"
-                    app:srcCompat="@drawable/puesto" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="7dp"
-                android:layout_marginEnd="15dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/textViewTitlePuesto"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:alpha="0.5"
-                    android:text="Puesto"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorBlanco"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/puestoSeleccionado"
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp"
-                    android:visibility="gone"
-                    android:textColor="@color/colorBlanco"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/textViewHorario"
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp"
-                    android:layout_marginBottom="5dp"
-                    android:visibility="gone"
-                    android:textColor="@color/colorBlanco"
-                    android:textSize="14sp" />
-
-                <Spinner
-                    android:id="@+id/spinnerPuesto"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/spinner_style"
-                    android:popupBackground="@color/item_name"
-                    android:layout_marginBottom="5dp"
-                    android:overlapAnchor="false"
-                    android:visibility="invisible" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardViewRegistro"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        app:cardBackgroundColor="#80272727"
-        app:cardCornerRadius="10dp"
-        app:layout_constraintEnd_toEndOf="@+id/backgroundDates"
-        app:layout_constraintStart_toStartOf="@+id/backgroundDates"
-        app:layout_constraintTop_toBottomOf="@+id/cardViewPuesto">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|center_vertical"
-                android:layout_marginStart="5dp"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="35dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center_horizontal"
-                    android:alpha="0.4"
-                    app:srcCompat="@drawable/enter_icon" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="193dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="7dp"
-                android:layout_marginEnd="15dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/textViewTitleRegister"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="5dp"
-                    android:text="Hora Registrada"
-                    android:textAlignment="center"
-                    android:textColor="@color/colorBlanco"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/textViewHoraRegistrada"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="--:--"
-                    android:textColor="@color/colorBlanco"
-                    android:textSize="30sp" />
-
-                <TextView
-                    android:id="@+id/textViewHoraIngreso"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="--:--"
-                    android:textColor="@android:color/holo_green_light"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/textViewTitleHoraIngreso"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginBottom="5dp"
-                    android:text="Hora Ingreso Real"
-                    android:textAlignment="center"
-                    android:textColor="@android:color/holo_green_light"
-                    android:textSize="12sp" />
-
-            </LinearLayout>
-
-
-        </LinearLayout>
-
-
-    </androidx.cardview.widget.CardView>
 
     <ImageView
         android:id="@+id/imageViewCamara"

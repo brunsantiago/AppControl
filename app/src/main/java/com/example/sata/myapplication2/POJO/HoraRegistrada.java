@@ -1,5 +1,6 @@
 package com.example.sata.myapplication2.POJO;
 
+import android.util.Log;
 import android.widget.Toast;
 
 import java.text.ParseException;
@@ -26,6 +27,8 @@ public class HoraRegistrada {
 
     public static String ingresoParametrizado(String ingresoPuestoStr, String fechaPuestoStr, String horaIngresoStr, String fechaIngresoStr){
 
+        Log.d("INGRESO PARAM: ", ingresoPuestoStr+" - "+fechaPuestoStr+" - "+horaIngresoStr+" - "+fechaIngresoStr);
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
         SimpleDateFormat hourFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
 
@@ -51,6 +54,8 @@ public class HoraRegistrada {
     }
 
     public static Date ingresoParametrizadoDate(String ingresoPuestoStr, String fechaPuestoStr, String horaIngresoStr, String fechaIngresoStr){
+
+        Log.d("INGRESO PARAM DATE: ", ingresoPuestoStr+" - "+fechaPuestoStr+" - "+horaIngresoStr+" - "+fechaIngresoStr);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
         SimpleDateFormat hourFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());

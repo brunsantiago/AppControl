@@ -16,7 +16,7 @@ import java.util.ArrayList;
 
 public class PuestoAdapter extends ArrayAdapter {
 
-    public PuestoAdapter(Context context, ArrayList<Puesto> listaPuestos){
+    public PuestoAdapter(Context context, ArrayList<PuestoDM> listaPuestos){
         super(context,0,listaPuestos);
     }
 
@@ -40,17 +40,17 @@ public class PuestoAdapter extends ArrayAdapter {
         TextView textViewNombrePuesto = convertView.findViewById(R.id.textViewNombrePuesto);
         TextView textViewHorario = convertView.findViewById(R.id.textViewHorario);
 
-        Puesto puesto = (Puesto) getItem(position);
+        PuestoDM puesto = (PuestoDM) getItem(position);
 
         if(puesto != null){
-            if(puesto.getIngresoPuesto() != null || puesto.getEgresoPuesto() != null){
-                String nombrePuesto = puesto.getNombrePuesto();
+            if(puesto.getPUES_DHOR() != null || puesto.getPUES_HHOR() != null){
+                String nombrePuesto = puesto.getPUES_NOMB();
                 textViewNombrePuesto.setText(nombrePuesto);
-                String horario = puesto.getNombreTurno() + " - " + puesto.getIngresoPuesto()+" a "+puesto.getEgresoPuesto();
+                String horario = puesto.getPUES_DHOR() + " a " + puesto.getPUES_HHOR();
                 textViewHorario.setText(horario);
                 textViewHorario.setVisibility(View.VISIBLE);
             } else {
-                textViewNombrePuesto.setText(puesto.getNombrePuesto());
+                textViewNombrePuesto.setText(puesto.getPUES_NOMB());
                 textViewHorario.setVisibility(View.GONE);
             }
 
@@ -58,4 +58,6 @@ public class PuestoAdapter extends ArrayAdapter {
 
         return convertView;
     }
+
+
 }

@@ -1,357 +1,126 @@
 package com.example.sata.myapplication2;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
-
-import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
-import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.MotionEvent;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Request.Method;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.sata.myapplication2.AlertDialog.ExitAlert;
 import com.example.sata.myapplication2.AlertDialog.LogOutAlert;
-import com.example.sata.myapplication2.AlertDialog.SesionVencidaAlert;
-import com.example.sata.myapplication2.AlertDialog.SesionVigenteAlert;
-import com.example.sata.myapplication2.POJO.Cliente;
-import com.example.sata.myapplication2.POJO.TurnoSesion;
-import com.example.sata.myapplication2.POJO.UltimaSesion;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.instacart.library.truetime.TrueTime;
+import com.example.sata.myapplication2.POJO.UltimaSesionDM;
+import com.google.android.material.navigation.NavigationView;
 
-import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+//Se referencian las Clases necesarias para la conexion con el Servidor MySQL
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
-public class MainActivity extends AppCompatActivity implements ResultListener<Date> {
+public class MainActivity extends AppCompatActivity {
 
-    private static final String NOMBRE_CLIENTE = "nombreCliente";
-    private static final String NOMBRE_OBJETIVO = "nombreObjetivo";
-    private static final String ID_CLIENTE = "idCliente";
-    private static final String ID_OBJETIVO = "idObjetivo";
-    private static final String IMEI = "imei";
-    private static final String NOMBRE = "nombre";
-    private static final String ESTADO_SESION = "estadoSesion";
-    private static final String ULTIMA_SESION = "ultimaSesion";
-    private static final String SESION_ID = "sesionID";
-    private static final String FECHA_PUESTO = "fechaPuesto";
-    private static final String FECHA_INGRESO_LOGIN = "fechaIngresoLogin";
-    private static final String HORA_INGRESO_LOGIN = "horaIngresoLogin";
-    private static final String NOMBRE_PUESTO = "nombrePuesto";
-    private static final String NRO_LEGAJO = "nroLegajo";
-    private static final String TAG = "MainActivity_TAG";
-    private static final String INGRESO_PUESTO = "ingresoPuesto";
-    private static final String HORA_INGRESO = "horaIngreso";
-    private static final String HORA_EGRESO = "horaEgreso";
-    private static final String EGRESO_PUESTO = "egresoPuesto";
-    private static final String FECHA_INGRESO = "fechaIngreso";
-    private static final String TURNO_NOCHE = "turnoNoche";
+    private static final String ESTADO_SESION = "es";
+    private AppBarConfiguration mAppBarConfiguration;
 
-    private FirebaseFirestore database;
-    private FirebaseUser userAuth;
-
-    private static final int MY_PERMISSIONS_REQUEST_READ_PHONE_STATE = 1;
-    private TelephonyManager telephonyManager;
-    private String imei;
-    private TextView textViewStatus;
-    private Button backgroundCounter;
-    private ProgressBar mProgressBar;
-    private CountDownTimer countDownTimer;
-    private ProgressDialog progressDialog=null;
-
-
-
-    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
 
-        progressDialog= new ProgressDialog(this);
-        progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-        progressDialog.setCancelable(false);
-        progressDialog.show();
-        progressDialog.setContentView(R.layout.custom_progressdialog);
+        setContentView(R.layout.activity_main);
 
-        database = FirebaseFirestore.getInstance();
-        userAuth = FirebaseAuth.getInstance().getCurrentUser();
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        synchronizeClock();
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
 
-        getIMEI(this);
-
-        Button btnPanico = findViewById(R.id.buttonPanic);
-
-        CardView btnIngreso = findViewById(R.id.cardViewIngresar);
-        CardView btnEgreso = findViewById(R.id.cardViewEgresar);
-        CardView btnNovedad = findViewById(R.id.cardViewNovedad);
-        CardView btnLlamar = findViewById(R.id.cardViewCall);
-
-        backgroundCounter = findViewById(R.id.backgroundCounter);
-        textViewStatus = findViewById(R.id.textViewStatus);
-        mProgressBar = findViewById(R.id.progress_circular);
+        mAppBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.nav_home, R.id.nav_config, R.id.nav_exit)
+                .setDrawerLayout(drawer)
+                .build();
 
 
-        btnIngreso.setOnClickListener(new View.OnClickListener() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+        NavigationUI.setupWithNavController(navigationView, navController);
+        navigationView.getMenu().getItem(0).setChecked(true);
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, IngresoActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        btnEgreso.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, EgresoActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        btnNovedad.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, NovedadActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        btnPanico.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        backgroundCounter.setVisibility(View.VISIBLE);
-                        mProgressBar.setVisibility(View.VISIBLE);
-                        countDown();
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        backgroundCounter.setVisibility(View.GONE);
-                        mProgressBar.setVisibility(View.GONE);
-                        countDownTimer.cancel();
-                }
-                return true;
-            }
-
-        });
-
-    }
-
-    @SuppressLint("HardwareIds")
-    public void getIMEI(Context context) {
-
-        telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-
-        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.READ_PHONE_STATE},
-                    MY_PERMISSIONS_REQUEST_READ_PHONE_STATE);
-
-        } else if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                imei = telephonyManager.getImei();
-            } else {
-                imei = telephonyManager.getDeviceId();
-            }
-            cargarSharedPreferences(imei);
-        }
-
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_READ_PHONE_STATE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        imei = telephonyManager.getImei();
-                    } else {
-                        imei = telephonyManager.getDeviceId();
-                    }
-                    cargarSharedPreferences(imei);
-                }
-            }
-
-        }
-    }
-
-    //Carga en SharedPreferences el CLIENTE - OBJETIVO - IMEI
-    private void cargarSharedPreferences(final String imei) {
-
-        DocumentReference reference = database.collection("devices")
-                .document(imei);
-
-        reference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot doc = task.getResult();
-                    String nombreCliente = (String) doc.get(NOMBRE_CLIENTE);
-                    String nombreObjetivo = (String) doc.get(NOMBRE_OBJETIVO);
-                    String idCliente = (String) doc.get(ID_CLIENTE);
-                    String idObjetivo = (String) doc.get(ID_OBJETIVO);
-
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                if (item.getItemId() == R.id.nav_exit) {
                     SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
-
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.putString(NOMBRE_CLIENTE, nombreCliente);
-                    editor.putString(NOMBRE_OBJETIVO, nombreObjetivo);
-                    editor.putString(ID_CLIENTE, idCliente);
-                    editor.putString(ID_OBJETIVO, idObjetivo);
-                    editor.putString(IMEI, imei);
-                    editor.apply();
-
-                    cargarDatosPantallaPrincipal(nombreCliente,nombreObjetivo);
-                }
-            }
-        })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                    }
-                });
-    }
-
-    /**
-     * init the TrueTime using a AsyncTask.
-     */
-    //Carga la fecha y hora desde Internet
-    public void initTrueTime() {
-        if (isNetworkConnected()) {
-            if (!TrueTime.isInitialized()) {
-                TrueTimeAsyncTask trueTime = new TrueTimeAsyncTask(this, this);
-                trueTime.execute();
-            } else {
-                Date date = TrueTime.now();
-                setFechaLoginSharedPreferences(date);
-            }
-        } else{
-            Toast.makeText(this, "No esta conectado", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public boolean isNetworkConnected() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo ni = cm.getActiveNetworkInfo();
-        return ni != null && ni.isConnectedOrConnecting();
-    }
-
-    private void setFechaLoginSharedPreferences(Date fecha){
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        SimpleDateFormat hourFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-
-        String fechaIngreso = dateFormat.format(fecha);
-        String horaIngreso = hourFormat.format(fecha);
-
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(FECHA_INGRESO_LOGIN,fechaIngreso);
-        editor.putString(HORA_INGRESO_LOGIN,horaIngreso);
-        editor.apply();
-
-        chequearEstadoSesion();
-    }
-
-    private void cargarDatosPantallaPrincipal(String cliente, String objetivo){
-
-        TextView datosObjetivo = findViewById(R.id.textViewObjetive);
-        TextView nombrePersonal = findViewById(R.id.textViewName);
-
-        datosObjetivo.setText((cliente+" - "+objetivo).toUpperCase());
-        textViewStatus.setText("");
-
-        String nroLegajo = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-
-        Query referenceUser = database.collection("users").whereEqualTo("idPersonal", nroLegajo);
-
-        referenceUser
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot doc : task.getResult()) {
-                        String nombre = (String) doc.get(NOMBRE);
-                        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = prefs.edit();
-                        editor.putString(NOMBRE, nombre);
-                        editor.apply();
-                        nombrePersonal.setText(nombre.toUpperCase());
+                    boolean estadoSesion = prefs.getBoolean(ESTADO_SESION,false);
+                    if(estadoSesion){
+                        showLogOutAlert();
+                    } else {
+                        showExitAlert();
                     }
                 } else {
-                    Toast.makeText(MainActivity.this, "No se pudo obtener el numero de legajo", Toast.LENGTH_SHORT).show();
+                    NavigationUI.onNavDestinationSelected(item, navController);
+                    drawer.closeDrawers();
                 }
-
+                return false;
             }
-        })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                    }
-                });
+        });
 
-        initTrueTime();
     }
 
     @Override
-    public void finish(Date resultado) {
-        setFechaLoginSharedPreferences(resultado);
+    public boolean onSupportNavigateUp() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
+                || super.onSupportNavigateUp();
     }
 
-    @Override
-    public void onBackPressed() {
-        //super.onBackPressed();
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-
-        boolean estadoSesion = prefs.getBoolean(ESTADO_SESION,false);
-
-        if(estadoSesion){
-            showLogOutAlert();
-        } else {
-            showExitAlert();
-        }
+    public void cambiarItemMenu(){
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.getMenu().getItem(0).setChecked(true);
     }
 
     public void showLogOutAlert(){
@@ -364,331 +133,15 @@ public class MainActivity extends AppCompatActivity implements ResultListener<Da
         myAlert.show(getSupportFragmentManager(),"Exit Alert");
     }
 
-    private void chequearEstadoSesion() {
-
-        Query reference = database.collection("users").whereEqualTo("idPersonal", userAuth.getDisplayName());
-
-        reference
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        Boolean estadoSesion = false;
-                        String userId = document.getId();
-                        if(document.get(ESTADO_SESION)!=null){
-                            estadoSesion = (Boolean) document.get(ESTADO_SESION);
-                        }
-                        if (estadoSesion) {
-                            UltimaSesion ultimaSesion = new UltimaSesion((Map<String, Object>) document.get(ULTIMA_SESION));
-                            cargaUltimaSesion(ultimaSesion,userId);
-                        } else {
-                            SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = prefs.edit();
-                            editor.putBoolean(ESTADO_SESION,false);
-                            editor.apply();
-                            textViewStatus.setText("No registrado en el Objetivo");
-                            textViewStatus.setTextColor(Color.RED);
-                        }
-                        progressDialog.dismiss();
-                    }
-
-                } else {
-                    Log.d("TAG", "No such document");
-                }
-            }
-        });
+    public void setNavigationHeaderData(String nombre,String objetivo){
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
+        TextView navNombre = (TextView) headerView.findViewById(R.id.textViewNombre);
+        navNombre.setText(nombre);
+        TextView navObjetivo = (TextView) headerView.findViewById(R.id.textViewObjetivo);
+        navObjetivo.setText(objetivo);
+        navObjetivo.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.gris));
     }
 
-    private void cargaUltimaSesion(UltimaSesion ultimaSesion, String userId){
-
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-
-        String clienteDispositivo = prefs.getString(NOMBRE_CLIENTE,"").toUpperCase();
-        String objetivoDispositivo = prefs.getString(NOMBRE_OBJETIVO,"").toUpperCase();
-
-        if (clienteDispositivo.equals(ultimaSesion.getNombreCliente()) && objetivoDispositivo.equals(ultimaSesion.getNombreObjetivo())){
-            obtenerTurno(ultimaSesion,prefs,editor,userId);
-        } else {
-            //////////////////////////////////////////////////////////
-            // Falta caragr la fecha del puesto en la ultima sesion //
-            //////////////////////////////////////////////////////////
-            showObjetivoVencidoAlert(ultimaSesion.getNombreCliente(),ultimaSesion.getNombreObjetivo(),ultimaSesion.getFechaPuesto());
-            editor.putBoolean(ESTADO_SESION,false);
-            editor.apply();
-            database.collection("users").document(userId).update(ESTADO_SESION, false);
-            textViewStatus.setText("No registrado en el Objetivo");
-            textViewStatus.setTextColor(Color.RED);
-        }
-    }
-
-    private void obtenerTurno(UltimaSesion ultimaSesion,SharedPreferences prefs,SharedPreferences.Editor editor, String userId){
-
-        DocumentReference docRef = database.document(ultimaSesion.getPathTurno());
-
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-
-                        TurnoSesion turnoSesion = new TurnoSesion((Map<String, Object>) document.getData());
-
-                        Date fechaLogin = null;
-                        Date fechaVence = null;
-
-                        fechaLogin = armarDate(prefs.getString(FECHA_INGRESO_LOGIN,""),prefs.getString(HORA_INGRESO_LOGIN,""));
-
-                        if(turnoSesion.getTurnoNoche()!=null && turnoSesion.getTurnoNoche()){
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                            Date hoy = null;
-                            try {
-                                hoy = dateFormat.parse(turnoSesion.getFechaPuesto());
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
-                            Date diaPosterior = new Date(hoy.getTime()+86400000);
-                            fechaVence = armarDate(dateFormat.format(diaPosterior),turnoSesion.getEgresoPuesto());
-                        }else if (turnoSesion.getTurnoNoche()!=null && !turnoSesion.getTurnoNoche()){
-                            fechaVence = armarDate(turnoSesion.getFechaPuesto(),turnoSesion.getEgresoPuesto());
-                        } else {
-                            //Toast.makeText(this, "Falta cargar si es Turno Noche en sesion del servidor", Toast.LENGTH_SHORT).show();
-                        }
-
-                        Configurador miConf = Configurador.getInstance();
-                        miConf.setFinSesion(fechaVence);
-
-                        if (comparaFechas(fechaLogin,fechaVence)==2){
-                            showSesionVigenteAlert();
-                            editor.putBoolean(ESTADO_SESION,true);
-                            editor.putString(FECHA_PUESTO,turnoSesion.getFechaPuesto());
-                            editor.putString(INGRESO_PUESTO,turnoSesion.getIngresoPuesto());
-                            editor.putString(HORA_INGRESO,turnoSesion.getHoraIngreso());
-                            editor.putString(FECHA_INGRESO,turnoSesion.getFechaIngreso());
-                            editor.putString(HORA_EGRESO,turnoSesion.getHoraEgreso());
-                            editor.putString(EGRESO_PUESTO,turnoSesion.getEgresoPuesto());
-                            editor.putBoolean(TURNO_NOCHE,turnoSesion.getTurnoNoche());
-                            editor.putString(SESION_ID,ultimaSesion.getSesionID());
-                            editor.putString(NOMBRE_PUESTO,turnoSesion.getNombrePuesto());
-                            editor.apply();
-                            textViewStatus.setText("Registrado en el Objetivo");
-                            textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
-                        } else {
-                            //Sesion Vencida
-                            showSesionVencidaAlert();
-                            editor.putBoolean(ESTADO_SESION,false);
-                            editor.apply();
-                            database.collection("users").document(userId).update(ESTADO_SESION, false);
-                            textViewStatus.setText("No registrado en el Objetivo");
-                            textViewStatus.setTextColor(Color.RED);
-                        }
-
-                    } else {
-                        Log.d(TAG, "No such document");
-                    }
-                } else {
-                    Log.d(TAG, "get failed with ", task.getException());
-                }
-            }
-        });
-
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        deleteCache(this);
-    }
-
-    public void deleteCache(Context context) {
-        try {
-            File dir = context.getCacheDir();
-            deleteDir(dir);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public boolean deleteDir(File dir) {
-        if (dir != null && dir.isDirectory()) {
-            String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]));
-                if (!success) {
-                    return false;
-                }
-            }
-            return dir.delete();
-        } else if(dir!= null && dir.isFile()) {
-            return dir.delete();
-        } else {
-            return false;
-        }
-    }
-
-    public void showSesionVigenteAlert(){
-        SesionVigenteAlert myAlert = new SesionVigenteAlert();
-        myAlert.show(getSupportFragmentManager(),"Sesion Vigente Alert");
-    }
-
-    public void showSesionVencidaAlert(){
-        SesionVencidaAlert myAlert = new SesionVencidaAlert();
-        myAlert.show(getSupportFragmentManager(),"Sesion Vencida Alert");
-    }
-
-    public void showObjetivoVencidoAlert(String cliente, String objetivo, String fecha){
-        SesionVencidaAlert myAlert = new SesionVencidaAlert();
-        myAlert.setObjetivoFecha(cliente,objetivo,fecha);
-        myAlert.show(getSupportFragmentManager(),"Sesion Vencida Alert");
-    }
-
-    public int comparaFechas(Date date1, Date date2){
-        if(date1.getTime()>date2.getTime()+60*60*1000){
-            return 1; // Parametro 1 mas grande que parametro 2
-        }else if(date1.getTime()<date2.getTime()+60*60*1000){
-            return 2; // Parametro 2 mas grande que parametro 1
-        } else {
-            return 0; // Iguales
-        }
-    }
-
-    public Date armarDate(String fecha, String hora){
-        Date date = null;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-        try {
-            date = dateFormat.parse(fecha+" "+hora);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return date;
-    }
-
-    public void statusCheck(){
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-        if(prefs.contains(ESTADO_SESION)){
-            boolean estadoSesion = prefs.getBoolean(ESTADO_SESION,false);
-            if(estadoSesion){
-                statusOn();
-            } else{
-                statusOff();
-            }
-        } else {
-            statusEmpty();
-        }
-    }
-
-    private void synchronizeClock(){
-        TextView thour = findViewById(R.id.textViewClock);
-        TextView tday = findViewById(R.id.textViewDay);
-        TextView tdate = findViewById(R.id.textViewDate);
-
-        SimpleDateFormat hourFormat = new SimpleDateFormat("HH:mm");
-        SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE,");
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd");
-        SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM");
-
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    while (!isInterrupted()) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                long date = System.currentTimeMillis();
-                                String hourString = hourFormat.format(date);
-                                String dayString = dayFormat.format(date);
-                                String dateString = dateFormat.format(date);
-                                String monthString = monthFormat.format(date);
-                                dayString = Character.toUpperCase(dayString.charAt(0)) + dayString.substring(1);
-                                monthString = Character.toUpperCase(monthString.charAt(0)) + monthString.substring(1);
-                                thour.setText(hourString);
-                                tday.setText(dayString);
-                                tdate.setText(dateString+" de "+monthString);
-                            }
-                        });
-                        Thread.sleep(1000);
-                    }
-                } catch (InterruptedException e) {
-                }
-            }
-        };
-        t.start();
-    }
-
-    public void statusOn(){
-        textViewStatus.setText("Registrado en el Objetivo");
-        textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
-    }
-
-    public void statusOff(){
-        textViewStatus.setText("No registrado en el Objetivo");
-        textViewStatus.setTextColor(Color.RED);
-    }
-
-    public void statusEmpty(){
-        textViewStatus.setText("");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        statusCheck();
-    }
-
-    private void countDown(){
-        countDownTimer = new CountDownTimer(4000, 1000) {
-            public void onTick(long millisUntilFinished) {
-                backgroundCounter.setTextSize(90);
-                backgroundCounter.setText("" + millisUntilFinished / 1000);
-            }
-            public void onFinish() {
-                mProgressBar.setVisibility(View.GONE);
-                backgroundCounter.setTextSize(24);
-                backgroundCounter.setText("Alarma Enviada !");
-                enviarAlarma();
-            }
-        }.start();
-    }
-
-
-    private void enviarDatos(){
-        String msg1 = "##,imei:358240051111110,A;";
-        String msg2 = "358240051111110;";
-        String msg3 = "imei:358240051111110,help me,1905122034,,F,203418.000,A,3432.5935,S,05828.5003,W,0.00,4.22,;";
-        Cliente cliente = new Cliente(this);
-        cliente.execute(msg3);
-        Toast.makeText(this, "Alerta enviada al servidor: "+msg3, Toast.LENGTH_SHORT).show();
-    }
-
-    private void enviarAlarma(){
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("idCliente", prefs.getString(NOMBRE_CLIENTE,""));
-        data.put("idObjetivo", prefs.getString(NOMBRE_OBJETIVO,""));
-        data.put("nroLegajo", prefs.getString(NRO_LEGAJO,""));
-        data.put("timestamp", FieldValue.serverTimestamp());
-        data.put("latitud", "-34.543225");
-        data.put("longitud", "-58.474950");
-
-        database.collection("alerts")
-                .add(data)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error adding document", e);
-                    }
-                });
-    }
 
 }

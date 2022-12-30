@@ -2,12 +2,14 @@ package com.example.sata.myapplication2.AlertDialog;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 
+import com.example.sata.myapplication2.LoginActivity;
 import com.example.sata.myapplication2.R;
 
 public class LogOutAlert extends DialogFragment {
@@ -35,6 +37,9 @@ public class LogOutAlert extends DialogFragment {
 
     public void confirmar()
     {
-        this.getActivity().finish();
+        //this.getActivity().finish();
+        Intent intent = new Intent(getContext(), LoginActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        getActivity().finish();
     }
 }

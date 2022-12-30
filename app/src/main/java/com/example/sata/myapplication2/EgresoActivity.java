@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +25,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 //import com.bumptech.glide.request.RequestOptions;
@@ -32,76 +41,86 @@ import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
 //import com.bumptech.glide.request.transition.Transition;
 import com.bumptech.glide.request.transition.Transition;
-import com.example.sata.myapplication2.AlertDialog.LoadPhotoAlert;
-import com.example.sata.myapplication2.AlertDialog.LoadPhotoAlertError;
+import com.example.sata.myapplication2.AlertDialog.RegisterAlert;
+import com.example.sata.myapplication2.AlertDialog.RegisterAlertError;
 import com.example.sata.myapplication2.POJO.HoraRegistrada;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.instacart.library.truetime.TrueTime;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 public class EgresoActivity extends AppCompatActivity implements ResultListener<Date>{
 
-    private static final String HORA_EGRESO = "horaEgreso";
-    private static final String ESTADO_SESION = "estadoSesion";
-    private static final String ULTIMA_SESION = "ultimaSesion";
-    private static final String FECHA_EGRESO = "fechaEgreso";
+    //private static final String API_PATH = "http://192.168.1.8:3000/api/";
+    //private static final String API_PATH = "http://186.182.25.11:3000/api/";
+
+    private static final String TAG = "Egreso_Activity_TAG";
+
     private static final String NOMBRE_OBJETIVO = "nombreObjetivo";
     private static final String NOMBRE_CLIENTE = "nombreCliente";
     private static final String ID_CLIENTE = "idCliente";
     private static final String ID_OBJETIVO = "idObjetivo";
-    private static final String FECHA_PUESTO = "fechaPuesto";
-    private static final String SESION_ID = "sesionID";
-    private static final String NOMBRE_PERSONAL = "nombre";
-    private static final String NRO_LEGAJO = "nroLegajo";
-    private static final String NOMBRE_PUESTO = "nombrePuesto";
-    private static final int REQUEST_TAKE_PHOTO = 1;
-    private static final String EGRESO_PUESTO = "egresoPuesto";
-    private static final String TURNO_NOCHE = "turnoNoche";
-    private static final String INGRESO_PUESTO = "ingresoPuesto";
-    private static final String IMAGE_PATH = "imagePath";
-    private static final String HORA_EGRESO_PARAM = "hep";
-    private static final String HORA_EGRESO_PARAM_ = "hep";
 
+    private static final int REQUEST_TAKE_PHOTO = 1;
+
+    private static final String HORA_EGRESO = "he";
+    private static final String FECHA_EGRESO = "fe";
+    private static final String FECHA_PUESTO = "fp";
+    private static final String NOMBRE_PUESTO = "np";
+    private static final String EGRESO_PUESTO = "ep";
+    private static final String TURNO_NOCHE = "tn";
+    private static final String INGRESO_PUESTO = "ip";
+    private static final String IMAGE_PATH = "im";
+    private static final String HORA_EGRESO_PARAM = "hep";
+    private static final String NOMBRE_PERSONAL = "an";
+    private static final String ESTADO_SESION = "es";
+    private static final String SESION_ID = "si";
+    private static final String NRO_LEGAJO = "nl";
+
+    private static final String PERS_CODI = "pers_codi";
+    private static final String ASIG_PUES = "asig_pues";
+    private static final String HORA_INGRESO_TIMESTAMP = "hit";
 
     private FirebaseFirestore database;
     private FirebaseStorage storage;
     private Button btnRegistrarSalida;
-    private TextView estadoDelIngreso;
     private TextView textViewStatus;
     private Uri photoURI;
-    private FirebaseUser userAuth;
     private ImageView imageViewCamara;
     private String currentPhotoPath;
-
     private String idCliente;
     private String idObjetivo;
+    private TextView estadoDelIngreso;
+    private FirebaseUser userAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_egreso);
+
+        Toolbar toolbar = findViewById(R.id.toolbarEgreso);
+        setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         synchronizeClock();
 
@@ -114,7 +133,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         storage = FirebaseStorage.getInstance();
 
         btnRegistrarSalida = findViewById(R.id.buttonRegistrarEgreso);
-        Button btnBack = findViewById(R.id.buttonBack);
         estadoDelIngreso = findViewById(R.id.textViewStatus);
         imageViewCamara = findViewById(R.id.imageViewCamara);
         textViewStatus = findViewById(R.id.textViewStatus);
@@ -130,108 +148,107 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
             }
         });
 
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
-
         chequearEstadoSesion();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        //chequearEstadoSesion();
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
-    private void registrarSalida(String fechaEgreso,String horaEgreso) {
+    private void registrarSalida(String fechaEgreso, String horaEgreso) {
 
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",Context.MODE_PRIVATE);
-
-        String path = prefs.getString(NOMBRE_CLIENTE,"")+"/"+
-                      prefs.getString(NOMBRE_OBJETIVO,"")+"/"+"CAPTURAS"+"/"+
-                      prefs.getString(FECHA_PUESTO,"")+"/"+
-                      prefs.getString(SESION_ID,"");
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
         String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
         String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
         Boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE,false);
+        String horaEgresoParametrizado = HoraRegistrada.egresoParametrizado(egresoPuesto,fechaPuesto,horaEgreso,fechaEgreso,turnoNoche);
 
-        Map<String, Object> egreso = new HashMap<>();
-        egreso.put(FECHA_EGRESO, fechaEgreso);
-        egreso.put(HORA_EGRESO, horaEgreso);
-        egreso.put(IMAGE_PATH, path+"/");
-        egreso.put(HORA_EGRESO_PARAM, HoraRegistrada.egresoParametrizadoDate(egresoPuesto,fechaPuesto,horaEgreso,fechaEgreso,turnoNoche));
+        int asigPues = prefs.getInt(ASIG_PUES,0);
+        String persCodi = prefs.getString(PERS_CODI,"");
+        String timestamp = prefs.getString(HORA_INGRESO_TIMESTAMP,"");
 
-        DocumentReference reference = database.collection("clientes")
-                .document(idCliente)
-                .collection("objetivos")
-                .document(idObjetivo)
-                .collection("cobertura")
-                .document(prefs.getString(FECHA_PUESTO,""))
-                .collection("puestos")
-                .document(prefs.getString(SESION_ID,""));
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        String URL = Configurador.API_PATH + "asigvigi/"+asigPues+"/"+persCodi+"/"+timestamp;
+        JSONObject jsonBody = new JSONObject();
 
-        reference.update(egreso)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        actualizarEstadoPersonal(fechaEgreso,horaEgreso);
-                        servicioFinalizado();
-                        subirArchivoImageView(path);
-                        showRegisterAlert();
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
+        try {
+            jsonBody.put("horaEgreso", horaEgresoParametrizado);
+            final String requestBody = jsonBody.toString();
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PATCH, URL, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    try {
+                        if(response.getInt("result")==1){
+                            showRegisterAlert();
+                            actualizarEstadoPersonal(fechaEgreso,horaEgreso);
+                            servicioFinalizado();
+                            String path = "CAPTURAS/"+
+                                    prefs.getString(ID_CLIENTE,"")+"/"+
+                                    prefs.getString(ID_OBJETIVO,"")+"/"+
+                                    prefs.getString(FECHA_PUESTO,"")+"/"+
+                                    prefs.getString(HORA_INGRESO_TIMESTAMP,"");
+                            subirArchivoImageView(path);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                         Toast.makeText(EgresoActivity.this, "No se pudo registrar la salida del servicio, por favor contactese con la Central de Operaciones", Toast.LENGTH_SHORT).show();
                     }
-                });
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Toast.makeText(EgresoActivity.this, "No se pudo registrar la salida del servicio, por favor contactese con la Central de Operaciones", Toast.LENGTH_SHORT).show();
+                }
+            }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        return null;
+                    }
+                }
+            };
+            requestQueue.add(jsonObjectRequest);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void actualizarEstadoPersonal(String fechaEgreso, String horaEgreso) {
-
-        Query reference = database.collection("users").whereEqualTo("idPersonal", userAuth.getDisplayName());
-
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",Context.MODE_PRIVATE);
-
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(FECHA_EGRESO, fechaEgreso);
         editor.putString(HORA_EGRESO, horaEgreso);
         editor.apply();
+        int persCodi = Integer.parseInt(prefs.getString(PERS_CODI,""));
+        cerrarEstadoSesion(persCodi);
+    }
 
-        reference.get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                database.collection("users").document(document.getId()).update(
-                                        ESTADO_SESION, false)
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(EgresoActivity.this, "No se pudo actualizar el estado de la sesion", Toast.LENGTH_SHORT).show();
-                                        // Habria que ver cargar el estado de sesion como cerrada
-                                    }
-                                });
+    private void cerrarEstadoSesion(int persCodi){
 
-                            }
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        String URL = Configurador.API_PATH + "last_session/"+persCodi;
 
-                        } else {
-                            Log.d("TAG", "No such document");
-                        }
-                    }
-                });
-
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PATCH, URL, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+            }
+        });
+        requestQueue.add(jsonObjectRequest);
     }
 
     private void chequearEstadoSesion(){
@@ -252,8 +269,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
         String horaEgreso = prefs.getString(HORA_EGRESO,"--:--");
-        String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
         String fechaEgreso = prefs.getString(FECHA_EGRESO,"");
+        String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
         String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
         boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE,false);
 
@@ -266,6 +283,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorNaranja));
         textViewHoraRegistrada.setText(HoraRegistrada.egresoParametrizado(egresoPuesto,fechaPuesto,horaEgreso,fechaEgreso,turnoNoche));
         textViewHoraEgreso.setText(horaEgreso);
+
     }
 
     public void initTrueTime() {
@@ -306,7 +324,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
             textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorNaranja));
             showRegisterAlertError();
         } else {
-            registrarSalida(fechaEgreso,horaEgreso);
+            chequearEstadoSesionServer(fechaEgreso,horaEgreso);
         }
     }
 
@@ -320,7 +338,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         String nombrePuesto = prefs.getString(NOMBRE_PUESTO,"");
         String ingresoPuesto = prefs.getString(INGRESO_PUESTO,"");
         String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
-
 
         TextView nombrePersonal = findViewById(R.id.textViewName);
         TextView nombreObjetivo = findViewById(R.id.textViewObjetive);
@@ -411,13 +428,13 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     }
 
     public void showRegisterAlert(){
-        LoadPhotoAlert myAlert = new LoadPhotoAlert();
+        RegisterAlert myAlert = new RegisterAlert();
         myAlert.setTipoRegistro("salida");
         myAlert.show(getSupportFragmentManager(),"Register Alert");
     }
 
     public void showRegisterAlertError(){
-        LoadPhotoAlertError myAlert = new LoadPhotoAlertError();
+        RegisterAlertError myAlert = new RegisterAlertError();
         myAlert.show(getSupportFragmentManager(),"Register Alert Error");
     }
 
@@ -457,7 +474,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean(ESTADO_SESION,false);
             editor.apply();
-            //chequearEstadoSesion();
             cargarImagen();
         }
     }
@@ -564,6 +580,52 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         } else {
             return false;
         }
+    }
+
+    public void chequearEstadoSesionServer(String fechaEgreso, String horaEgreso){
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        String persCodi = prefs.getString(PERS_CODI,"");
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        String mJSONURLString = Configurador.API_PATH + "last_session/"+persCodi;
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                Request.Method.GET,
+                mJSONURLString,
+                null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        if(response.length()>0) {
+                            JSONObject jsonObject;
+                            try {
+                                jsonObject = response.getJSONObject(0);
+                                if(jsonObject.getInt("LAST_ESTA")==1){
+                                    registrarSalida(fechaEgreso,horaEgreso);
+                                }else{
+                                    textViewStatus.setText("Servicio cerrado por Operador");
+                                    textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorNaranja));
+                                    showRegisterAlertError();
+                                }
+                            } catch (JSONException e) {
+                                Log.d(TAG, "No se pudo extraer estado de la ultima sesion");
+                            }
+                        }else{
+                            Log.d(TAG, "No se encontro personal");
+                        }
+                    }
+                },
+                new Response.ErrorListener(){
+                    @Override
+                    public void onErrorResponse(VolleyError error){
+                        Log.d(TAG, "Error en el servidor");
+                    }
+                }
+        );
+
+        requestQueue.add(jsonArrayRequest);
+
     }
 
 }

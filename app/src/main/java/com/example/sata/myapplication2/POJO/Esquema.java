@@ -34,6 +34,9 @@ public class Esquema {
     }
 
     public Date getFechaHasta() {
+
+
+
         return fechaHasta;
     }
 
