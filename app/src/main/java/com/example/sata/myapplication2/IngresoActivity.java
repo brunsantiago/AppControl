@@ -1,15 +1,20 @@
 
 package com.example.sata.myapplication2;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -18,9 +23,12 @@ import android.provider.MediaStore;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -132,6 +140,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private FirebaseStorage storage;
     private FirebaseUser userAuth;
     private Button btnRegistrarIngreso;
+    private TextView textViewUbicacion;
     private Uri photoURI;
     private String currentPhotoPath;
     private ImageView imageViewCamara;
@@ -144,6 +153,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private String idCliente;
     private String idObjetivo;
     private Spinner spinnerPuesto;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,6 +182,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         userAuth = FirebaseAuth.getInstance().getCurrentUser();
         storage = FirebaseStorage.getInstance();
 
+        textViewUbicacion = findViewById(R.id.textViewUbicacion);
         btnRegistrarIngreso = findViewById(R.id.buttonRegistrarIngreso);
         imageViewCamara = findViewById(R.id.imageViewCamara);
         imageViewCamara.setVisibility(View.INVISIBLE);
@@ -184,18 +196,96 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         btnRegistrarIngreso.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (puestoSeleccionado) {
-                    dispatchTakePictureIntent();
-                    btnRegistrarIngreso.setClickable(false);
-                    btnRegistrarIngreso.setAlpha(0.5f);
-                } else {
-                    Toast.makeText(IngresoActivity.this, "Debe seleccionar un Puesto", Toast.LENGTH_SHORT).show();
+                String ubicacion = (String) textViewUbicacion.getText();
+                if(ubicacion.equals("Dentro del Rango")  || ubicacion.equals("Desactivada")){
+                    if (puestoSeleccionado) {
+                        dispatchTakePictureIntent();
+                        btnRegistrarIngreso.setClickable(false);
+                        btnRegistrarIngreso.setAlpha(0.5f);
+                    } else {
+                        Toast.makeText(IngresoActivity.this, "Debe seleccionar un Puesto", Toast.LENGTH_SHORT).show();
+                    }
+                }else{
+                    Toast.makeText(IngresoActivity.this, "Por favor verifique que este dentro del rango de ubicacion", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
+        } else {
+            locationStart();
+        }
+
         chequearEstadoSesion();
 
+    }
+
+    private void locationStart() {
+
+        LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        final boolean gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+        if (!gpsEnabled) {
+            Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(settingsIntent);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
+            return;
+        }
+        //mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, (LocationListener) Local);
+        mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+
+                double branchRadio = 178.0;
+                double branchLatitud = -34.40335862818175;
+                double branchLongitud = -58.64900077953637;
+
+                Location markerLocation = new Location("");
+                markerLocation.setLatitude(branchLatitud);
+                markerLocation.setLongitude(branchLongitud);
+
+                //distancia.setText("Distancia: "+loc.distanceTo(markerLocation));
+
+                if (location.distanceTo(markerLocation) < branchRadio) {
+                    textViewUbicacion.setText("Dentro del Rango");
+                    textViewUbicacion.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
+                }else{
+                    textViewUbicacion.setText("Fuera del Rango");
+                    textViewUbicacion.setTextColor(Color.RED);
+                }
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+                textViewUbicacion.setText("GPS Activado");
+                textViewUbicacion.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+                textViewUbicacion.setText("GPS Desactivado");
+                textViewUbicacion.setTextColor(Color.RED);
+            }
+        });
+
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == 1000) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                locationStart();
+                return;
+            }
+        }
     }
 
     @Override
