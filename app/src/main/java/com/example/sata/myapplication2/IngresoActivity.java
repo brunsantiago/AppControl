@@ -92,6 +92,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String ID_CLIENTE = "idCliente";
     private static final String ID_OBJETIVO = "idObjetivo";
 
+    private static final String MAP_COOR = "map_coor";
+    private static final String MAP_RADIO = "map_radio";
+
     //private static final String SESION_ID = "sesionID";
 
     // Variables de Cobertura (Nuevas)
@@ -135,6 +138,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String ASIG_FACM = "asig_facm";
     private static final String PERS_CODI = "pers_codi";
     private static final String HORA_INGRESO_TIMESTAMP = "hit";
+    private static final String DEVI_UBIC = "devi_ubic";
 
     private FirebaseFirestore database;
     private FirebaseStorage storage;
@@ -154,7 +158,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private String idObjetivo;
     private Spinner spinnerPuesto;
 
-
+    private double branchRadio;
+    private double branchLatitud;
+    private double branchLongitud;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -211,17 +217,42 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             }
         });
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
-        } else {
-            locationStart();
-        }
+        chequearUbicacion();
 
         chequearEstadoSesion();
 
     }
 
+    private void chequearUbicacion(){
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+
+        int ubicacion = prefs.getInt(DEVI_UBIC,0);
+
+        if(ubicacion==1){
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
+            } else {
+                locationStart();
+            }
+        }else {
+            textViewUbicacion.setText("Desactivada");
+            textViewUbicacion.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorNaranja));
+        }
+
+    }
+
     private void locationStart() {
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+
+        String coordenadas = prefs.getString(MAP_COOR,"");
+
+        String[] split = coordenadas.split(",");
+
+        branchRadio = prefs.getInt(MAP_RADIO,0);
+        branchLatitud = Double.parseDouble(split[0]);
+        branchLongitud = Double.parseDouble(split[1]);
 
         LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -235,14 +266,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
             return;
         }
-        //mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, (LocationListener) Local);
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-
-                double branchRadio = 178.0;
-                double branchLatitud = -34.40335862818175;
-                double branchLongitud = -58.64900077953637;
 
                 Location markerLocation = new Location("");
                 markerLocation.setLatitude(branchLatitud);
@@ -717,6 +743,10 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         String fechaIngreso = dateFormat.format(fecha);
         String horaIngreso = hourFormat.format(fecha);
         String horaIngresoTimestamp = timestampFormat.format(fecha);
+
+        Log.d(TAG, "fecha ingreso: "+fechaIngreso);
+        Log.d(TAG, "hora ingreso: "+horaIngreso);
+        Log.d(TAG, "Timestamp horaIngresoTimestamp: "+horaIngresoTimestamp);
 
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(FECHA_INGRESO,fechaIngreso);

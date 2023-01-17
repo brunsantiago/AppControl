@@ -86,6 +86,9 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private static final String ID_CLIENTE = "idCliente";
     private static final String ID_OBJETIVO = "idObjetivo";
 
+    private static final String MAP_COOR = "map_coor";
+    private static final String MAP_RADIO = "map_radio";
+
     private static final int REQUEST_TAKE_PHOTO = 1;
 
     private static final String HORA_EGRESO = "he";
@@ -105,6 +108,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private static final String PERS_CODI = "pers_codi";
     private static final String ASIG_PUES = "asig_pues";
     private static final String HORA_INGRESO_TIMESTAMP = "hit";
+    private static final String DEVI_UBIC = "devi_ubic";
 
     private FirebaseFirestore database;
     private FirebaseStorage storage;
@@ -118,6 +122,10 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private String idObjetivo;
     private TextView estadoDelIngreso;
     private FirebaseUser userAuth;
+
+    private double branchRadio;
+    private double branchLatitud;
+    private double branchLongitud;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -162,16 +170,41 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
             }
         });
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
-        } else {
-            locationStart();
-        }
+        chequearUbicacion();
 
         chequearEstadoSesion();
     }
 
+    private void chequearUbicacion(){
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+
+        int ubicacion = prefs.getInt(DEVI_UBIC,0);
+
+        if(ubicacion==1){
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
+            } else {
+                locationStart();
+            }
+        }else {
+            textViewUbicacion.setText("Desactivada");
+            textViewUbicacion.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorNaranja));
+        }
+
+    }
+
     private void locationStart() {
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+
+        String coordenadas = prefs.getString(MAP_COOR,"");
+
+        String[] split = coordenadas.split(",");
+
+        branchRadio = prefs.getInt(MAP_RADIO,0);
+        branchLatitud = Double.parseDouble(split[0]);
+        branchLongitud = Double.parseDouble(split[1]);
 
         LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -189,10 +222,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-
-                double branchRadio = 178.0;
-                double branchLatitud = -34.40335862818175;
-                double branchLongitud = -58.64900077953637;
 
                 Location markerLocation = new Location("");
                 markerLocation.setLatitude(branchLatitud);

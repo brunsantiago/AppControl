@@ -475,7 +475,7 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
 
             String ISO_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
             SimpleDateFormat sdf = new SimpleDateFormat(ISO_FORMAT);
-            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT-3:00"));
 
             Date date = null;
             try {

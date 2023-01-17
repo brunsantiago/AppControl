@@ -49,6 +49,9 @@ public class LoginActivity extends AppCompatActivity {
     private static final String NOMBRE_PERSONAL = "an";
     private static final String PERS_CODI = "pers_codi";
     private static final String USER_PROFILE = "user_profile";
+    private static final String MAP_COOR = "map_coor";
+    private static final String MAP_RADIO = "map_radio";
+    private static final String DEVI_UBIC = "devi_ubic";
 
     private TextView textViewNroLegajo;
     private TextView textViewClave;
@@ -306,6 +309,9 @@ public class LoginActivity extends AppCompatActivity {
                                         nombreObjetivo = jsonObject.getString("DEVI_NOBJ");
                                         String idCliente = jsonObject.getString("DEVI_CCLI");
                                         String idObjetivo = jsonObject.getString("DEVI_COBJ");
+                                        int ubicacion = jsonObject.getInt("DEVI_UBIC");
+                                        String mapCoordenada = jsonObject.getString("DEVI_COOR");
+                                        int mapRadio = jsonObject.getInt("DEVI_RADI");
 
                                         SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
 
@@ -314,6 +320,9 @@ public class LoginActivity extends AppCompatActivity {
                                         editor.putString(NOMBRE_OBJETIVO, nombreObjetivo);
                                         editor.putString(ID_CLIENTE, idCliente);
                                         editor.putString(ID_OBJETIVO, idObjetivo);
+                                        editor.putInt(DEVI_UBIC, ubicacion);
+                                        editor.putString(MAP_COOR, mapCoordenada);
+                                        editor.putInt(MAP_RADIO, mapRadio);
                                         editor.putString(ID_ANDROID, idAndroid);
                                         editor.apply();
                                         loadLoginActivity();
