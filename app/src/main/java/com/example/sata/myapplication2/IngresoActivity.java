@@ -29,6 +29,7 @@ import androidx.core.content.FileProvider;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.provider.Settings;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -38,6 +39,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -45,6 +47,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -77,7 +80,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Locale;
+import java.util.Map;
 
 
 public class IngresoActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,ResultListener<Date>{
@@ -117,12 +122,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String NRO_LEGAJO = "nl";
     private static final String NOMBRE_PERSONAL = "an";
     private static final String ESTADO_SESION = "es";
-    //private static final String ULTIMA_SESION = "ul";
-    //private static final String UL_NOMBRE_CLIENTE = "nc";
-    //private static final String UL_NOMBRE_OBJETIVO = "no";
-    //private static final String UL_PATH_TURNO = "pt";
-    //private static final String UL_FECHA_PUESTO = "fp";
-    ///private static final String UL_SESION_ID = "si";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final String ASIG_OBJE = "asig_obje";
@@ -248,61 +247,82 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
         String coordenadas = prefs.getString(MAP_COOR,"");
 
-        String[] split = coordenadas.split(",");
+        String[] split = new String[0];
 
-        branchRadio = prefs.getInt(MAP_RADIO,0);
-        branchLatitud = Double.parseDouble(split[0]);
-        branchLongitud = Double.parseDouble(split[1]);
+        if (coordenadas != null && coordenadas.contains(",") && coordenadas.length()>=3 ) {
+            split = coordenadas.split(",");
+            branchRadio = prefs.getInt(MAP_RADIO, 0);
+            // Si la lat y lon son numericos continua
+            if (isNumeric(split[0]) && isNumeric(split[1])){
+                branchLatitud = Double.parseDouble(split[0]);
+                branchLongitud = Double.parseDouble(split[1]);
+                LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                final boolean gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
-        final boolean gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-        if (!gpsEnabled) {
-            Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(settingsIntent);
-        }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
-            return;
-        }
-        mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-
-                Location markerLocation = new Location("");
-                markerLocation.setLatitude(branchLatitud);
-                markerLocation.setLongitude(branchLongitud);
-
-                //distancia.setText("Distancia: "+loc.distanceTo(markerLocation));
-
-                if (location.distanceTo(markerLocation) < branchRadio) {
-                    textViewUbicacion.setText("Dentro del Rango");
-                    textViewUbicacion.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
-                }else{
-                    textViewUbicacion.setText("Fuera del Rango");
-                    textViewUbicacion.setTextColor(Color.RED);
+                if (!gpsEnabled) {
+                    Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(settingsIntent);
                 }
-            }
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
+                    return;
+                }
+                mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location) {
 
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
+                        Location markerLocation = new Location("");
+                        markerLocation.setLatitude(branchLatitud);
+                        markerLocation.setLongitude(branchLongitud);
 
-            }
+                        //distancia.setText("Distancia: "+loc.distanceTo(markerLocation));
 
-            @Override
-            public void onProviderEnabled(String provider) {
-                textViewUbicacion.setText("GPS Activado");
-                textViewUbicacion.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
-            }
+                        if (location.distanceTo(markerLocation) < branchRadio) {
+                            textViewUbicacion.setText("Dentro del Rango");
+                            textViewUbicacion.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
+                        } else {
+                            textViewUbicacion.setText("Fuera del Rango");
+                            textViewUbicacion.setTextColor(Color.RED);
+                        }
+                    }
 
-            @Override
-            public void onProviderDisabled(String provider) {
-                textViewUbicacion.setText("GPS Desactivado");
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String provider) {
+                        textViewUbicacion.setText("GPS Activado");
+                        textViewUbicacion.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String provider) {
+                        textViewUbicacion.setText("GPS Desactivado");
+                        textViewUbicacion.setTextColor(Color.RED);
+                    }
+                });
+
+            }else{
+                textViewUbicacion.setText("Coordenadas Objetivo Incorrectas");
                 textViewUbicacion.setTextColor(Color.RED);
             }
-        });
 
+        }else{
+            textViewUbicacion.setText("Coordenadas Objetivo Incorrectas");
+            textViewUbicacion.setTextColor(Color.RED);
+        }
+    }
+
+    public static boolean isNumeric(String s) {
+        try {
+            Double.parseDouble(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -364,6 +384,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                           prefs.getString(FECHA_PUESTO,"")+"/"+
                                           prefs.getString(HORA_INGRESO_TIMESTAMP,"");
                     subirArchivoImageView(path);
+                    uploadImage();
                 }
             }, new Response.ErrorListener() {
                 @Override
@@ -669,6 +690,54 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
             }
         });
+    }
+
+    public String getStringImagen(){
+        // Get the data from an ImageView as bytes
+        imageViewCamara.setDrawingCacheEnabled(true);
+        imageViewCamara.buildDrawingCache();
+        Bitmap bitmap = ((BitmapDrawable) imageViewCamara.getDrawable()).getBitmap();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes  = baos.toByteArray();
+        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        return encodedImage;
+    }
+
+    public void uploadImage() {
+        String KEY_IMAGE = "key_image";
+        String KEY_NOMBRE = "key_nombre";
+        String UPLOAD_URL = "";
+        //final ProgressDialog loading = ProgressDialog.show(this, "Subiendo...", "Espere por favor");
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, UPLOAD_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        //loading.dismiss();
+                        Toast.makeText(IngresoActivity.this, "Imagen cargada exitosamente", Toast.LENGTH_LONG).show();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //loading.dismiss();
+                Toast.makeText(IngresoActivity.this, "Imagen no cargada", Toast.LENGTH_LONG).show();
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                String imagen = getStringImagen();
+                String nombre = "foto_prueba";
+
+                Map<String, String> params = new Hashtable<String, String>();
+                params.put(KEY_IMAGE, imagen);
+                params.put(KEY_NOMBRE, nombre);
+
+                return params;
+            }
+        };
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
     }
 
     public void showRegisterAlert(){
