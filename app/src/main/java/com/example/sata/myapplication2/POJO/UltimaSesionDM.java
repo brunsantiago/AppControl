@@ -17,6 +17,8 @@ public class UltimaSesionDM {
     private String LAST_NOBJ;
     private String LAST_DHRE;
     private String LAST_TIME;
+    private String LAST_ASID;
+
 
     public int getLAST_CCLI() {
         return LAST_CCLI;
@@ -130,5 +132,11 @@ public class UltimaSesionDM {
         this.LAST_TIME = LAST_TIME;
     }
 
+    public String getLAST_ASID() {
+        return LAST_ASID;
+    }
 
+    public void setLAST_ASID(String LAST_ASID) {
+        this.LAST_ASID = LAST_ASID;
+    }
 }

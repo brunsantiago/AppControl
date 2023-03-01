@@ -4,7 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.TextAppearanceSpan;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -61,7 +64,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String ESTADO_SESION = "es";
     private AppBarConfiguration mAppBarConfiguration;
@@ -89,6 +92,17 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
         navigationView.getMenu().getItem(0).setChecked(true);
+
+        Menu menu = navigationView.getMenu();
+        MenuItem titleNav = menu.findItem(R.id.titleNav);
+        MenuItem titleDisp = menu.findItem(R.id.titleDisp);
+        SpannableString sTitleNav = new SpannableString(titleNav.getTitle());
+        SpannableString sTitleDisp = new SpannableString(titleDisp.getTitle());
+        sTitleNav.setSpan(new TextAppearanceSpan(this, R.style.NavigationDrawerTitle), 0, sTitleNav.length(), 0);
+        sTitleDisp.setSpan(new TextAppearanceSpan(this, R.style.NavigationDrawerTitle), 0, sTitleDisp.length(), 0);
+        titleNav.setTitle(sTitleNav);
+        titleDisp.setTitle(sTitleDisp);
+        navigationView.setNavigationItemSelectedListener(this);
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -144,4 +158,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        return false;
+    }
 }

@@ -343,6 +343,7 @@ public class LoginActivity extends AppCompatActivity {
                                 showDeviceErrorAlert();
                             }
                         }
+                        progressDialog.dismiss();
                     }else{
                         loadLoginActivity();
                     }
@@ -360,6 +361,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loadLoginActivity(){
+        progressDialog.dismiss();
         Intent intent = new Intent(LoginActivity.this,MainActivity.class);
         startActivity(intent);
         finish();

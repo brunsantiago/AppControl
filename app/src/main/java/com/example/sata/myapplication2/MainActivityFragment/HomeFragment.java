@@ -99,6 +99,7 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
     private static final String PERS_CODI = "pers_codi";
     private static final String HORA_INGRESO_TIMESTAMP = "hit";
     private static final String ASIG_PUES = "asig_pues";
+    private static final String ASIG_ID = "asig_id";
 
     private FirebaseFirestore database;
 
@@ -155,8 +156,6 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
         backgroundCounter = root.findViewById(R.id.backgroundCounter);
         mProgressBar = root.findViewById(R.id.progress_circular);
 
-        cargarDatosPantallaPrincipal(root);
-
         btnIngreso = root.findViewById(R.id.cardViewIngresar);
         btnEgreso = root.findViewById(R.id.cardViewEgresar);
         btnNovedad = root.findViewById(R.id.cardViewNovedad);
@@ -166,6 +165,8 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
         backgroundCounter = root.findViewById(R.id.backgroundCounter);
         textViewStatus = root.findViewById(R.id.textViewStatus);
         mProgressBar = root.findViewById(R.id.progress_circular);
+
+        cargarDatosPantallaPrincipal(root);
 
         btnIngreso.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -295,15 +296,16 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
 
         if(nombreCliente==null || nombreObjetivo==null){
             datosObjetivo.setText("Sin Asignar");
-            datosObjetivo.setTextColor(ContextCompat.getColor(getContext(), R.color.colorNaranja));
-            ((MainActivity)getActivity()).setNavigationHeaderData(nombre,"Objetivo no asignado");
+            //datosObjetivo.setTextColor(ContextCompat.getColor(getContext(), R.color.colorNaranja));
+            datosObjetivo.setTextColor(ContextCompat.getColor(getContext(), R.color.colorBlanco));
+            ((MainActivity)getActivity()).setNavigationHeaderData(nombre,"OBJETIVO SIN ASIGNAR");
             disableButtons();
+            progressDialog.dismiss();
         }else{
             datosObjetivo.setText((nombreCliente+" - "+nombreObjetivo).toUpperCase());
             ((MainActivity)getActivity()).setNavigationHeaderData(nombre,nombreCliente+" - "+nombreObjetivo);
+            initTrueTime();
         }
-
-        initTrueTime();
 
     }
 
@@ -351,6 +353,7 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
                                     ultimaSesion.setLAST_NOBJ(jsonObject.getString("LAST_NOBJ"));
                                     ultimaSesion.setLAST_DHRE(jsonObject.getString("LAST_DHRE"));
                                     ultimaSesion.setLAST_TIME(jsonObject.getString("LAST_TIME"));
+                                    ultimaSesion.setLAST_ASID(jsonObject.getString("LAST_ASID"));
                                     //ultimaSesion.setLAST_DHPA(jsonObject.getString("LAST_DHPA"));
                                     cargaUltimaSesion(ultimaSesion);
 
@@ -473,32 +476,35 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
 
             showSesionVigenteAlert();
 
-            String ISO_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
-            SimpleDateFormat sdf = new SimpleDateFormat(ISO_FORMAT);
-            sdf.setTimeZone(TimeZone.getTimeZone("GMT-3:00"));
-
-            Date date = null;
-            try {
-                date = sdf.parse(ultimaSesion.getLAST_TIME());
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
-            SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-            String horaIngresoTimestamp = timestampFormat.format(date);
+//            String ISO_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+//            SimpleDateFormat sdf = new SimpleDateFormat(ISO_FORMAT);
+//            sdf.setTimeZone(TimeZone.getTimeZone("GMT-3:00"));
+//
+//            Date date = null;
+//            try {
+//                date = sdf.parse(ultimaSesion.getLAST_TIME());
+//            } catch (ParseException e) {
+//                e.printStackTrace();
+//            }
+//
+//            SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+//            String horaIngresoTimestamp = timestampFormat.format(date);
+//
+//            Log.d(TAG, "obtenerTurno: "+horaIngresoTimestamp);
 
             editor.putBoolean(ESTADO_SESION,true);
             editor.putInt(ASIG_PUES,ultimaSesion.getLAST_PUES());
             editor.putString(FECHA_PUESTO,dateToString(ultimaSesion.getLAST_FECH()));
             editor.putString(INGRESO_PUESTO,ultimaSesion.getLAST_DHOR());
             editor.putString(HORA_INGRESO,ultimaSesion.getLAST_DHRE());
-            editor.putString(HORA_INGRESO_TIMESTAMP,horaIngresoTimestamp);
+            //editor.putString(HORA_INGRESO_TIMESTAMP,horaIngresoTimestamp);
+            editor.putString(HORA_INGRESO_TIMESTAMP,ultimaSesion.getLAST_TIME());
             editor.putString(FECHA_INGRESO,dateToString(ultimaSesion.getLAST_FECH())); // Deberia ir la fecha de ingreso real, se coloca la FECHA PUESTO
             editor.putString(HORA_EGRESO,ultimaSesion.getLAST_HHOR());
-
             editor.putString(EGRESO_PUESTO,ultimaSesion.getLAST_HHOR());
             editor.putBoolean(TURNO_NOCHE,esTurnoNoche(ultimaSesion.getLAST_DHOR(),ultimaSesion.getLAST_HHOR()));
             editor.putString(NOMBRE_PUESTO,ultimaSesion.getLAST_NPUE());
+            editor.putString(ASIG_ID,ultimaSesion.getLAST_ASID());
 
             editor.apply();
             textViewStatus.setText("Registrado en el Objetivo");

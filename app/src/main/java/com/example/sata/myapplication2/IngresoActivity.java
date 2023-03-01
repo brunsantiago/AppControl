@@ -138,6 +138,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String PERS_CODI = "pers_codi";
     private static final String HORA_INGRESO_TIMESTAMP = "hit";
     private static final String DEVI_UBIC = "devi_ubic";
+    private static final String ASIG_ID = "asig_id";
 
     private FirebaseFirestore database;
     private FirebaseStorage storage;
@@ -376,15 +377,31 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL, null, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    showRegisterAlert();
-                    registrarUltimaSesion();
-                    String path = "CAPTURAS/"+
-                                          prefs.getString(ID_CLIENTE,"")+"/"+
-                                          prefs.getString(ID_OBJETIVO,"")+"/"+
-                                          prefs.getString(FECHA_PUESTO,"")+"/"+
-                                          prefs.getString(HORA_INGRESO_TIMESTAMP,"");
-                    subirArchivoImageView(path);
-                    uploadImage();
+                    String result, asigId="";
+                    try {
+                        result = response.getString("result");
+                        asigId = response.getString("asigId");
+                        if(result.equals("1")){
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putString(ASIG_ID, asigId);
+                            editor.apply();
+                            showRegisterAlert();
+                            registrarUltimaSesion();
+                            String path = "CAPTURAS/"+
+                                    prefs.getString(ID_CLIENTE,"")+"/"+
+                                    prefs.getString(ID_OBJETIVO,"")+"/"+
+                                    prefs.getString(FECHA_PUESTO,"")+"/"+
+                                    prefs.getString(HORA_INGRESO_TIMESTAMP,"");
+                            subirArchivoImageView(path);
+                            uploadImage();
+                        }else{
+                            Toast.makeText(IngresoActivity.this, "Error al cargar ingreso", Toast.LENGTH_SHORT).show();
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
                 }
             }, new Response.ErrorListener() {
                 @Override
@@ -436,6 +453,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             jsonBody.put("last_ncli", prefs.getString(NOMBRE_CLIENTE,""));
             jsonBody.put("last_nobj", prefs.getString(NOMBRE_OBJETIVO,""));
             jsonBody.put("last_dhre", prefs.getString(HORA_INGRESO,""));
+            jsonBody.put("last_asid", prefs.getString(ASIG_ID,""));
             final String requestBody = jsonBody.toString();
 
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL, null, new Response.Listener<JSONObject>() {
@@ -551,7 +569,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             progressDialog.dismiss();
         }
     }
-
 
     public void addPuestos(PuestoDM nuevoPuesto, Date fechaHoraIngreso){
         SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -701,12 +718,13 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] imageBytes  = baos.toByteArray();
         String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        Log.d(TAG, "getStringImagen: "+bitmap);
         return encodedImage;
     }
 
     public void uploadImage() {
-        String KEY_IMAGE = "key_image";
-        String KEY_NOMBRE = "key_nombre";
+        String KEY_IMAGE = "file";
+        String KEY_NOMBRE = "nombre";
         String UPLOAD_URL = "";
         //final ProgressDialog loading = ProgressDialog.show(this, "Subiendo...", "Espere por favor");
         StringRequest stringRequest = new StringRequest(Request.Method.POST, UPLOAD_URL,
@@ -714,13 +732,13 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                     @Override
                     public void onResponse(String response) {
                         //loading.dismiss();
-                        Toast.makeText(IngresoActivity.this, "Imagen cargada exitosamente", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(IngresoActivity.this, "Imagen cargada exitosamente", Toast.LENGTH_LONG).show();
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 //loading.dismiss();
-                Toast.makeText(IngresoActivity.this, "Imagen no cargada", Toast.LENGTH_LONG).show();
+                //Toast.makeText(IngresoActivity.this, "Imagen no cargada", Toast.LENGTH_LONG).show();
             }
         }){
             @Override
@@ -730,7 +748,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
                 Map<String, String> params = new Hashtable<String, String>();
                 params.put(KEY_IMAGE, imagen);
-                params.put(KEY_NOMBRE, nombre);
+                //params.put(KEY_NOMBRE, nombre);
 
                 return params;
             }

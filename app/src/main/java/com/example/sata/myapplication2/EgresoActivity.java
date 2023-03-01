@@ -109,6 +109,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private static final String ASIG_PUES = "asig_pues";
     private static final String HORA_INGRESO_TIMESTAMP = "hit";
     private static final String DEVI_UBIC = "devi_ubic";
+    private static final String ASIG_ID = "asig_id";
 
     private FirebaseFirestore database;
     private FirebaseStorage storage;
@@ -284,10 +285,12 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
 
         int asigPues = prefs.getInt(ASIG_PUES,0);
         String persCodi = prefs.getString(PERS_CODI,"");
-        String timestamp = prefs.getString(HORA_INGRESO_TIMESTAMP,"");
+        //String timestamp = prefs.getString(HORA_INGRESO_TIMESTAMP,"");
+        String asigId = prefs.getString(ASIG_ID,"");
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String URL = Configurador.API_PATH + "asigvigi/"+asigPues+"/"+persCodi+"/"+timestamp;
+        //String URL = Configurador.API_PATH + "asigvigi/"+asigPues+"/"+persCodi+"/"+timestamp;
+        String URL = Configurador.API_PATH + "asigvigi/"+asigId;
         JSONObject jsonBody = new JSONObject();
 
         try {

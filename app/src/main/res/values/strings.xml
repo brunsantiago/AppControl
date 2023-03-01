@@ -13,11 +13,11 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
-    <string name="menu_config">Configuracion</string>
+    <string name="menu_config">Solicitar Vinculacion</string>
     <string name="menu_inicio">Inicio</string>
     <string name="menu_salir">Salir</string>
-    <string name="nav_header_title">BRUN SANTIAGO</string>
-    <string name="nav_header_subtitle">DIA - 143</string>
+    <string name="nav_header_title"></string>
+    <string name="nav_header_subtitle"></string>
     <string name="nav_header_desc">Navigation header</string>
 
     <string name="hello_first_fragment">Hello first fragment</string>
