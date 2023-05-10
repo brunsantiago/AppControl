@@ -1,18 +1,27 @@
 package com.example.sata.myapplication2;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,24 +33,42 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.BaseTarget;
+import com.bumptech.glide.request.target.SizeReadyCallback;
+import com.bumptech.glide.request.transition.Transition;
 import com.example.sata.myapplication2.AlertDialog.RegisterAlert;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.face.Face;
+import com.google.mlkit.vision.face.FaceDetection;
+import com.google.mlkit.vision.face.FaceDetector;
+import com.google.mlkit.vision.face.FaceDetectorOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
 public class RegistroActivity extends AppCompatActivity {
-
-    //private static final String API_PATH = "http://192.168.1.8:3000/api/";
-    //private static final String API_PATH = "http://186.182.25.11:3000/api/";
 
     private TextView textViewVolverLogin;
     private EditText editTextNroLegajo;
@@ -49,10 +76,26 @@ public class RegistroActivity extends AppCompatActivity {
     private EditText editTextFechaNac;
     private EditText editTextClave;
     private EditText editTextReingreseClave;
+    private ImageButton btnTakePhoto;
     private Button btnRegistrar;
     private Calendar calendar;
     private ProgressDialog progressDialog = null;
     private DatePickerDialog datePickerDialog;
+
+    private ImageView imageViewPhoto;
+
+    private static final String NRO_LEGAJO = "nl";
+    private Uri photoURI;
+    private String currentPhotoPath;
+    private static final int REQUEST_TAKE_PHOTO = 1;
+    private FirebaseStorage storage;
+    private FaceDetector detector;
+    private FaceDetectorOptions highAccuracyOpts = new FaceDetectorOptions.Builder()
+            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
+            .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
+            .build();
+    private boolean faceDetection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,8 +117,14 @@ public class RegistroActivity extends AppCompatActivity {
         editTextFechaNac = findViewById(R.id.editTextFechaNac);
         editTextClave = findViewById(R.id.editTextClave);
         editTextReingreseClave = findViewById(R.id.editTextReingreseClave);
+        btnTakePhoto = findViewById(R.id.btnTakePhoto);
         btnRegistrar = findViewById(R.id.btnRegistrar);
         textViewVolverLogin = findViewById(R.id.volverLogin);
+
+        storage = FirebaseStorage.getInstance();
+        imageViewPhoto = findViewById(R.id.imageView3);
+        detector = FaceDetection.getClient(highAccuracyOpts);
+        faceDetection=false;
 
         DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
             @Override
@@ -106,6 +155,13 @@ public class RegistroActivity extends AppCompatActivity {
         progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         progressDialog.setCancelable(false);
 
+        btnTakePhoto.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                dispatchTakePictureIntent();
+            }
+        });
+
         btnRegistrar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -125,12 +181,100 @@ public class RegistroActivity extends AppCompatActivity {
             }
         });
 
+        clearFormRegister();
+
     }
 
     @Override
     protected void onResume() {
-        clearFormRegister();
+        //clearFormRegister();
         super.onResume();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
+            cargarImagen();
+        }
+    }
+
+    public void cargarImagen(){
+        RequestOptions requestOptions = new RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.NONE) // because file name is always same
+                .skipMemoryCache(true);
+
+        Glide.with(getApplicationContext())
+                .load(currentPhotoPath)
+                .apply(requestOptions)
+                .into(new BaseTarget<Drawable>() {
+                    @Override
+                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                        imageViewPhoto.setImageDrawable(resource);
+                        Bitmap bitmap = ((BitmapDrawable) resource).getBitmap();
+                        faceVerification(bitmap);
+                    }
+                    @Override
+                    public void getSize(@NonNull SizeReadyCallback cb) {
+                        cb.onSizeReady(200, 200);
+                    }
+                    @Override
+                    public void removeCallback(@NonNull SizeReadyCallback cb) {
+                    }
+                })
+        ;
+    }
+
+    private void uploadProfilePhoto(Bitmap bitmap){
+        String path = "USERS/PROFILE_PHOTO/"+editTextNroLegajo.getText();
+        StorageReference storageRef = storage.getReference();
+        StorageReference photoRef = storageRef.child(path+"/"+photoURI.getLastPathSegment());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+        UploadTask uploadTask = photoRef.putBytes(data);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+            }
+        });
+    }
+
+    private void faceVerification(Bitmap input){
+
+        InputImage image = InputImage.fromBitmap(input, 0);
+        Task<List<Face>> result =
+                detector.process(image)
+                        .addOnSuccessListener(
+                                new OnSuccessListener<List<Face>>() {
+                                    @Override
+                                    public void onSuccess(List<Face> faces) {
+                                        if(faces.size() == 0){
+                                            Toast.makeText(RegistroActivity.this, "No se detectaron caras en la foto tomada", Toast.LENGTH_SHORT).show();
+                                            faceDetection=false;
+                                        }else if(faces.size() > 1){
+                                            Toast.makeText(RegistroActivity.this, "Se detecto mas de una cara en la foto tomada", Toast.LENGTH_SHORT).show();
+                                            faceDetection=false;
+                                        }else{
+                                            faceDetection=true;
+                                        }
+                                    }
+                                })
+                        .addOnFailureListener(
+                                new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        // Task failed with an exception
+                                        // ...
+
+                                    }
+                                });
+
     }
 
     private void registrarUsuario(String persCodi, String nroLegajo, String clave) {
@@ -153,6 +297,10 @@ public class RegistroActivity extends AppCompatActivity {
                         if(response.getInt("result")==1){
                             showRegisterAlert();
                             progressDialog.dismiss();
+                            imageViewPhoto.setDrawingCacheEnabled(true);
+                            imageViewPhoto.buildDrawingCache();
+                            Bitmap bitmap = ((BitmapDrawable) imageViewPhoto.getDrawable()).getBitmap();
+                            uploadProfilePhoto(bitmap);
                         }else{
                             Toast.makeText(RegistroActivity.this, "Usuario ya registrado", Toast.LENGTH_SHORT).show();
                             progressDialog.dismiss();
@@ -269,6 +417,16 @@ public class RegistroActivity extends AppCompatActivity {
             return false;
         }
 
+        if(editTextClave.getText().length()<4){
+            Toast.makeText(this, "Por favor verifique que la clave ingresada sea igual o mayor a cuatro caracteres", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if(!faceDetection){
+            Toast.makeText(this, "Por favor verifique que la foto este bien tomada", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
         return true;
     }
 
@@ -334,6 +492,41 @@ public class RegistroActivity extends AppCompatActivity {
         editTextFechaNac.setText("");
         editTextClave.setText("");
         editTextReingreseClave.setText("");
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String imageFileName = editTextNroLegajo.getText()+"_profile_photo.jpg";
+        File storageDir = getApplicationContext().getCacheDir();
+        File imageFile = new File(storageDir, imageFileName);
+        if (!imageFile.createNewFile()) {
+            imageFile.delete();
+            imageFile = new File(storageDir, imageFileName);
+        }
+        currentPhotoPath = imageFile.getAbsolutePath();
+        return imageFile;
+    }
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+            }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                photoURI = FileProvider.getUriForFile(this,
+                        "com.example.android.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+            }
+        }
     }
 
 }

@@ -29,6 +29,7 @@ public class RegisterAlert extends DialogFragment {
                         if(tipoRegistro.equals("registro")){
                             Intent intent = new Intent(getContext(), LoginActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                             startActivity(intent);
+                            getActivity().finish();
                         }
                     }
                 });

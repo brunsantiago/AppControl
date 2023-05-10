@@ -4,8 +4,11 @@ package com.example.sata.myapplication2;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,16 +34,22 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.sata.myapplication2.AlertDialog.DeviceAlertError;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 
@@ -67,6 +76,9 @@ public class LoginActivity extends AppCompatActivity {
     private static final String ID_OBJETIVO = "idObjetivo";
     private static final String ID_ANDROID = "androidId";
 
+    private FirebaseStorage storage;
+    private static final String PROFILE_PHOTO = "ProfilePhotoPath";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +89,8 @@ public class LoginActivity extends AppCompatActivity {
         textViewClave = findViewById(R.id.clave);
         botonIngresar = findViewById(R.id.ingresar);
         textViewRegistrarse = findViewById(R.id.registrarse);
+
+        storage = FirebaseStorage.getInstance();
 
         progressDialog = new ProgressDialog(LoginActivity.this);
         progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
@@ -343,7 +357,7 @@ public class LoginActivity extends AppCompatActivity {
                                 showDeviceErrorAlert();
                             }
                         }
-                        progressDialog.dismiss();
+                        //progressDialog.dismiss();
                     }else{
                         loadLoginActivity();
                     }
@@ -361,10 +375,11 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loadLoginActivity(){
-        progressDialog.dismiss();
-        Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-        startActivity(intent);
-        finish();
+        downloadProfilePhoto();
+//        progressDialog.dismiss();
+//        Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+//        startActivity(intent);
+//        finish();
     }
 
     private void showDeviceErrorAlert(){
@@ -376,6 +391,66 @@ public class LoginActivity extends AppCompatActivity {
         botonIngresar.setClickable(true);
         textViewNroLegajo.setText("");
         textViewClave.setText("");
+    }
+
+    private void downloadProfilePhoto(){
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+        String nroLegajo = prefs.getString(NRO_LEGAJO,"");
+        String fileName = nroLegajo+"_profile_photo.jpg";
+
+        StorageReference photoRef = storage.getReference()
+                .child("USERS")
+                .child("PROFILE_PHOTO")
+                .child(nroLegajo)
+                .child(fileName);
+        photoRef.getBytes(600*600)
+                .addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                    @Override
+                    public void onSuccess(byte[] bytes) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+                        //imageViewDownload.setImageBitmap(bitmap);
+                        saveToInternalStorage(bitmap);
+                        //loadImageFromStorage(path);
+                    }
+                });
+    }
+
+    private void saveToInternalStorage(Bitmap bitmapImage){
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        // path to /data/data/yourapp/app_data/imageDir
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        // Create imageDir
+        File mypath = new File(directory,"profile.jpg");
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        editor.putString(PROFILE_PHOTO, directory.getAbsolutePath());
+        editor.apply();
+
+        loadMainActivity();
+    }
+
+    private void loadMainActivity(){
+        progressDialog.dismiss();
+        Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
 }

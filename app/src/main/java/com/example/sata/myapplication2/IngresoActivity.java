@@ -2,13 +2,19 @@
 package com.example.sata.myapplication2;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -57,23 +63,34 @@ import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.sata.myapplication2.AlertDialog.RegisterAlert;
 import com.example.sata.myapplication2.AlertDialog.PuestoVencidoAlert;
+import com.example.sata.myapplication2.FaceRecognition.FaceClassifier;
+import com.example.sata.myapplication2.FaceRecognition.TFLiteFaceRecognition;
 import com.example.sata.myapplication2.POJO.HoraRegistrada;
 import com.example.sata.myapplication2.POJO.PuestoAdapter;
 import com.example.sata.myapplication2.POJO.PuestoDM;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.face.Face;
+import com.google.mlkit.vision.face.FaceDetection;
+import com.google.mlkit.vision.face.FaceDetector;
+import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.instacart.library.truetime.TrueTime;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
@@ -81,14 +98,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 
 public class IngresoActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,ResultListener<Date>{
-
-    //private static final String API_PATH = "http://192.168.1.8:3000/api/";
-    //private static final String API_PATH = "http://186.182.25.11:3000/api/";
 
     private static final String TAG = "Ingreso Activity";
 
@@ -99,6 +114,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
     private static final String MAP_COOR = "map_coor";
     private static final String MAP_RADIO = "map_radio";
+
+    private static final String PROFILE_PHOTO = "ProfilePhotoPath";
 
     //private static final String SESION_ID = "sesionID";
 
@@ -139,6 +156,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String HORA_INGRESO_TIMESTAMP = "hit";
     private static final String DEVI_UBIC = "devi_ubic";
     private static final String ASIG_ID = "asig_id";
+    private static final String ASIG_VENC = "asig_venc";
 
     private FirebaseFirestore database;
     private FirebaseStorage storage;
@@ -148,6 +166,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private Uri photoURI;
     private String currentPhotoPath;
     private ImageView imageViewCamara;
+    private ImageView imageViewDownload;
     private ArrayList<String> nombrePuestos;
     private ArrayList<PuestoDM> listaDePuestos;
 
@@ -161,6 +180,18 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private double branchRadio;
     private double branchLatitud;
     private double branchLongitud;
+
+    // TODO declare face detector
+    FaceDetector detector;
+
+    FaceDetectorOptions highAccuracyOpts = new FaceDetectorOptions.Builder()
+                    .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+                    .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
+                    .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
+                    .build();
+
+    // TODO declare face recognizer
+    FaceClassifier faceClassifier;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -217,9 +248,139 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             }
         });
 
+        //TODO initialize face detector
+        detector = FaceDetection.getClient(highAccuracyOpts);
+
+        //TODO initialize face recognition model
+        try {
+            faceClassifier = TFLiteFaceRecognition.create(getAssets(),"facenet.tflite",160,false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         chequearUbicacion();
 
         chequearEstadoSesion();
+
+        faceRegistration();
+
+    }
+
+
+    private Bitmap loadImageFromStorage(){
+        Bitmap bitmap = null;
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        String profilePhotoPath = prefs.getString(PROFILE_PHOTO, "");
+        try {
+            File f = new File(profilePhotoPath, "profile.jpg");
+            bitmap = BitmapFactory.decodeStream(new FileInputStream(f));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    public Bitmap croppedFace(Rect bound, Bitmap input){
+        if(bound.top < 0){
+            bound.top = 0;
+        }
+        if(bound.left < 0){
+            bound.left = 0;
+        }
+        if(bound.right > input.getWidth()){
+            bound.right = input.getWidth()-1;
+        }
+        if(bound.bottom > input.getHeight()){
+            bound.bottom = input.getHeight()-1;
+        }
+        Bitmap croppedFace = Bitmap.createBitmap(input,bound.left,bound.top,bound.width(),bound.height());
+        croppedFace = Bitmap.createScaledBitmap(croppedFace,160,160,false);
+        return croppedFace;
+    }
+
+    private void faceRegistration(){
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        String name = prefs.getString(NOMBRE_PERSONAL, "");
+        Bitmap input = loadImageFromStorage();
+        InputImage image = InputImage.fromBitmap(input, 0);
+        Task<List<Face>> result =
+                detector.process(image)
+                        .addOnSuccessListener(
+                                new OnSuccessListener<List<Face>>() {
+                                    @Override
+                                    public void onSuccess(List<Face> faces) {
+
+                                        if(faces.size() == 0){
+                                            Log.d(TAG, "No se detectaron caras en la registracion");
+                                        }else if(faces.size() > 1){
+                                            Log.d(TAG, "Se detecto mas de una cara en la registracion");
+                                        }else{
+                                            for (Face face : faces) {
+                                                Rect bounds = face.getBoundingBox();
+                                                Bitmap bitmap = croppedFace(bounds,input);
+                                                FaceClassifier.Recognition recognitionRegistration = faceClassifier.recognizeImage(bitmap,true);
+                                                faceClassifier.register(name,recognitionRegistration);
+                                            }
+                                        }
+
+                                    }
+                                })
+                        .addOnFailureListener(
+                                new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        // Task failed with an exception
+                                        // ...
+                                    }
+                                });
+
+
+    }
+
+    private void faceVerification(Bitmap input){
+
+        InputImage image = InputImage.fromBitmap(input, 0);
+        Task<List<Face>> result =
+                detector.process(image)
+                        .addOnSuccessListener(
+                                new OnSuccessListener<List<Face>>() {
+                                    @Override
+                                    public void onSuccess(List<Face> faces) {
+                                        if(faces.size() == 0){
+                                            Toast.makeText(IngresoActivity.this, "No se detecto un rostro en la registracion. Por favor vuelva a intentarlo", Toast.LENGTH_SHORT).show();
+                                            btnRegistrarIngreso.setAlpha(1.0f);
+                                            btnRegistrarIngreso.setClickable(true);
+                                        }else if(faces.size() > 1){
+                                            Toast.makeText(IngresoActivity.this, "Se detecto mas de un rostro en la registracion. Por favor vuelva a intentarlo", Toast.LENGTH_SHORT).show();
+                                            btnRegistrarIngreso.setAlpha(1.0f);
+                                            btnRegistrarIngreso.setClickable(true);
+                                        }else{
+                                            for (Face face : faces) {
+                                                Rect bounds = face.getBoundingBox();
+                                                Bitmap bitmap = croppedFace(bounds,input);
+                                                FaceClassifier.Recognition recognitionVerification = faceClassifier.recognizeImage(bitmap,false);
+                                                if(recognitionVerification.getDistance()<=0.85){
+                                                    registrarIngreso();
+                                                    //Toast.makeText(IngresoActivity.this, "Distancia del modelo = "+recognitionVerification.getDistance(), Toast.LENGTH_SHORT).show();
+                                                }else{
+                                                    Toast.makeText(IngresoActivity.this, "No se pudo reconocer el rostro. Por favor vuelva a intentarlo "+recognitionVerification.getDistance(), Toast.LENGTH_SHORT).show();
+                                                    btnRegistrarIngreso.setAlpha(1.0f);
+                                                    btnRegistrarIngreso.setClickable(true);
+                                                }
+                                            }
+                                        }
+                                    }
+                                })
+                        .addOnFailureListener(
+                                new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        // Task failed with an exception
+                                        // ...
+
+                                    }
+                                });
 
     }
 
@@ -371,29 +532,33 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             jsonBody.put("asig_bloq", prefs.getInt(ASIG_BLOQ,0));
             jsonBody.put("asig_esta", prefs.getInt(ASIG_BLOQ,0));
             jsonBody.put("asig_facm", prefs.getInt(ASIG_FACM,0));
+            jsonBody.put("asig_venc", prefs.getString(ASIG_VENC,""));
 
             final String requestBody = jsonBody.toString();
 
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL, null, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    String result, asigId="";
+                    String result;
+                    String asigId;
                     try {
                         result = response.getString("result");
                         asigId = response.getString("asigId");
                         if(result.equals("1")){
                             SharedPreferences.Editor editor = prefs.edit();
                             editor.putString(ASIG_ID, asigId);
+                            editor.putBoolean(ESTADO_SESION,true);
                             editor.apply();
+                            chequearEstadoSesion();
                             showRegisterAlert();
                             registrarUltimaSesion();
-                            String path = "CAPTURAS/"+
-                                    prefs.getString(ID_CLIENTE,"")+"/"+
-                                    prefs.getString(ID_OBJETIVO,"")+"/"+
-                                    prefs.getString(FECHA_PUESTO,"")+"/"+
-                                    prefs.getString(HORA_INGRESO_TIMESTAMP,"");
-                            subirArchivoImageView(path);
-                            uploadImage();
+//                            String path = "CAPTURAS/"+
+//                                    prefs.getString(ID_CLIENTE,"")+"/"+
+//                                    prefs.getString(ID_OBJETIVO,"")+"/"+
+//                                    prefs.getString(FECHA_PUESTO,"")+"/"+
+//                                    prefs.getString(HORA_INGRESO_TIMESTAMP,"");
+//                            subirArchivoImageView(path);
+//                            uploadImage();
                         }else{
                             Toast.makeText(IngresoActivity.this, "Error al cargar ingreso", Toast.LENGTH_SHORT).show();
                         }
@@ -406,7 +571,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(IngresoActivity.this, "Error al cargar ingreso", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(IngresoActivity.this, "Error al cargar ingreso en la base de datos", Toast.LENGTH_SHORT).show();
                 }
             }) {
                 @Override
@@ -693,6 +858,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         imageViewCamara.setDrawingCacheEnabled(true);
         imageViewCamara.buildDrawingCache();
         Bitmap bitmap = ((BitmapDrawable) imageViewCamara.getDrawable()).getBitmap();
+        faceVerification(bitmap);
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data = baos.toByteArray();
@@ -776,7 +943,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                     @Override
                     public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
                         imageViewCamara.setImageDrawable(resource);
-                        registrarIngreso();
+                        Bitmap bitmap = ((BitmapDrawable) resource).getBitmap();
+                        faceVerification(bitmap);
+                        //registrarIngreso();
                     }
                     @Override
                     public void getSize(@NonNull SizeReadyCallback cb) {
@@ -844,6 +1013,24 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
     }
 
+    private void setVencimientoPuesto(Date fecha){
+
+        Date fechaVence = new Date(fecha.getTime()+60*60*1000);
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+
+        SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+
+        String vencimientoPuesto = timestampFormat.format(fechaVence);
+
+        Log.d(TAG, "Timestamp vencimientoPuesto: "+fechaVence);
+
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(ASIG_VENC,vencimientoPuesto);
+        editor.apply();
+
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -851,11 +1038,11 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         if(requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
 
             if(sesionVigente()){
-                SharedPreferences prefs = getSharedPreferences("MisPreferencias",Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean(ESTADO_SESION,true);
-                editor.apply();
-                chequearEstadoSesion();
+//                SharedPreferences prefs = getSharedPreferences("MisPreferencias",Context.MODE_PRIVATE);
+//                SharedPreferences.Editor editor = prefs.edit();
+//                editor.putBoolean(ESTADO_SESION,true);
+//                editor.apply();
+//                chequearEstadoSesion();
                 cargarImagen();
             }else{
                 showSesionVencidaAlert();
@@ -939,6 +1126,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
         Configurador miConf = Configurador.getInstance();
         miConf.setFinSesion(fechaVence);
+
+        setVencimientoPuesto(fechaVence);
 
         return initTrueTimeVigente(fechaVence);
 
@@ -1123,6 +1312,25 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             return false;
         }
     }
+
+    //TODO rotate image if image captured on samsung devices
+    //TODO Most phone cameras are landscape, meaning if you take the photo in portrait, the resulting photos will be rotated 90 degrees.
+    @SuppressLint("Range")
+    public Bitmap rotateBitmap(Bitmap input){
+        String[] orientationColumn = {MediaStore.Images.Media.ORIENTATION};
+        Cursor cur = getContentResolver().query(photoURI, orientationColumn, null, null, null);
+        int orientation = -1;
+        if (cur != null && cur.moveToFirst()) {
+            orientation = cur.getInt(cur.getColumnIndex(orientationColumn[0]));
+        }
+        Log.d("tryOrientation",orientation+"");
+        Matrix rotationMatrix = new Matrix();
+        rotationMatrix.setRotate(orientation);
+        Bitmap cropped = Bitmap.createBitmap(input,0,0, input.getWidth(), input.getHeight(), rotationMatrix, true);
+        return cropped;
+    }
+
+
 
 }
 

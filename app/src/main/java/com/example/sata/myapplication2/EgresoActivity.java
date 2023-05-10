@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -50,15 +52,23 @@ import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.sata.myapplication2.AlertDialog.RegisterAlert;
 import com.example.sata.myapplication2.AlertDialog.RegisterAlertError;
+import com.example.sata.myapplication2.FaceRecognition.FaceClassifier;
+import com.example.sata.myapplication2.FaceRecognition.TFLiteFaceRecognition;
 import com.example.sata.myapplication2.POJO.HoraRegistrada;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.face.Face;
+import com.google.mlkit.vision.face.FaceDetection;
+import com.google.mlkit.vision.face.FaceDetector;
+import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.instacart.library.truetime.TrueTime;
 
 import org.json.JSONArray;
@@ -67,17 +77,17 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class EgresoActivity extends AppCompatActivity implements ResultListener<Date>{
-
-    //private static final String API_PATH = "http://192.168.1.8:3000/api/";
-    //private static final String API_PATH = "http://186.182.25.11:3000/api/";
 
     private static final String TAG = "Egreso_Activity_TAG";
 
@@ -90,6 +100,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private static final String MAP_RADIO = "map_radio";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
+
+    private static final String PROFILE_PHOTO = "ProfilePhotoPath";
 
     private static final String HORA_EGRESO = "he";
     private static final String FECHA_EGRESO = "fe";
@@ -127,6 +139,18 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private double branchRadio;
     private double branchLatitud;
     private double branchLongitud;
+
+    // TODO declare face detector
+    FaceDetector detector;
+
+    FaceDetectorOptions highAccuracyOpts = new FaceDetectorOptions.Builder()
+            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
+            .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
+            .build();
+
+    // TODO declare face recognizer
+    FaceClassifier faceClassifier;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,9 +195,139 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
             }
         });
 
+        //TODO initialize face detector
+        detector = FaceDetection.getClient(highAccuracyOpts);
+
+        //TODO initialize face recognition model
+        try {
+            faceClassifier = TFLiteFaceRecognition.create(getAssets(),"facenet.tflite",160,false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         chequearUbicacion();
 
         chequearEstadoSesion();
+
+        faceRegistration();
+
+    }
+
+    private Bitmap loadImageFromStorage(){
+        Bitmap bitmap = null;
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        String profilePhotoPath = prefs.getString(PROFILE_PHOTO, "");
+        try {
+            File f = new File(profilePhotoPath, "profile.jpg");
+            bitmap = BitmapFactory.decodeStream(new FileInputStream(f));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    public Bitmap croppedFace(Rect bound, Bitmap input){
+        if(bound.top < 0){
+            bound.top = 0;
+        }
+        if(bound.left < 0){
+            bound.left = 0;
+        }
+        if(bound.right > input.getWidth()){
+            bound.right = input.getWidth()-1;
+        }
+        if(bound.bottom > input.getHeight()){
+            bound.bottom = input.getHeight()-1;
+        }
+        Bitmap croppedFace = Bitmap.createBitmap(input,bound.left,bound.top,bound.width(),bound.height());
+        croppedFace = Bitmap.createScaledBitmap(croppedFace,160,160,false);
+        return croppedFace;
+    }
+
+    private void faceRegistration(){
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        String name = prefs.getString(NOMBRE_PERSONAL, "");
+        Bitmap input = loadImageFromStorage();
+        InputImage image = InputImage.fromBitmap(input, 0);
+        Task<List<Face>> result =
+                detector.process(image)
+                        .addOnSuccessListener(
+                                new OnSuccessListener<List<Face>>() {
+                                    @Override
+                                    public void onSuccess(List<Face> faces) {
+
+                                        if(faces.size() == 0){
+                                            Log.d(TAG, "No se detectaron caras en la registracion");
+                                        }else if(faces.size() > 1){
+                                            Log.d(TAG, "Se detecto mas de una cara en la registracion");
+                                        }else{
+                                            for (Face face : faces) {
+                                                Rect bounds = face.getBoundingBox();
+                                                Bitmap bitmap = croppedFace(bounds,input);
+                                                FaceClassifier.Recognition recognitionRegistration = faceClassifier.recognizeImage(bitmap,true);
+                                                faceClassifier.register(name,recognitionRegistration);
+                                            }
+                                        }
+
+                                    }
+                                })
+                        .addOnFailureListener(
+                                new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        // Task failed with an exception
+                                        // ...
+                                    }
+                                });
+
+
+    }
+
+    private void faceVerification(Bitmap input){
+
+        InputImage image = InputImage.fromBitmap(input, 0);
+        Task<List<Face>> result =
+                detector.process(image)
+                        .addOnSuccessListener(
+                                new OnSuccessListener<List<Face>>() {
+                                    @Override
+                                    public void onSuccess(List<Face> faces) {
+                                        if(faces.size() == 0){
+                                            Toast.makeText(EgresoActivity.this, "No se detecto un rostro en la registracion. Por favor vuelva a intentarlo", Toast.LENGTH_SHORT).show();
+                                            btnRegistrarSalida.setAlpha(1.0f);
+                                            btnRegistrarSalida.setClickable(true);
+                                        }else if(faces.size() > 1){
+                                            Toast.makeText(EgresoActivity.this, "Se detecto mas de un rostro en la registracion. Por favor vuelva a intentarlo", Toast.LENGTH_SHORT).show();
+                                            btnRegistrarSalida.setAlpha(1.0f);
+                                            btnRegistrarSalida.setClickable(true);
+                                        }else{
+                                            for (Face face : faces) {
+                                                Rect bounds = face.getBoundingBox();
+                                                Bitmap bitmap = croppedFace(bounds,input);
+                                                FaceClassifier.Recognition recognitionVerification = faceClassifier.recognizeImage(bitmap,false);
+                                                if(recognitionVerification.getDistance()<=0.85){
+                                                    initTrueTime();
+                                                    //Toast.makeText(EgresoActivity.this, "Distancia del modelo = "+recognitionVerification.getDistance(), Toast.LENGTH_SHORT).show();
+                                                }else{
+                                                    Toast.makeText(EgresoActivity.this, "No se pudo reconocer el rostro. Por favor vuelva a intentarlo "+recognitionVerification.getDistance(), Toast.LENGTH_SHORT).show();
+                                                    btnRegistrarSalida.setAlpha(1.0f);
+                                                    btnRegistrarSalida.setClickable(true);
+                                                }
+                                            }
+                                        }
+                                    }
+                                })
+                        .addOnFailureListener(
+                                new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        // Task failed with an exception
+                                        // ...
+
+                                    }
+                                });
+
     }
 
     private void chequearUbicacion(){
@@ -283,13 +437,9 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         Boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE,false);
         String horaEgresoParametrizado = HoraRegistrada.egresoParametrizado(egresoPuesto,fechaPuesto,horaEgreso,fechaEgreso,turnoNoche);
 
-        int asigPues = prefs.getInt(ASIG_PUES,0);
-        String persCodi = prefs.getString(PERS_CODI,"");
-        //String timestamp = prefs.getString(HORA_INGRESO_TIMESTAMP,"");
         String asigId = prefs.getString(ASIG_ID,"");
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        //String URL = Configurador.API_PATH + "asigvigi/"+asigPues+"/"+persCodi+"/"+timestamp;
         String URL = Configurador.API_PATH + "asigvigi/"+asigId;
         JSONObject jsonBody = new JSONObject();
 
@@ -304,12 +454,12 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                             showRegisterAlert();
                             actualizarEstadoPersonal(fechaEgreso,horaEgreso);
                             servicioFinalizado();
-                            String path = "CAPTURAS/"+
-                                    prefs.getString(ID_CLIENTE,"")+"/"+
-                                    prefs.getString(ID_OBJETIVO,"")+"/"+
-                                    prefs.getString(FECHA_PUESTO,"")+"/"+
-                                    prefs.getString(HORA_INGRESO_TIMESTAMP,"");
-                            subirArchivoImageView(path);
+//                            String path = "CAPTURAS/"+
+//                                    prefs.getString(ID_CLIENTE,"")+"/"+
+//                                    prefs.getString(ID_OBJETIVO,"")+"/"+
+//                                    prefs.getString(FECHA_PUESTO,"")+"/"+
+//                                    prefs.getString(HORA_INGRESO_TIMESTAMP,"");
+//                            subirArchivoImageView(path);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -348,6 +498,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(FECHA_EGRESO, fechaEgreso);
         editor.putString(HORA_EGRESO, horaEgreso);
+        editor.putBoolean(ESTADO_SESION,false);
         editor.apply();
         int persCodi = Integer.parseInt(prefs.getString(PERS_CODI,""));
         cerrarEstadoSesion(persCodi);
@@ -570,7 +721,9 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                     @Override
                     public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
                         imageViewCamara.setImageDrawable(resource);
-                        initTrueTime();
+                        Bitmap bitmap = ((BitmapDrawable) resource).getBitmap();
+                        faceVerification(bitmap);
+                        //initTrueTime();
                     }
                     @Override
                     public void getSize(@NonNull SizeReadyCallback cb) {
@@ -588,10 +741,10 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-            SharedPreferences preferences = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putBoolean(ESTADO_SESION,false);
-            editor.apply();
+//            SharedPreferences preferences = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+//            SharedPreferences.Editor editor = preferences.edit();
+//            editor.putBoolean(ESTADO_SESION,false);
+//            editor.apply();
             cargarImagen();
         }else{
             btnRegistrarSalida.setAlpha(1.0f);
