@@ -60,7 +60,7 @@
 
     <EditText
         android:id="@+id/editTextNroLegajo"
-        android:layout_width="200dp"
+        android:layout_width="204dp"
         android:layout_height="40dp"
         android:layout_below="@id/textViewTitle"
         android:layout_centerHorizontal="true"
@@ -76,7 +76,7 @@
 
     <EditText
         android:id="@+id/editTextDni"
-        android:layout_width="200dp"
+        android:layout_width="204dp"
         android:layout_height="40dp"
         android:layout_below="@+id/editTextNroLegajo"
         android:layout_marginTop="25dp"
@@ -92,7 +92,7 @@
 
     <EditText
         android:id="@+id/editTextFechaNac"
-        android:layout_width="200dp"
+        android:layout_width="204dp"
         android:layout_height="40dp"
         android:layout_below="@+id/editTextDni"
         android:layout_marginTop="25dp"
@@ -123,7 +123,7 @@
 
         <EditText
             android:id="@+id/editTextClave"
-            android:layout_width="200dp"
+            android:layout_width="204dp"
             android:layout_height="40dp"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="25dp"
@@ -151,7 +151,7 @@
 
             <EditText
                 android:id="@+id/editTextReingreseClave"
-                android:layout_width="200dp"
+                android:layout_width="204dp"
                 android:layout_height="40dp"
                 android:layout_below="@+id/editTextClave"
                 android:layout_centerHorizontal="true"
@@ -182,7 +182,7 @@
 
     <Button
         android:id="@+id/btnRegistrar"
-        android:layout_width="200dp"
+        android:layout_width="204dp"
         android:layout_height="40dp"
         android:layout_below="@+id/btnTakePhoto"
         android:layout_centerHorizontal="true"

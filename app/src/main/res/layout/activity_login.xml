@@ -95,10 +95,20 @@
         android:id="@+id/registrarse"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="40dp"
+        android:text="¿No estas registrado? Registrarse"
+        android:textColor="@color/description" />
+
+    <TextView
+        android:id="@+id/version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
         android:layout_marginBottom="18dp"
-        android:text="Registrarse"
+        android:text="Version 1.0"
         android:textColor="@color/gris" />
 
 </RelativeLayout>

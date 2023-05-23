@@ -61,6 +61,9 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.bumptech.glide.request.transition.Transition;
+import com.example.sata.myapplication2.AlertDialog.FaceDetectionError;
+import com.example.sata.myapplication2.AlertDialog.FaceRecognitionError;
+import com.example.sata.myapplication2.AlertDialog.FacesDetectionError;
 import com.example.sata.myapplication2.AlertDialog.RegisterAlert;
 import com.example.sata.myapplication2.AlertDialog.PuestoVencidoAlert;
 import com.example.sata.myapplication2.FaceRecognition.FaceClassifier;
@@ -348,11 +351,13 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                     @Override
                                     public void onSuccess(List<Face> faces) {
                                         if(faces.size() == 0){
-                                            Toast.makeText(IngresoActivity.this, "No se detecto un rostro en la registracion. Por favor vuelva a intentarlo", Toast.LENGTH_SHORT).show();
+                                            //Toast.makeText(IngresoActivity.this, "No se detecto un rostro en la registracion. Por favor vuelva a intentarlo", Toast.LENGTH_SHORT).show();
+                                            showFaceDetectionError();
                                             btnRegistrarIngreso.setAlpha(1.0f);
                                             btnRegistrarIngreso.setClickable(true);
                                         }else if(faces.size() > 1){
-                                            Toast.makeText(IngresoActivity.this, "Se detecto mas de un rostro en la registracion. Por favor vuelva a intentarlo", Toast.LENGTH_SHORT).show();
+                                            //Toast.makeText(IngresoActivity.this, "Se detecto mas de un rostro en la registracion. Por favor vuelva a intentarlo", Toast.LENGTH_SHORT).show();
+                                            showFacesDetectionError();
                                             btnRegistrarIngreso.setAlpha(1.0f);
                                             btnRegistrarIngreso.setClickable(true);
                                         }else{
@@ -364,7 +369,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                                     registrarIngreso();
                                                     //Toast.makeText(IngresoActivity.this, "Distancia del modelo = "+recognitionVerification.getDistance(), Toast.LENGTH_SHORT).show();
                                                 }else{
-                                                    Toast.makeText(IngresoActivity.this, "No se pudo reconocer el rostro. Por favor vuelva a intentarlo "+recognitionVerification.getDistance(), Toast.LENGTH_SHORT).show();
+                                                    //Toast.makeText(IngresoActivity.this, "No se pudo reconocer el rostro. Por favor vuelva a intentarlo ", Toast.LENGTH_SHORT).show();
+                                                    showFaceRecognitionError();
                                                     btnRegistrarIngreso.setAlpha(1.0f);
                                                     btnRegistrarIngreso.setClickable(true);
                                                 }
@@ -929,6 +935,21 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         RegisterAlert myAlert = new RegisterAlert();
         myAlert.setTipoRegistro("ingreso");
         myAlert.show(getSupportFragmentManager(),"Register Alert");
+    }
+
+    public void showFaceRecognitionError(){
+        FaceRecognitionError myAlert = new FaceRecognitionError();
+        myAlert.show(getSupportFragmentManager(),"Face Recognition Error");
+    }
+
+    public void showFaceDetectionError(){
+        FaceDetectionError myAlert = new FaceDetectionError();
+        myAlert.show(getSupportFragmentManager(),"Face Detection Error");
+    }
+
+    public void showFacesDetectionError(){
+        FacesDetectionError myAlert = new FacesDetectionError();
+        myAlert.show(getSupportFragmentManager(),"Faces Detection Error");
     }
 
     public void cargarImagen(){
