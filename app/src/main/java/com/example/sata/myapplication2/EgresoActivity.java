@@ -596,12 +596,20 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         String horaEgreso = hourFormat.format(fecha);
 
         if(sesionVencida(fechaEgreso,horaEgreso)){
+            cerrarEstadoSesionApp();
             textViewStatus.setText("Servicio Expirado");
             textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorNaranja));
             showRegisterAlertError();
         } else {
             chequearEstadoSesionServer(fechaEgreso,horaEgreso);
         }
+    }
+
+    private void cerrarEstadoSesionApp(){
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(ESTADO_SESION,false);
+        editor.apply();
     }
 
     private void cargarDatosPantallaIngreso(Boolean estadoSesion){
@@ -899,6 +907,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                                 if(jsonObject.getInt("LAST_ESTA")==1){
                                     registrarSalida(fechaEgreso,horaEgreso);
                                 }else{
+                                    cerrarEstadoSesionApp();
                                     textViewStatus.setText("Servicio cerrado por Operador");
                                     textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorNaranja));
                                     showRegisterAlertError();

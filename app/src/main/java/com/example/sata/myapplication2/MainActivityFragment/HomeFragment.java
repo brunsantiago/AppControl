@@ -101,7 +101,7 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
     private static final String ASIG_PUES = "asig_pues";
     private static final String ASIG_ID = "asig_id";
 
-    private FirebaseFirestore database;
+    //private FirebaseFirestore database;
 
     private Button backgroundCounter;
     private ProgressBar mProgressBar;
@@ -149,7 +149,7 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
         progressDialog.show();
         progressDialog.setContentView(R.layout.custom_progressdialog);
 
-        database = FirebaseFirestore.getInstance();
+        //database = FirebaseFirestore.getInstance();
 
         synchronizeClock(root);
 
@@ -707,7 +707,7 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
                 mProgressBar.setVisibility(View.GONE);
                 backgroundCounter.setTextSize(24);
                 backgroundCounter.setText("Alarma Enviada !");
-                enviarAlarma();
+                //enviarAlarma();
             }
         }.start();
     }
@@ -721,34 +721,34 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
         Toast.makeText(getContext(), "Alerta enviada al servidor: "+msg3, Toast.LENGTH_SHORT).show();
     }
 
-    private void enviarAlarma(){
-        SharedPreferences prefs = getContext().getSharedPreferences("MisPreferencias", MODE_PRIVATE);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("idCliente", prefs.getString(ID_CLIENTE,""));
-        data.put("idObjetivo", prefs.getString(ID_OBJETIVO,""));
-        data.put("nombreCliente", prefs.getString(NOMBRE_CLIENTE,""));
-        data.put("nombreObjetivo", prefs.getString(NOMBRE_OBJETIVO,""));
-        data.put("nroLegajo", prefs.getString(NRO_LEGAJO,""));
-        data.put("timestamp", FieldValue.serverTimestamp());
-        data.put("latitud", "-34.543225");
-        data.put("longitud", "-58.474950");
-
-        database.collection("alerts")
-                .add(data)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error adding document", e);
-                    }
-                });
-    }
+//    private void enviarAlarma(){
+//        SharedPreferences prefs = getContext().getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+//
+//        Map<String, Object> data = new HashMap<>();
+//        data.put("idCliente", prefs.getString(ID_CLIENTE,""));
+//        data.put("idObjetivo", prefs.getString(ID_OBJETIVO,""));
+//        data.put("nombreCliente", prefs.getString(NOMBRE_CLIENTE,""));
+//        data.put("nombreObjetivo", prefs.getString(NOMBRE_OBJETIVO,""));
+//        data.put("nroLegajo", prefs.getString(NRO_LEGAJO,""));
+//        data.put("timestamp", FieldValue.serverTimestamp());
+//        data.put("latitud", "-34.543225");
+//        data.put("longitud", "-58.474950");
+//
+//        database.collection("alerts")
+//                .add(data)
+//                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//                    @Override
+//                    public void onSuccess(DocumentReference documentReference) {
+//                        Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
+//                    }
+//                })
+//                .addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Log.w(TAG, "Error adding document", e);
+//                    }
+//                });
+//    }
 
     private void disableButtons(){
         btnIngreso.setEnabled(false);
