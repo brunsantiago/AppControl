@@ -13,16 +13,18 @@
         android:layout_height="100dp"
         android:layout_marginTop="50dp"
         android:layout_marginBottom="40dp"
-        app:srcCompat="@drawable/exclamation" />
+        app:srcCompat="@drawable/danger" />
 
     <TextView
+        android:id="@+id/textAlert"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginBottom="40dp"
         android:fontFamily="@font/hpsimplified_rg"
-        android:text="¿Desea salir de la Aplicacion?"
+        android:text=""
+        android:textAlignment="center"
         android:textColor="@android:color/white"
         android:textSize="20dp" />
 

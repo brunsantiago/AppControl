@@ -37,7 +37,6 @@ public class LogOutAlert extends DialogFragment {
 
     public void confirmar()
     {
-        //this.getActivity().finish();
         Intent intent = new Intent(getContext(), LoginActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
         getActivity().finish();

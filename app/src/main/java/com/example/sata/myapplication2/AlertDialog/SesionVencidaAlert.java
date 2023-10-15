@@ -30,8 +30,8 @@ public class SesionVencidaAlert extends DialogFragment {
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View viewAlert = inflater.inflate(R.layout.custom_alert_vencida, null);
-        TextView textViewObjetivo = viewAlert.findViewById(R.id.textViewObjetivoFechaPuesto);
 
+        TextView textViewObjetivo = viewAlert.findViewById(R.id.textViewObjetivoFechaPuesto);
         textViewObjetivo.setText(objetivoFecha);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),R.style.ThemeDialogCustom);

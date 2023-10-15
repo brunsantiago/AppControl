@@ -1,7 +1,9 @@
 package com.example.sata.myapplication2;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -28,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -297,12 +300,10 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                                     @Override
                                     public void onSuccess(List<Face> faces) {
                                         if(faces.size() == 0){
-                                            //Toast.makeText(EgresoActivity.this, "No se detecto un rostro en la registracion. Por favor vuelva a intentarlo", Toast.LENGTH_SHORT).show();
                                             showFaceDetectionError();
                                             btnRegistrarSalida.setAlpha(1.0f);
                                             btnRegistrarSalida.setClickable(true);
                                         }else if(faces.size() > 1){
-                                            //Toast.makeText(EgresoActivity.this, "Se detecto mas de un rostro en la registracion. Por favor vuelva a intentarlo", Toast.LENGTH_SHORT).show();
                                             showFacesDetectionError();
                                             btnRegistrarSalida.setAlpha(1.0f);
                                             btnRegistrarSalida.setClickable(true);
@@ -313,9 +314,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                                                 FaceClassifier.Recognition recognitionVerification = faceClassifier.recognizeImage(bitmap,false);
                                                 if(recognitionVerification.getDistance()<=0.85){
                                                     initTrueTime();
-                                                    //Toast.makeText(EgresoActivity.this, "Distancia del modelo = "+recognitionVerification.getDistance(), Toast.LENGTH_SHORT).show();
                                                 }else{
-                                                    //Toast.makeText(EgresoActivity.this, "No se pudo reconocer el rostro. Por favor vuelva a intentarlo ", Toast.LENGTH_SHORT).show();
                                                     showFaceRecognitionError();
                                                     btnRegistrarSalida.setAlpha(1.0f);
                                                     btnRegistrarSalida.setClickable(true);
@@ -434,16 +433,17 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         return true;
     }
 
-    private void registrarSalida(String fechaEgreso, String horaEgreso) {
+
+    private void registrarSalida(String fechaEgreso,String horaEgreso) {
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
         String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
         String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
         Boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE,false);
-        String horaEgresoParametrizado = HoraRegistrada.egresoParametrizado(egresoPuesto,fechaPuesto,horaEgreso,fechaEgreso,turnoNoche);
-
         String asigId = prefs.getString(ASIG_ID,"");
+
+        String horaEgresoParametrizado = HoraRegistrada.egresoParametrizado(egresoPuesto,fechaPuesto,horaEgreso,fechaEgreso,turnoNoche);
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         String URL = Configurador.API_PATH + "asigvigi/"+asigId;
@@ -460,12 +460,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                             showRegisterAlert();
                             actualizarEstadoPersonal(fechaEgreso,horaEgreso);
                             servicioFinalizado();
-//                            String path = "CAPTURAS/"+
-//                                    prefs.getString(ID_CLIENTE,"")+"/"+
-//                                    prefs.getString(ID_OBJETIVO,"")+"/"+
-//                                    prefs.getString(FECHA_PUESTO,"")+"/"+
-//                                    prefs.getString(HORA_INGRESO_TIMESTAMP,"");
-//                            subirArchivoImageView(path);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -496,6 +490,42 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
             requestQueue.add(jsonObjectRequest);
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void egresoAnticipado(String fechaEgreso,String horaEgreso) {
+
+        Date horaEgresoReal = null;
+        Date horaEgresoPuesto = null;
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
+
+        String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
+        String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
+        Boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE,false);
+        String asigId = prefs.getString(ASIG_ID,"");
+
+        String horaEgresoParametrizado = HoraRegistrada.egresoParametrizado(egresoPuesto,fechaPuesto,horaEgreso,fechaEgreso,turnoNoche);
+
+
+        try {
+            horaEgresoReal = dateFormat.parse(fechaEgreso+" "+horaEgreso);
+            horaEgresoPuesto = dateFormat.parse(fechaPuesto+" "+egresoPuesto);
+            if(turnoNoche){
+                horaEgresoPuesto = new Date(horaEgresoPuesto.getTime()+86400000);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        Long diferenciaEnMinutos = (horaEgresoPuesto.getTime() - horaEgresoReal.getTime())/60/1000;
+
+        if(diferenciaEnMinutos>=15){
+            showEarlyRetirement(horaEgresoParametrizado,fechaEgreso,horaEgreso);
+        }else{
+            registrarSalida(fechaEgreso,horaEgreso);
         }
     }
 
@@ -711,6 +741,28 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         });
     }
 
+    public void showEarlyRetirement(String horaEgresoParametrizada,String fechaEgreso,String horaEgreso){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this,R.style.ThemeDialogCustom);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogLayout = inflater.inflate(R.layout.custom_alert_early_retirement, null);
+        TextView textView = (TextView) dialogLayout.findViewById(R.id.textAlert);
+        textView.setText("Su egreso se registrará a las "+horaEgresoParametrizada+" ¿Desea continuar de todos modos?");
+        builder.setView(dialogLayout)
+                .setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        registrarSalida(fechaEgreso,horaEgreso);
+                    }
+                })
+                .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        btnRegistrarSalida.setAlpha(1.0f);
+                        btnRegistrarSalida.setClickable(true);
+                    }
+                });
+        builder.create();
+        builder.show();
+    }
+
     public void showRegisterAlert(){
         RegisterAlert myAlert = new RegisterAlert();
         myAlert.setTipoRegistro("salida");
@@ -905,7 +957,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                             try {
                                 jsonObject = response.getJSONObject(0);
                                 if(jsonObject.getInt("LAST_ESTA")==1){
-                                    registrarSalida(fechaEgreso,horaEgreso);
+                                    //registrarSalida(fechaEgreso,horaEgreso);
+                                    egresoAnticipado(fechaEgreso,horaEgreso);
                                 }else{
                                     cerrarEstadoSesionApp();
                                     textViewStatus.setText("Servicio cerrado por Operador");
