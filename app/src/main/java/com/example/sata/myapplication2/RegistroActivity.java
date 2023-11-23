@@ -78,10 +78,10 @@ public class RegistroActivity extends AppCompatActivity {
     private EditText editTextReingreseClave;
     private ImageButton btnTakePhoto;
     private Button btnRegistrar;
+
     private Calendar calendar;
     private ProgressDialog progressDialog = null;
     private DatePickerDialog datePickerDialog;
-
     private ImageView imageViewPhoto;
 
     private static final String NRO_LEGAJO = "nl";

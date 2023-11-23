@@ -181,7 +181,7 @@
 
 
     <Button
-        android:id="@+id/btnRegistrar"
+        android:id="@+id/btnCambiarClave"
         android:layout_width="204dp"
         android:layout_height="40dp"
         android:layout_below="@+id/btnTakePhoto"
