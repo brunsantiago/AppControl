@@ -65,6 +65,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView textViewNroLegajo;
     private TextView textViewClave;
     private Button botonIngresar;
+    private TextView textViewRecoveryKey;
     private TextView textViewRegistrarse;
     private ProgressDialog progressDialog = null;
 
@@ -88,6 +89,7 @@ public class LoginActivity extends AppCompatActivity {
         textViewNroLegajo = findViewById(R.id.nrolegajo);
         textViewClave = findViewById(R.id.clave);
         botonIngresar = findViewById(R.id.ingresar);
+        textViewRecoveryKey = findViewById(R.id.recoverKey);
         textViewRegistrarse = findViewById(R.id.registrarse);
 
         storage = FirebaseStorage.getInstance();
@@ -107,6 +109,15 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                  Toast.makeText(LoginActivity.this, "Por favor ingrese un Numero de Legajo y/o Clave valida", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+
+        textViewRecoveryKey.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginActivity.this,RecoveryKeyActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
 

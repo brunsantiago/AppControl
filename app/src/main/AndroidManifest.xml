@@ -50,6 +50,9 @@
         <activity
             android:name=".PreviewActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".RecoveryKeyActivity"
+            android:screenOrientation="portrait" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

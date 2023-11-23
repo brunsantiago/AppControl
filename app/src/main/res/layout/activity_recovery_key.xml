@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/fondo_conexiones"
+    tools:context=".RecoveryKeyActivity">
+
+    <FrameLayout
+        android:id="@+id/recuadro"
+        android:layout_width="260dp"
+        android:layout_height="610dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="20dp"
+        android:alpha="0.5"
+        android:background="@drawable/shapenegro">
+
+    </FrameLayout>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/profilePhoto"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignTop="@id/recuadro"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:innerRadius="0dp"
+        android:shape="ring"
+        android:thicknessRatio="1.9"
+        app:cardBackgroundColor="#00FFFFFF"
+        app:cardCornerRadius="40dp"
+        >
+
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:background="#001E1D1D"
+            android:src="@android:drawable/ic_lock_idle_lock"
+            >
+
+        </ImageView>
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profilePhoto"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Cambio de Clave"
+        android:textColor="@color/white"
+        android:textSize="20dp" />
+
+
+    <EditText
+        android:id="@+id/editTextNroLegajo"
+        android:layout_width="204dp"
+        android:layout_height="40dp"
+        android:layout_below="@id/textViewTitle"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/shapeblanco"
+        android:drawableStart="@drawable/ic_person_black_24dp"
+        android:ems="10"
+        android:fontFamily="@font/hpsimplified_rg"
+        android:hint="Numero de Legajo"
+        android:inputType="number"
+        android:paddingStart="5dp"
+        android:textColor="@android:color/white" />
+
+    <EditText
+        android:id="@+id/editTextDni"
+        android:layout_width="204dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/editTextNroLegajo"
+        android:layout_marginTop="25dp"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/shapeblanco"
+        android:drawableStart="@drawable/ic_person_black_24dp"
+        android:ems="10"
+        android:fontFamily="@font/hpsimplified_rg"
+        android:hint="DNI"
+        android:inputType="number"
+        android:paddingStart="5dp"
+        android:textColor="@android:color/white" />
+
+    <EditText
+        android:id="@+id/editTextFechaNac"
+        android:layout_width="204dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/editTextDni"
+        android:layout_marginTop="25dp"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/shapeblanco"
+        android:drawableStart="@drawable/ic_baseline_calendar_month_24"
+        android:ems="10"
+        android:fontFamily="@font/hpsimplified_rg"
+        android:hint="Fecha Nacimiento"
+        android:inputType="date"
+        android:paddingStart="5dp"
+        android:textColor="@android:color/white"
+        android:clickable="false"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/password_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editTextFechaNac"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        app:hintEnabled="false"
+        app:passwordToggleEnabled="true"
+        android:fontFamily="@font/hpsimplified_rg">
+
+        <EditText
+            android:id="@+id/editTextClave"
+            android:layout_width="204dp"
+            android:layout_height="40dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="25dp"
+            android:background="@drawable/shapeblanco"
+            android:drawableStart="@drawable/ic_lock_black_24dp"
+            android:inputType="textPassword"
+            android:ems="10"
+            android:fontFamily="@font/hpsimplified_rg"
+            android:hint="Clave"
+            android:paddingStart="5dp"
+            android:textColor="@android:color/white" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/re_password_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/password_layout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        app:hintEnabled="false"
+        app:passwordToggleEnabled="true"
+        android:fontFamily="@font/hpsimplified_rg">
+
+            <EditText
+                android:id="@+id/editTextReingreseClave"
+                android:layout_width="204dp"
+                android:layout_height="40dp"
+                android:layout_below="@+id/editTextClave"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/shapeblanco"
+                android:drawableStart="@drawable/ic_lock_black_24dp"
+                android:inputType="textPassword"
+                android:ems="10"
+                android:fontFamily="@font/hpsimplified_rg"
+                android:hint="Reingresar Clave"
+                android:paddingStart="5dp"
+                android:textColor="@android:color/white" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageButton
+        android:id="@+id/btnTakePhoto"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/re_password_layout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/shapeazul"
+        android:contentDescription="Tomar Foto"
+        android:gravity="center"
+        android:src="@drawable/ic_face" />
+
+
+    <Button
+        android:id="@+id/btnRegistrar"
+        android:layout_width="204dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/btnTakePhoto"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/shapebordo"
+        android:fontFamily="@font/hpsimplified_rg"
+        android:gravity="center"
+        android:text="Cambiar Clave"
+        android:textColor="@android:color/white"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/volverLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="18dp"
+        android:text="Volver al Login"
+        android:textColor="@color/gris" />
+
+
+
+
+
+
+</RelativeLayout>
