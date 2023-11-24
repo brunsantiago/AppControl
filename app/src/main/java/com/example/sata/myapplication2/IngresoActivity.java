@@ -5,7 +5,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -26,14 +25,6 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
@@ -44,6 +35,14 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -64,8 +63,8 @@ import com.bumptech.glide.request.transition.Transition;
 import com.example.sata.myapplication2.AlertDialog.FaceDetectionError;
 import com.example.sata.myapplication2.AlertDialog.FaceRecognitionError;
 import com.example.sata.myapplication2.AlertDialog.FacesDetectionError;
-import com.example.sata.myapplication2.AlertDialog.RegisterAlert;
 import com.example.sata.myapplication2.AlertDialog.PuestoVencidoAlert;
+import com.example.sata.myapplication2.AlertDialog.RegisterAlert;
 import com.example.sata.myapplication2.FaceRecognition.FaceClassifier;
 import com.example.sata.myapplication2.FaceRecognition.TFLiteFaceRecognition;
 import com.example.sata.myapplication2.POJO.HoraRegistrada;
@@ -86,14 +85,15 @@ import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.instacart.library.truetime.TrueTime;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
@@ -1350,7 +1350,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         Bitmap cropped = Bitmap.createBitmap(input,0,0, input.getWidth(), input.getHeight(), rotationMatrix, true);
         return cropped;
     }
-
 
 
 }

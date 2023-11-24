@@ -34,15 +34,14 @@
         >
 
         <ImageView
-            android:id="@+id/imageView3"
+            android:id="@+id/imageViewPhoto"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:background="#001E1D1D"
-            android:src="@android:drawable/ic_lock_idle_lock"
+            android:src="@drawable/ic_baseline_person_outline_24"
             >
-
         </ImageView>
     </androidx.cardview.widget.CardView>
 
@@ -52,7 +51,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/profilePhoto"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="15dp"
         android:text="Cambio de Clave"
         android:textColor="@color/white"
         android:textSize="20dp" />
