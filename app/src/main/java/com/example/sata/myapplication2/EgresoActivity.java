@@ -19,15 +19,8 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.provider.MediaStore;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,6 +29,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -47,11 +48,9 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-//import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
-//import com.bumptech.glide.request.transition.Transition;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.sata.myapplication2.AlertDialog.FaceDetectionError;
 import com.example.sata.myapplication2.AlertDialog.FaceRecognitionError;
@@ -92,6 +91,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+//import com.bumptech.glide.request.RequestOptions;
+//import com.bumptech.glide.request.transition.Transition;
 
 public class EgresoActivity extends AppCompatActivity implements ResultListener<Date>{
 
@@ -905,37 +907,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         t.start();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        deleteCache(this);
-    }
-
-    public void deleteCache(Context context) {
-        try {
-            File dir = context.getCacheDir();
-            deleteDir(dir);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public boolean deleteDir(File dir) {
-        if (dir != null && dir.isDirectory()) {
-            String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]));
-                if (!success) {
-                    return false;
-                }
-            }
-            return dir.delete();
-        } else if(dir!= null && dir.isFile()) {
-            return dir.delete();
-        } else {
-            return false;
-        }
-    }
 
     public void chequearEstadoSesionServer(String fechaEgreso, String horaEgreso){
 
@@ -984,5 +955,38 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         requestQueue.add(jsonArrayRequest);
 
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        deleteCache(this);
+    }
+
+    public void deleteCache(Context context) {
+        try {
+            File dir = context.getCacheDir();
+            deleteDir(dir);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+            return dir.delete();
+        } else if(dir!= null && dir.isFile()) {
+            return dir.delete();
+        } else {
+            return false;
+        }
+    }
+
 
 }
