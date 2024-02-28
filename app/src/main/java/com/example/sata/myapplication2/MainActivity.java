@@ -3,6 +3,7 @@ package com.example.sata.myapplication2;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -43,7 +44,14 @@ import com.example.sata.myapplication2.AlertDialog.ExitAlert;
 import com.example.sata.myapplication2.AlertDialog.LogOutAlert;
 import com.example.sata.myapplication2.POJO.UltimaSesionDM;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.appupdate.AppUpdateOptions;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -84,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     //private ProgressDialog progressDialog;
 
+    private InAppUpdate inAppUpdate;
 
 
     @Override
@@ -149,8 +158,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
+        inAppUpdate = new InAppUpdate(MainActivity.this);
+        inAppUpdate.checkForAppUpdate();
+
         //downloadProfilePhoto();
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        inAppUpdate.onActivityResult(requestCode, resultCode);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        inAppUpdate.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        inAppUpdate.onDestroy();
     }
 
     @Override

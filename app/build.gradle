@@ -57,6 +57,8 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite:+'
     implementation 'com.google.mlkit:face-detection:16.1.5'
 
+    implementation 'com.google.android.play:app-update:2.1.0'
+
 }
 
 apply plugin: 'com.google.gms.google-services'
