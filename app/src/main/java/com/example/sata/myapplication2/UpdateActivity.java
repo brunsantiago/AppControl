@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,6 +29,8 @@ public class UpdateActivity extends AppCompatActivity {
 
     private FirebaseStorage storage;
     private String versionNameServer;
+    private ProgressBar progressBar;
+    private TextView progressBarNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +39,8 @@ public class UpdateActivity extends AppCompatActivity {
 
         storage = FirebaseStorage.getInstance();
         versionNameServer = getIntent().getExtras().getString("versionNameServer");
+        progressBar = findViewById(R.id.progressBar);
+        progressBarNumber = findViewById(R.id.progressBarNumber);
 
         downloadUpdateApp();
 
@@ -61,7 +67,6 @@ public class UpdateActivity extends AppCompatActivity {
         updateRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                // Local temp file has been created
                 if(finalLocalFile.exists()) {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setDataAndType(uriFromFile(getApplicationContext(), finalLocalFile), "application/vnd.android.package-archive");
@@ -69,25 +74,29 @@ public class UpdateActivity extends AppCompatActivity {
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     try {
                         getApplicationContext().startActivity(intent);
+                        finish();
                     } catch (ActivityNotFoundException e) {
                         e.printStackTrace();
                         Log.e("TAG", "Error in opening the file!");
+                        finish();
                     }
                 }else{
-                    Toast.makeText(getApplicationContext(),"installing",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),"No se encuentra el archivo de Instalacion",Toast.LENGTH_LONG).show();
+                    finish();
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(UpdateActivity.this, "Error al intentar actualizar ", Toast.LENGTH_SHORT).show();
+                finish();
             }
         }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
             @Override
             public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
                 double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                //progressDialog.setMessage((int) progress + "");
-                Toast.makeText(UpdateActivity.this, "Download "+(int) progress + "%...", Toast.LENGTH_SHORT).show();
+                progressBar.setProgress((int) progress);
+                progressBarNumber.setText((int) progress+" %");
             }
         });
 
