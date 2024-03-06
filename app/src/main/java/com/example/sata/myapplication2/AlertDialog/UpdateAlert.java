@@ -10,11 +10,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
-import com.example.sata.myapplication2.LoginActivity;
 import com.example.sata.myapplication2.R;
+import com.example.sata.myapplication2.UpdateActivity;
 
 
-public class ExitAlert extends DialogFragment {
+public class UpdateAlert extends DialogFragment {
+
+    private String versionNameServer;
 
     @NonNull
     @Override
@@ -22,8 +24,8 @@ public class ExitAlert extends DialogFragment {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),R.style.ThemeDialogCustom);
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        builder.setView(inflater.inflate(R.layout.custom_alert_exit, null))
-                .setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
+        builder.setView(inflater.inflate(R.layout.custom_alert_update, null))
+                .setPositiveButton("Instalar", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         confirmar();
                     }
@@ -37,11 +39,15 @@ public class ExitAlert extends DialogFragment {
         return builder.create();
     }
 
-
     public void confirmar(){
-        Intent intent = new Intent(getContext(), LoginActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        Intent intent = new Intent(getContext(), UpdateActivity.class);
+        intent.putExtra("versionNameServer", this.versionNameServer);
         startActivity(intent);
-        getActivity().finish();
+        //getActivity().finish();
+    }
+
+    public void versionNameServer(String versionNameServer){
+        this.versionNameServer = versionNameServer;
     }
 
 }

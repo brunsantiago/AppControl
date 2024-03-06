@@ -34,8 +34,4 @@ public class DeviceAlertError extends DialogFragment {
         return builder.create();
     }
 
-//    public void setTipoRegistro(String tipoRegistro){
-//        this.tipoRegistro = tipoRegistro;
-//    }
-
 }

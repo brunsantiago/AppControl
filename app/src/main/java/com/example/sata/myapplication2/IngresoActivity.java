@@ -558,13 +558,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                             chequearEstadoSesion();
                             showRegisterAlert();
                             registrarUltimaSesion();
-//                            String path = "CAPTURAS/"+
-//                                    prefs.getString(ID_CLIENTE,"")+"/"+
-//                                    prefs.getString(ID_OBJETIVO,"")+"/"+
-//                                    prefs.getString(FECHA_PUESTO,"")+"/"+
-//                                    prefs.getString(HORA_INGRESO_TIMESTAMP,"");
-//                            subirArchivoImageView(path);
-//                            uploadImage();
                         }else{
                             Toast.makeText(IngresoActivity.this, "Error al cargar ingreso", Toast.LENGTH_SHORT).show();
                         }
@@ -847,8 +840,11 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
+//                photoURI = FileProvider.getUriForFile(this,
+//                        "com.example.android.fileprovider",
+//                        photoFile);
                 photoURI = FileProvider.getUriForFile(this,
-                        "com.example.android.fileprovider",
+                        BuildConfig.APPLICATION_ID + ".provider",
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
@@ -1059,11 +1055,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         if(requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
 
             if(sesionVigente()){
-//                SharedPreferences prefs = getSharedPreferences("MisPreferencias",Context.MODE_PRIVATE);
-//                SharedPreferences.Editor editor = prefs.edit();
-//                editor.putBoolean(ESTADO_SESION,true);
-//                editor.apply();
-//                chequearEstadoSesion();
                 cargarImagen();
             }else{
                 showSesionVencidaAlert();

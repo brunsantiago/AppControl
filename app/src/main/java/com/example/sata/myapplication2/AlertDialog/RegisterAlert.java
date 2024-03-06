@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -28,8 +27,8 @@ public class RegisterAlert extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View viewAlert = inflater.inflate(R.layout.custom_alert_registro, null);
 
-        TextView textViewMensaje = viewAlert.findViewById(R.id.textViewMensaje);
-        textViewMensaje.setText(mensaje);
+        //TextView textViewMensaje = viewAlert.findViewById(R.id.textViewMensaje);
+        //textViewMensaje.setText(mensaje);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),R.style.ThemeDialogCustom);
         builder.setView(viewAlert)
