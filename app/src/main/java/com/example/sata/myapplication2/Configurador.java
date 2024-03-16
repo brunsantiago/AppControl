@@ -1,8 +1,5 @@
 package com.example.sata.myapplication2;
 
-import android.app.Activity;
-import android.content.Context;
-
 import java.util.Date;
 
 public class Configurador {

@@ -389,8 +389,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                 markerLocation.setLatitude(branchLatitud);
                 markerLocation.setLongitude(branchLongitud);
 
-                //distancia.setText("Distancia: "+loc.distanceTo(markerLocation));
-
                 if (location.distanceTo(markerLocation) < branchRadio) {
                     textViewUbicacion.setText("Dentro del Rango");
                     textViewUbicacion.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.holo_green_light));
@@ -604,7 +602,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                 setFechaExitSharedPreferences(date);
             }
         } else{
-            Toast.makeText(this, "No esta conectado", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No esta conectado a Internet", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -710,9 +708,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
-//                photoURI = FileProvider.getUriForFile(this,
-//                        "com.example.android.fileprovider",
-//                        photoFile);
                 photoURI = FileProvider.getUriForFile(this,
                         BuildConfig.APPLICATION_ID + ".provider",
                         photoFile);
@@ -827,10 +822,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-//            SharedPreferences preferences = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-//            SharedPreferences.Editor editor = preferences.edit();
-//            editor.putBoolean(ESTADO_SESION,false);
-//            editor.apply();
             cargarImagen();
         }else{
             btnRegistrarSalida.setAlpha(1.0f);

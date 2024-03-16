@@ -2,17 +2,14 @@
 package com.example.sata.myapplication2;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -44,7 +41,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -52,7 +48,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -77,8 +72,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceDetection;
@@ -100,10 +93,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 
 public class IngresoActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,ResultListener<Date>{
@@ -563,6 +554,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                         }
 
                     } catch (JSONException e) {
+                        Toast.makeText(IngresoActivity.this, "Error al cargar ingreso", Toast.LENGTH_SHORT).show();
                         e.printStackTrace();
                     }
 
@@ -759,16 +751,10 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             }
             // Si el Ingreso Real es menor al ingreso Puesto y los dias son distintos (Ingreso y Puesto)
             else if (fechaHoraIngreso.getTime() < egresoPuesto.getTime() && !nuevoPuesto.getPUES_FECH().equals(fechaIngreso)){
-                Log.d(TAG, "addPuestos: ENTRO POR EL SEGUNDO");
-                Log.d(TAG, "fechaHoraIngreso: "+fechaHoraIngreso);
-                Log.d(TAG, "egresoPuesto: "+egresoPuesto);
-                Log.d(TAG, "nuevoPuesto.getPUES_FECH(): " + nuevoPuesto.getPUES_FECH());
-                Log.d(TAG, "fechaIngreso: " + fechaIngreso);
-                Log.d(TAG, "esTurnoNoche: "+esTurnoNoche(nuevoPuesto.getPUES_DHOR(),nuevoPuesto.getPUES_HHOR()));
                 listaDePuestos.add(nuevoPuesto);
             }
         } else if (fechaHoraIngreso.getTime() > ingresoPuesto.getTime()-60*60*1000  && fechaHoraIngreso.getTime() < egresoPuesto.getTime()) {
-            Log.d(TAG, "addPuestos: ENTRO POR EL TERCERO");
+            //Log.d(TAG, "addPuestos: ENTRO POR EL TERCERO");
             listaDePuestos.add(nuevoPuesto);
         }
     }
@@ -781,7 +767,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             PuestoDM puesto = listaDePuestos.get(i);
 
             SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
-
             SharedPreferences.Editor editor = prefs.edit();
 
             editor.putInt(ASIG_OBJE, puesto.getPUES_OBJE());
@@ -840,9 +825,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
-//                photoURI = FileProvider.getUriForFile(this,
-//                        "com.example.android.fileprovider",
-//                        photoFile);
                 photoURI = FileProvider.getUriForFile(this,
                         BuildConfig.APPLICATION_ID + ".provider",
                         photoFile);
@@ -850,32 +832,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
-    }
-
-    public void subirArchivoImageView(String path){
-        // Create a storage reference from our app
-        StorageReference storageRef = storage.getReference();
-        StorageReference photoRef = storageRef.child(path+"/"+photoURI.getLastPathSegment());
-        // Get the data from an ImageView as bytes
-        imageViewCamara.setDrawingCacheEnabled(true);
-        imageViewCamara.buildDrawingCache();
-        Bitmap bitmap = ((BitmapDrawable) imageViewCamara.getDrawable()).getBitmap();
-        faceVerification(bitmap);
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] data = baos.toByteArray();
-
-        UploadTask uploadTask = photoRef.putBytes(data);
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-            }
-        });
     }
 
     public String getStringImagen(){
@@ -891,41 +847,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         return encodedImage;
     }
 
-    public void uploadImage() {
-        String KEY_IMAGE = "file";
-        String KEY_NOMBRE = "nombre";
-        String UPLOAD_URL = "";
-        //final ProgressDialog loading = ProgressDialog.show(this, "Subiendo...", "Espere por favor");
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, UPLOAD_URL,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        //loading.dismiss();
-                        //Toast.makeText(IngresoActivity.this, "Imagen cargada exitosamente", Toast.LENGTH_LONG).show();
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                //loading.dismiss();
-                //Toast.makeText(IngresoActivity.this, "Imagen no cargada", Toast.LENGTH_LONG).show();
-            }
-        }){
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                String imagen = getStringImagen();
-                String nombre = "foto_prueba";
-
-                Map<String, String> params = new Hashtable<String, String>();
-                params.put(KEY_IMAGE, imagen);
-                //params.put(KEY_NOMBRE, nombre);
-
-                return params;
-            }
-        };
-
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        requestQueue.add(stringRequest);
-    }
 
     public void showRegisterAlert(){
         RegisterAlert myAlert = new RegisterAlert();
@@ -975,7 +896,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         ;
     }
 
-    //Carga la fecha y hora desde Internet
     public void initTrueTime() {
         if (isNetworkConnected()) {
             if (!TrueTime.isInitialized()) {
@@ -986,8 +906,11 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                 buscarPuestos(date);
             }
         } else{
+            cargarDatosPantallaIngreso(false);
             disableButtonRegistrarIngreso();
             Toast.makeText(this, "No esta conectado a Internet", Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
+
         }
     }
 
@@ -1040,7 +963,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
         String vencimientoPuesto = timestampFormat.format(fechaVence);
 
-        Log.d(TAG, "Timestamp vencimientoPuesto: "+fechaVence);
+        //Log.d(TAG, "Timestamp vencimientoPuesto: "+fechaVence);
 
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(ASIG_VENC,vencimientoPuesto);
@@ -1235,13 +1158,14 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             public void onResponse(JSONArray response) {
                 if (response != null) {
 
+                    listaDePuestos.clear(); //Vacia la lista de puestos antes de iniciar la carga
+
                     PuestoDM puestoInicial = new PuestoDM();
                     puestoInicial.setPUES_NOMB("Seleccione un Puesto ...");
                     listaDePuestos.add(puestoInicial);
 
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
-                    //Date hoy = new Date();
                     Date ayer = new Date(date.getTime()-86400000);
                     String diaSemanaHoy = campoSemana(date);
                     String diaSemanaAyer = campoSemana(ayer);
@@ -1323,23 +1247,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         }else{
             return false;
         }
-    }
-
-    //TODO rotate image if image captured on samsung devices
-    //TODO Most phone cameras are landscape, meaning if you take the photo in portrait, the resulting photos will be rotated 90 degrees.
-    @SuppressLint("Range")
-    public Bitmap rotateBitmap(Bitmap input){
-        String[] orientationColumn = {MediaStore.Images.Media.ORIENTATION};
-        Cursor cur = getContentResolver().query(photoURI, orientationColumn, null, null, null);
-        int orientation = -1;
-        if (cur != null && cur.moveToFirst()) {
-            orientation = cur.getInt(cur.getColumnIndex(orientationColumn[0]));
-        }
-        Log.d("tryOrientation",orientation+"");
-        Matrix rotationMatrix = new Matrix();
-        rotationMatrix.setRotate(orientation);
-        Bitmap cropped = Bitmap.createBitmap(input,0,0, input.getWidth(), input.getHeight(), rotationMatrix, true);
-        return cropped;
     }
 
 

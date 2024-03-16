@@ -32,7 +32,6 @@ public class CartListAdapter extends RecyclerView.Adapter<CartListAdapter.MyView
         public MyViewHolder(View view) {
             super(view);
             name = view.findViewById(R.id.name);
-            //description = view.findViewById(R.id.description);
             thumbnail = view.findViewById(R.id.thumbnail);
             viewBackground = view.findViewById(R.id.view_background);
             viewForeground = view.findViewById(R.id.view_foreground);
@@ -57,11 +56,8 @@ public class CartListAdapter extends RecyclerView.Adapter<CartListAdapter.MyView
     public void onBindViewHolder(MyViewHolder holder, final int position) {
         final Uri uri = uriList.get(position);
         holder.name.setText(uri.getLastPathSegment());
-        //holder.description.setText(uri.getPath());
-        //holder.price.setText("₹" + item.getPrice());
 
         Glide.with(context)
-                //.load(item.getThumbnail())
                 .load(uri)
                 .into(holder.thumbnail);
     }
@@ -73,15 +69,11 @@ public class CartListAdapter extends RecyclerView.Adapter<CartListAdapter.MyView
 
     public void removeItem(int position) {
         uriList.remove(position);
-        // notify the item removed by position
-        // to perform recycler view delete animations
-        // NOTE: don't call notifyDataSetChanged()
         notifyItemRemoved(position);
     }
 
     public void restoreItem(Uri uri, int position) {
         uriList.add(position, uri);
-        // notify item added by position
         notifyItemInserted(position);
     }
 }

@@ -400,10 +400,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private void loadLoginActivity(){
         downloadProfilePhoto();
-//        progressDialog.dismiss();
-//        Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-//        startActivity(intent);
-//        finish();
     }
 
     private void showDeviceErrorAlert(){
@@ -433,9 +429,7 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(byte[] bytes) {
                         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
-                        //imageViewDownload.setImageBitmap(bitmap);
                         saveToInternalStorage(bitmap);
-                        //loadImageFromStorage(path);
                     }
                 });
     }

@@ -18,15 +18,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Parcelable;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.InputType;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -39,9 +32,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
@@ -228,19 +226,6 @@ public class NovedadActivity extends AppCompatActivity implements AdapterView.On
             }
         });
 
-//        textViewCantidad.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if(mSelected.size()>0){
-//                    Intent intent = new Intent(NovedadActivity.this,PreviewActivity.class);
-//                    intent.putParcelableArrayListExtra("uriList", (ArrayList<? extends Parcelable>) mSelected);
-//                    startActivityForResult(intent,REQUEST_CODE);
-//                } else{
-//                    Toast.makeText(NovedadActivity.this, "No tiene imagenes seleccionadas", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        });
-
         textViewArchivosCargados.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -348,45 +333,6 @@ public class NovedadActivity extends AppCompatActivity implements AdapterView.On
 
     }
 
-//    public void showDialog(Activity activity, String msg){
-//        final Dialog dialog = new Dialog(activity);
-//        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-//        dialog.setContentView(R.layout.custom_alert_take_photo);
-//        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-//
-//        TextView text = dialog.findViewById(R.id.textViewMessage);
-//        text.setText(msg);
-//
-//        ImageView dialogBtn_camera =  dialog.findViewById(R.id.imageViewCamera);
-//        dialogBtn_camera.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-//                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-//                }
-//                dialog.dismiss();
-//            }
-//        });
-//
-//        ImageView dialogBtn_gallery = dialog.findViewById(R.id.imageViewGallery);
-//        dialogBtn_gallery.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                Intent intent = new Intent();
-//                intent.setType("image/*");
-//                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-//                intent.setAction(Intent.ACTION_GET_CONTENT);
-//                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_MULTIPLE);
-////                }
-//                dialog.dismiss();
-//            }
-//        });
-//
-//        dialog.show();
-//    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -427,9 +373,6 @@ public class NovedadActivity extends AppCompatActivity implements AdapterView.On
             textViewArchivosCargados.setAlpha(0.8F);
         } else {
             mSelected.clear();
-//            textViewCantidad.setText("0");
-//            textViewCantidad.setTextColor(getResources().getColor(R.color.colorBlanco));
-//            textViewCantidad.setAlpha(0.5F);
             String archivosCargados = "Archivos Cargados: 0";
             textViewArchivosCargados.setText(archivosCargados);
             textViewArchivosCargados.setTextColor((getResources().getColor(R.color.colorBlanco)));
