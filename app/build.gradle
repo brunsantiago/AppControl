@@ -5,7 +5,7 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        applicationId "com.example.sata.myapplication2"
+        applicationId "com.appcontrol.sab5.app"
         minSdkVersion 26 //Android 8 (nivel de API 26)
         targetSdkVersion 28 //Android 9 (nivel de API 28)
         versionCode 2

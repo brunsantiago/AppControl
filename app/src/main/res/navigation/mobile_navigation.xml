@@ -7,13 +7,13 @@
 
     <fragment
         android:id="@+id/nav_home"
-        android:name="com.example.sata.myapplication2.MainActivityFragment.HomeFragment"
+        android:name="com.appcontrol.sab5.app.MainActivityFragment.HomeFragment"
         android:label="@string/menu_inicio"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/nav_config"
-        android:name="com.example.sata.myapplication2.MainActivityFragment.ConfigFragment"
+        android:name="com.appcontrol.sab5.app.MainActivityFragment.ConfigFragment"
         android:label="@string/menu_config"
         tools:layout="@layout/fragment_config" />
 
