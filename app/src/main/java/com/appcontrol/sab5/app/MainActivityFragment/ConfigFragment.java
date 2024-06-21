@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.appcontrol.sab5.app.AlertDialog.RequestDeviceAlert;
+import com.appcontrol.sab5.app.BuildConfig;
 import com.appcontrol.sab5.app.Configurador;
 import com.appcontrol.sab5.app.POJO.Cliente;
 import com.appcontrol.sab5.app.POJO.ClienteAdapter;
@@ -317,12 +319,15 @@ public class ConfigFragment extends Fragment implements AdapterView.OnItemSelect
             jsonBody.put("rdev_cobj",solicitudDispositivo.getIdObjetivo());
             jsonBody.put("rdev_marc",solicitudDispositivo.getMarca());
             jsonBody.put("rdev_mode",solicitudDispositivo.getModelo());
+            jsonBody.put("rdev_vers",BuildConfig.VERSION_NAME);
             jsonBody.put("rdev_nomb",solicitudDispositivo.getNombre());
             jsonBody.put("rdev_ncli",solicitudDispositivo.getNombreCliente());
             jsonBody.put("rdev_nobj",solicitudDispositivo.getNombreObjetivo());
             jsonBody.put("rdev_cper",solicitudDispositivo.getNroLegajo());
             jsonBody.put("rdev_nlin",solicitudDispositivo.getNroLinea());
             final String requestBody = jsonBody.toString();
+
+            Log.d("JSONBODY", "sendRequestDevice: "+requestBody);
 
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL, null, new Response.Listener<JSONObject>() {
                 @Override

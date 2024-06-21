@@ -531,6 +531,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             jsonBody.put("asig_facm", prefs.getInt(ASIG_FACM,0));
             jsonBody.put("asig_venc", prefs.getString(ASIG_VENC,""));
 
+            jsonBody.put("asig_empr", Configurador.ID_EMPRESA); // Se agrega el campo empresa
+
             final String requestBody = jsonBody.toString();
 
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL, null, new Response.Listener<JSONObject>() {
@@ -940,10 +942,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         String horaIngreso = hourFormat.format(fecha);
         String horaIngresoTimestamp = timestampFormat.format(fecha);
 
-        //Log.d(TAG, "fecha ingreso: "+fechaIngreso);
-        //Log.d(TAG, "hora ingreso: "+horaIngreso);
-        //Log.d(TAG, "Timestamp horaIngresoTimestamp: "+horaIngresoTimestamp);
-
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(FECHA_INGRESO,fechaIngreso);
         editor.putString(HORA_INGRESO,horaIngreso);
@@ -962,8 +960,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
 
         String vencimientoPuesto = timestampFormat.format(fechaVence);
-
-        //Log.d(TAG, "Timestamp vencimientoPuesto: "+fechaVence);
 
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(ASIG_VENC,vencimientoPuesto);
