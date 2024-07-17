@@ -128,7 +128,7 @@ public class UpdateActivity extends AppCompatActivity {
     private void updateVersionDevice(){
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String URL = Configurador.API_PATH + "brouclean/devices/"+androidId;
+        String URL = Configurador.API_PATH + "devices/"+androidId+"/"+Configurador.ID_EMPRESA;
         JSONObject jsonBody = new JSONObject();
 
         try {
