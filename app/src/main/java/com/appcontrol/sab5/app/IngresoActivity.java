@@ -593,7 +593,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String URL = Configurador.API_PATH + "last_session";
+        String URL = Configurador.API_PATH + "last_session/"+Configurador.ID_EMPRESA;
         JSONObject jsonBody = new JSONObject();
 
         try {

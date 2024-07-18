@@ -228,7 +228,8 @@ public class RegistroActivity extends AppCompatActivity {
     }
 
     private void uploadProfilePhoto(Bitmap bitmap){
-        String path = "USERS/PROFILE_PHOTO/"+editTextNroLegajo.getText();
+        //String path = "BROUCLEAN/USERS/PROFILE_PHOTO/"+editTextNroLegajo.getText();
+        String path = "USERS/PROFILE_PHOTO/"+editTextNroLegajo.getText(); //SAB-5 Directorio raiz
         StorageReference storageRef = storage.getReference();
         StorageReference photoRef = storageRef.child(path+"/"+photoURI.getLastPathSegment());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -282,7 +283,7 @@ public class RegistroActivity extends AppCompatActivity {
 
         try {
             RequestQueue requestQueue = Volley.newRequestQueue(this);
-            String URL = Configurador.API_PATH + "register";
+            String URL = Configurador.API_PATH + "register/"+Configurador.ID_EMPRESA;
             JSONObject jsonBody = new JSONObject();
             jsonBody.put("user_codi", persCodi);
             jsonBody.put("user_lega", nroLegajo);
@@ -347,7 +348,7 @@ public class RegistroActivity extends AppCompatActivity {
         String clave = editTextClave.getText().toString();
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String mJSONURLString = Configurador.API_PATH + "personal/"+nroLegajo;
+        String mJSONURLString = Configurador.API_PATH + "personal/"+nroLegajo+"/"+Configurador.ID_EMPRESA;
         // Initialize a new JsonArrayRequest instance
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                 Request.Method.GET,

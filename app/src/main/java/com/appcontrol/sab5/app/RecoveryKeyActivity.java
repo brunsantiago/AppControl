@@ -303,7 +303,7 @@ public class RecoveryKeyActivity extends AppCompatActivity {
         String clave = editTextClave.getText().toString();
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String mJSONURLString = Configurador.API_PATH + "personal/"+nroLegajo;
+        String mJSONURLString = Configurador.API_PATH + "personal/"+nroLegajo+"/"+Configurador.ID_EMPRESA;
         // Initialize a new JsonArrayRequest instance
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                 Request.Method.GET,
@@ -413,7 +413,7 @@ public class RecoveryKeyActivity extends AppCompatActivity {
     private void recoveryKey(String persCodi, String clave) {
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String URL = Configurador.API_PATH + "recovery_key";
+        String URL = Configurador.API_PATH + "recovery_key/"+Configurador.ID_EMPRESA;
         JSONObject jsonBody = new JSONObject();
 
         try {
@@ -486,7 +486,8 @@ public class RecoveryKeyActivity extends AppCompatActivity {
         String fileName = nroLegajo+"_profile_photo.jpg";
 
         StorageReference photoRef = storage.getReference()
-                .child("USERS")
+                //.child("BROUCLEAN") or .child("CONSISA")
+                .child("USERS") // SAB-5 Directorio raiz
                 .child("PROFILE_PHOTO")
                 .child(nroLegajo)
                 .child(fileName);

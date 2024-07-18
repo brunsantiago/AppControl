@@ -66,7 +66,8 @@ public class UpdateActivity extends AppCompatActivity {
         String fileName = "app-control.apk";
 
         StorageReference updateRef = storage.getReference()
-                .child("RELEASE")
+                //.child("BROUCLEAN") or .child("CONSISA")
+                .child("RELEASE") // SAB-5 Directorio raiz
                 .child(versionNameServer)
                 .child(fileName);
 
