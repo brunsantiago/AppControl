@@ -4,15 +4,6 @@ import java.util.Map;
 
 public class TurnoSesion {
 
-//    private String fechaPuesto;
-//    private String nombrePuesto;
-//    private String egresoPuesto;
-//    private String ingresoPuesto;
-//    private String horaIngreso;
-//    private String fechaIngreso;
-//    private String horaEgreso;
-//    private Boolean turnoNoche;
-
     private String fp;
     private String np;
     private String ep;

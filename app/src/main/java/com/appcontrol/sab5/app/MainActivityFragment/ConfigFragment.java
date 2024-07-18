@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -310,7 +309,7 @@ public class ConfigFragment extends Fragment implements AdapterView.OnItemSelect
 
         try {
             RequestQueue requestQueue = Volley.newRequestQueue(getContext());
-            String URL = Configurador.API_PATH + "request_device";
+            String URL = Configurador.API_PATH + "request_device/"+Configurador.ID_EMPRESA;
             JSONObject jsonBody = new JSONObject();
             jsonBody.put("rdev_anid",solicitudDispositivo.getAndroidId());
             jsonBody.put("rdev_date",solicitudDispositivo.getDate());
@@ -326,8 +325,6 @@ public class ConfigFragment extends Fragment implements AdapterView.OnItemSelect
             jsonBody.put("rdev_cper",solicitudDispositivo.getNroLegajo());
             jsonBody.put("rdev_nlin",solicitudDispositivo.getNroLinea());
             final String requestBody = jsonBody.toString();
-
-            Log.d("JSONBODY", "sendRequestDevice: "+requestBody);
 
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL, null, new Response.Listener<JSONObject>() {
                 @Override
@@ -367,7 +364,7 @@ public class ConfigFragment extends Fragment implements AdapterView.OnItemSelect
         clienteInicial.setNombreCliente("Seleccione un Cliente ...");
         listaDeClientes.add(clienteInicial);
         RequestQueue requestQueue = Volley.newRequestQueue(getContext());
-        String mJSONURLString = Configurador.API_PATH + "clientes";
+        String mJSONURLString = Configurador.API_PATH + "clientes/"+Configurador.ID_EMPRESA;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                 Method.GET,
                 mJSONURLString,

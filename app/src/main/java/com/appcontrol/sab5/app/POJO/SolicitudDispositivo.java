@@ -29,6 +29,7 @@ public class SolicitudDispositivo {
         this.idCliente = (int) map.get("idCliente");
         this.idObjetivo = (String) map.get("idObjetivo");
         this.marca = (String) map.get("marca");
+        this.estado = (String) map.get("appVersion");
         this.modelo = (String) map.get("modelo");
         this.androidId = (String) map.get("androidId");
         this.nombre = (String) map.get("nombre");
