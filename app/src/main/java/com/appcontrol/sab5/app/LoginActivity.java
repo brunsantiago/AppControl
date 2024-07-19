@@ -77,6 +77,7 @@ public class LoginActivity extends AppCompatActivity {
     private int versionCodeServer;
     private String versionNameServer;
     private int versionPriority;
+    private String androidId;
 
     UpdateAlert myAlert;
 
@@ -85,6 +86,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         setContentView(R.layout.activity_login);
+
+        androidId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
         textViewNroLegajo = findViewById(R.id.nrolegajo);
         textViewClave = findViewById(R.id.clave);
@@ -496,6 +499,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private void checkForUpdates(){
 
+        updateVersionDevice(); // Actualiza la version del dispositivo en el servidor
+
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         String mJSONURLString = Configurador.API_PATH + "app_version/last_version/"+Configurador.ID_EMPRESA;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
@@ -544,6 +549,55 @@ public class LoginActivity extends AppCompatActivity {
         myAlert = new UpdateAlert();
         myAlert.versionNameServer(versionNameServer);
         myAlert.show(getSupportFragmentManager(),"Update Alert");
+    }
+
+    private void updateVersionDevice(){
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        String URL = Configurador.API_PATH + "devices/"+androidId+"/"+Configurador.ID_EMPRESA;
+        JSONObject jsonBody = new JSONObject();
+
+        try {
+            jsonBody.put("appVersion", versionNameApp);
+            final String requestBody = jsonBody.toString();
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PATCH, URL, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    try {
+                        if(response.getInt("result")==1){
+                            // Si sale OK !
+                            Toast.makeText(LoginActivity.this, "versionNameServer: "+versionNameServer+"Android ID: "+androidId, Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(LoginActivity.this, "No se pudo cargar la version en el dispositivo", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Toast.makeText(LoginActivity.this, "No se pudo cargar la version en el dispositivo", Toast.LENGTH_SHORT).show();
+                }
+            }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        return null;
+                    }
+                }
+            };
+            requestQueue.add(jsonObjectRequest);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 
