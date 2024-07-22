@@ -90,6 +90,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -255,6 +256,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         chequearEstadoSesion();
 
         faceRegistration();
+
+        esFeriado();
 
     }
 
@@ -1152,6 +1155,10 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                         try {
                             JSONObject jsonObject = response.getJSONObject(i);
 
+                            boolean puestoFeriado = esPuestoFeriado(jsonObject);
+
+                            Log.d("PUESTO FERIADO", "Puesto Feriado: "+puestoFeriado);
+
                             JSONObject dayHoyJSONObject = jsonObject.getJSONObject(diaSemanaHoy);
                             JSONObject dayAyerJSONObject = jsonObject.getJSONObject(diaSemanaAyer);
 
@@ -1211,7 +1218,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             public void onResponse(JSONArray response) {
                 if (response != null) {
 
-                    listaDePuestos.clear(); //Vacia la lista de puestos antes de iniciar la carga
+                    listaDePuestos.clear();
 
                     PuestoDM puestoInicial = new PuestoDM();
                     puestoInicial.setPUES_NOMB("Seleccione un Puesto ...");
@@ -1235,8 +1242,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
                             JSONObject jsonObject = response.getJSONObject(i);
 
-                            Boolean puestoFeriado = false; // Falta funcion
-                            Boolean puestoTurnoNoche = esTurnoNoche(jsonObject.getString("PUES_DHOR"), jsonObject.getString("PUES_HHOR"));
+                            boolean puestoFeriado = esPuestoFeriado(jsonObject);
+                            boolean puestoTurnoNoche = esTurnoNoche(jsonObject.getString("PUES_DHOR"), jsonObject.getString("PUES_HHOR"));
 
                             PuestoDM puesto = new PuestoDM();
                             puesto.setPUES_CODI(jsonObject.getInt("PUES_CODI"));
@@ -1301,17 +1308,71 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         return true;
     }
 
-    private Boolean esFeriado(Date date){
+    private void esFeriado(){
         // Funcion que devuelve si el dia pasado como paramentro es feriado segun la tabla de feriados
-        return true;
+        Date hoy = new Date();
+        Date ayer = new Date(hoy.getTime()-86400000);
+
+        ArrayList<String> feriados = new ArrayList<String>();
+
+        RequestQueue requestQueue = Volley.newRequestQueue(IngresoActivity.this);
+        String url = Configurador.API_PATH + "feriados";
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                if (response != null) {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    for (int i = 0; i < response.length(); i++) {
+                        try {
+                            JSONObject jsonObject = response.getJSONObject(i);
+                            feriados.add(jsonObject.getInt("FERI_DIA")+"-"+jsonObject.getInt("FERI_MES"));
+                        } catch (JSONException e) {
+                            //Toast.makeText(IngresoActivity.this, "No se encontraron dias feriados", Toast.LENGTH_SHORT).show();
+                            cargarDatosPantallaIngreso(false);
+                        }
+                    }
+
+                    int mesHoy = hoy.getMonth()+1;
+                    String stHoy = hoy.getDate()+"-"+mesHoy;
+
+                    int mesAyer = ayer.getMonth()+1;
+                    String stAyer = ayer.getDate()+"-"+mesAyer;
+
+                    boolean hoyFeriado = feriados.contains(stHoy);
+                    boolean ayerFeriado = feriados.contains(stAyer);
+
+                }else{
+
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(IngresoActivity.this, "Error de conexion con el Servidor", Toast.LENGTH_SHORT).show();
+            }
+        });
+        requestQueue.add(jsonArrayRequest);
     }
 
-    private Boolean feriadoCobertura(){
+    private boolean feriadoCobertura(){
         // Funcion que devuelve si existe en la cobertura la carga de feriados
         return true;
     }
 
-
+    private boolean esPuestoFeriado(JSONObject jsonObject){
+        try {
+            JSONObject dayHoyJSONObject = jsonObject.getJSONObject("PUES_FERI");
+            JSONArray dataHoy = dayHoyJSONObject.getJSONArray("data");
+            if(dataHoy.getInt(0) == 1){
+                return true;
+            }else{
+                return false;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     public String campoSemana(Date date){
         ArrayList<String> dias = new ArrayList<>();
