@@ -90,7 +90,6 @@ import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -258,6 +257,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         faceRegistration();
 
         esFeriado();
+
+        feriadoCobertura();
 
     }
 
@@ -769,6 +770,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         } else if (fechaHoraIngreso.getTime() > ingresoPuesto.getTime()-60*60*1000  && fechaHoraIngreso.getTime() < egresoPuesto.getTime()) {
             listaDePuestos.add(nuevoPuesto);
         }
+
     }
 
     @Override
@@ -1231,8 +1233,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                     String diaSemanaHoy = campoSemana(date);
                     String diaSemanaAyer = campoSemana(ayer);
 
-                    Boolean ayerFeriado = false; // Falta funcion
-                    Boolean hoyFeriado = false; // Falta funcion
+                    Boolean ayerFeriado = false; // Vienen como parametro
+                    Boolean hoyFeriado = false; // Vienen como parametro
 
                     Boolean feriadoCobertura = false;  // La Cobertura tiene feriados cargados
 
@@ -1308,8 +1310,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         return true;
     }
 
-    private void esFeriado(){
-        // Funcion que devuelve si el dia pasado como paramentro es feriado segun la tabla de feriados
+    private void esFeriado(){ //Agregar parametro Date
+        // Funcion que inicializa las variables "hoyFeriado" y "ayerFeriado" segun tabla de feriados
         Date hoy = new Date();
         Date ayer = new Date(hoy.getTime()-86400000);
 
@@ -1327,7 +1329,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                             JSONObject jsonObject = response.getJSONObject(i);
                             feriados.add(jsonObject.getInt("FERI_DIA")+"-"+jsonObject.getInt("FERI_MES"));
                         } catch (JSONException e) {
-                            //Toast.makeText(IngresoActivity.this, "No se encontraron dias feriados", Toast.LENGTH_SHORT).show();
                             cargarDatosPantallaIngreso(false);
                         }
                     }
@@ -1341,6 +1342,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                     boolean hoyFeriado = feriados.contains(stHoy);
                     boolean ayerFeriado = feriados.contains(stAyer);
 
+                    //Continua ciclo de busqueda de puestos
+
                 }else{
 
                 }
@@ -1348,15 +1351,50 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                cargarDatosPantallaIngreso(false);
                 Toast.makeText(IngresoActivity.this, "Error de conexion con el Servidor", Toast.LENGTH_SHORT).show();
             }
         });
         requestQueue.add(jsonArrayRequest);
     }
 
-    private boolean feriadoCobertura(){
-        // Funcion que devuelve si existe en la cobertura la carga de feriados
-        return true;
+    private void feriadoCobertura(){
+        // Funcion que indica si existe en la cobertura la carga de feriados
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        String idClienteLocal = prefs.getString(ID_CLIENTE,"");
+        String idObjetivoLocal = prefs.getString(ID_OBJETIVO,"");
+
+        RequestQueue requestQueue = Volley.newRequestQueue(IngresoActivity.this);
+        String url = Configurador.API_PATH + "puestos/feriados/" + idClienteLocal + "/" + idObjetivoLocal;
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                if (response != null) {
+                    if(response.length()>0){ //Significa que tiene al menos un puesto feriado
+                        //Continua ciclo enviadado como parametro feriadoCobertura = true
+                        Toast.makeText(IngresoActivity.this, "HAY PUESTOS FERIADOS: "+response.length(), Toast.LENGTH_SHORT).show();
+                        cargarDatosPantallaIngreso(false);
+                    }else{ //No posee puestos feriados
+                        //Continua ciclo enviadado como parametro feriadoCobertura = false
+                        Toast.makeText(IngresoActivity.this, "NO HAY PUESTOS FERIADOS", Toast.LENGTH_SHORT).show();
+                        cargarDatosPantallaIngreso(false);
+                    }
+                }else{
+                    //No posee puestos feriados
+                    //Continua ciclo enviadado como parametro feriadoCobertura = false
+                    cargarDatosPantallaIngreso(false);
+                    Toast.makeText(IngresoActivity.this, "No se encontraron puestos", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                cargarDatosPantallaIngreso(false);
+                Toast.makeText(IngresoActivity.this, "Error de conexion con el Servidor"+error, Toast.LENGTH_SHORT).show();
+            }
+        });
+        requestQueue.add(jsonArrayRequest);
+
     }
 
     private boolean esPuestoFeriado(JSONObject jsonObject){
