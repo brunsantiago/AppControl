@@ -5,9 +5,9 @@ import java.util.Date;
 
 public class Configurador {
 
-    public static final String API_PATH = "http://192.168.1.8:3000/api/"; // PRUEBAS LOCALES NOTEBOOK
+    //public static final String API_PATH = "http://192.168.1.8:3000/api/"; // PRUEBAS LOCALES NOTEBOOK
 
-    //public static final String API_PATH = "http://192.168.1.12:3000/api/"; // PRUEBAS LOCALES PC
+    public static final String API_PATH = "http://192.168.1.12:3000/api/"; // PRUEBAS LOCALES PC
 
     //public static final String API_PATH = "https://app-server.com.ar/api-dm/"; // PLESK - app-server.com.ar
 
