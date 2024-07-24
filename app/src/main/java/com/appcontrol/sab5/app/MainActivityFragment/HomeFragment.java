@@ -65,8 +65,6 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class HomeFragment extends Fragment implements ResultListener<Date> {
 
-    private static final String TAG = "HomeFragment_TAG";
-
     private static final String NOMBRE_CLIENTE = "nombreCliente";
     private static final String NOMBRE_OBJETIVO = "nombreObjetivo";
     private static final String ID_CLIENTE = "idCliente";
@@ -93,8 +91,6 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
     private static final String HORA_INGRESO_TIMESTAMP = "hit";
     private static final String ASIG_PUES = "asig_pues";
     private static final String ASIG_ID = "asig_id";
-
-    //private FirebaseFirestore database;
 
     private Button backgroundCounter;
     private ProgressBar mProgressBar;
@@ -471,28 +467,11 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
 
             showSesionVigenteAlert();
 
-//            String ISO_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
-//            SimpleDateFormat sdf = new SimpleDateFormat(ISO_FORMAT);
-//            sdf.setTimeZone(TimeZone.getTimeZone("GMT-3:00"));
-//
-//            Date date = null;
-//            try {
-//                date = sdf.parse(ultimaSesion.getLAST_TIME());
-//            } catch (ParseException e) {
-//                e.printStackTrace();
-//            }
-//
-//            SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-//            String horaIngresoTimestamp = timestampFormat.format(date);
-//
-//            Log.d(TAG, "obtenerTurno: "+horaIngresoTimestamp);
-
             editor.putBoolean(ESTADO_SESION,true);
             editor.putInt(ASIG_PUES,ultimaSesion.getLAST_PUES());
             editor.putString(FECHA_PUESTO,dateToString(ultimaSesion.getLAST_FECH()));
             editor.putString(INGRESO_PUESTO,ultimaSesion.getLAST_DHOR());
             editor.putString(HORA_INGRESO,ultimaSesion.getLAST_DHRE());
-            //editor.putString(HORA_INGRESO_TIMESTAMP,horaIngresoTimestamp);
             editor.putString(HORA_INGRESO_TIMESTAMP,ultimaSesion.getLAST_TIME());
             editor.putString(FECHA_INGRESO,dateToString(ultimaSesion.getLAST_FECH())); // Deberia ir la fecha de ingreso real, se coloca la FECHA PUESTO
             editor.putString(HORA_EGRESO,ultimaSesion.getLAST_HHOR());
@@ -707,44 +686,6 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
         }.start();
     }
 
-    private void enviarDatos(){
-        String msg1 = "##,imei:358240051111110,A;";
-        String msg2 = "358240051111110;";
-        String msg3 = "imei:358240051111110,help me,1905122034,,F,203418.000,A,3432.5935,S,05828.5003,W,0.00,4.22,;";
-        Cliente_Old clienteOld = new Cliente_Old(getContext());
-        clienteOld.execute(msg3);
-        Toast.makeText(getContext(), "Alerta enviada al servidor: "+msg3, Toast.LENGTH_SHORT).show();
-    }
-
-//    private void enviarAlarma(){
-//        SharedPreferences prefs = getContext().getSharedPreferences("MisPreferencias", MODE_PRIVATE);
-//
-//        Map<String, Object> data = new HashMap<>();
-//        data.put("idCliente", prefs.getString(ID_CLIENTE,""));
-//        data.put("idObjetivo", prefs.getString(ID_OBJETIVO,""));
-//        data.put("nombreCliente", prefs.getString(NOMBRE_CLIENTE,""));
-//        data.put("nombreObjetivo", prefs.getString(NOMBRE_OBJETIVO,""));
-//        data.put("nroLegajo", prefs.getString(NRO_LEGAJO,""));
-//        data.put("timestamp", FieldValue.serverTimestamp());
-//        data.put("latitud", "-34.543225");
-//        data.put("longitud", "-58.474950");
-//
-//        database.collection("alerts")
-//                .add(data)
-//                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-//                    @Override
-//                    public void onSuccess(DocumentReference documentReference) {
-//                        Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
-//                    }
-//                })
-//                .addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Log.w(TAG, "Error adding document", e);
-//                    }
-//                });
-//    }
-
     private void disableButtons(){
         btnIngreso.setEnabled(false);
         btnEgreso.setEnabled(false);
@@ -752,6 +693,5 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
         btnLlamar.setEnabled(false);
         btnPanico.setEnabled(false);
     }
-
 
 }

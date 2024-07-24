@@ -85,7 +85,6 @@ public class RegistroActivity extends AppCompatActivity {
     private DatePickerDialog datePickerDialog;
     private ImageView imageViewPhoto;
 
-    private static final String NRO_LEGAJO = "nl";
     private Uri photoURI;
     private String currentPhotoPath;
     private static final int REQUEST_TAKE_PHOTO = 1;
@@ -188,7 +187,6 @@ public class RegistroActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        //clearFormRegister();
         super.onResume();
     }
 

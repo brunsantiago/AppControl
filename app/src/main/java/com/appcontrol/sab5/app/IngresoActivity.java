@@ -109,24 +109,14 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
     private static final String PROFILE_PHOTO = "ProfilePhotoPath";
 
-    //private static final String SESION_ID = "sesionID";
-
-    // Variables de Cobertura (Nuevas)
     private static final String FECHA_INGRESO = "fi";
     private static final String HORA_INGRESO = "hi";
-    //private static final String ID_PERSONAL = "nl";
-    //private static final String FECHA_EGRESO = "fe";
-    //private static final String HORA_EGRESO = "he";
     private static final String INGRESO_PUESTO = "ip" ;
     private static final String EGRESO_PUESTO = "ep";
-    //private static final String HORAS_TURNO = "ht";
     private static final String FECHA_PUESTO = "fp";
     private static final String NOMBRE_PUESTO = "np";
-    //private static final String NOMBRE_TURNO = "nt";
     private static final String TURNO_NOCHE = "tn";
-    //private static final String IMAGE_PATH = "im";
     private static final String HORA_INGRESO_PARAM = "hip";
-    //private static final String HORA_EGRESO_PARAM = "hep";
 
     private static final String NRO_LEGAJO = "nl";
     private static final String NOMBRE_PERSONAL = "an";
@@ -266,7 +256,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
     @Override
     public void finish(Date date) {
-        //buscarPuestos(date);
         cargarPuestos(date);
     }
 
@@ -450,8 +439,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                         Location markerLocation = new Location("");
                         markerLocation.setLatitude(branchLatitud);
                         markerLocation.setLongitude(branchLongitud);
-
-                        //distancia.setText("Distancia: "+loc.distanceTo(markerLocation));
 
                         if (location.distanceTo(markerLocation) < branchRadio) {
                             textViewUbicacion.setText("Dentro del Rango");
@@ -900,7 +887,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                 trueTime.execute();
             } else {
                 Date date = TrueTime.now(); // Obtengo la hora desde Internet
-                //buscarPuestos(date);
                 cargarPuestos(date);
             }
         } else{
@@ -1126,172 +1112,80 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         btnRegistrarIngreso.setEnabled(false);
     }
 
-    public void buscarPuestos(Date date){
+    public void buscarPuestos(Date ingresoDate, boolean feriadoCobertura, ArrayList<Integer> diasSemanaCobertura, boolean hoyFeriado, boolean ayerFeriado, JSONArray puestosServer){
 
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
-        String idClienteLocal = prefs.getString(ID_CLIENTE,"");
-        String idObjetivoLocal = prefs.getString(ID_OBJETIVO,"");
+        if (puestosServer != null) {
 
-        RequestQueue requestQueue = Volley.newRequestQueue(IngresoActivity.this);
-        String url = Configurador.API_PATH + "puestos/" + idClienteLocal + "/" + idObjetivoLocal;
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                if (response != null) {
+            listaDePuestos.clear();
 
-                    listaDePuestos.clear(); //Vacia la lista de puestos antes de iniciar la carga
+            PuestoDM puestoInicial = new PuestoDM();
+            puestoInicial.setPUES_NOMB("Seleccione un Puesto ...");
+            listaDePuestos.add(puestoInicial);
 
-                    PuestoDM puestoInicial = new PuestoDM();
-                    puestoInicial.setPUES_NOMB("Seleccione un Puesto ...");
-                    listaDePuestos.add(puestoInicial);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Date ayer = new Date(ingresoDate.getTime()-86400000);
 
-                    Date ayer = new Date(date.getTime()-86400000);
-                    String diaSemanaHoy = campoSemana(date);
-                    String diaSemanaAyer = campoSemana(ayer);
+            String diaSemanaHoy = campoSemana(ingresoDate);
+            String diaSemanaAyer = campoSemana(ayer);
 
-                    for (int i = 0; i < response.length(); i++) {
-                        try {
-                            JSONObject jsonObject = response.getJSONObject(i);
+            for (int i = 0; i < puestosServer.length(); i++) {
 
-                            JSONObject dayHoyJSONObject = jsonObject.getJSONObject(diaSemanaHoy);
-                            JSONObject dayAyerJSONObject = jsonObject.getJSONObject(diaSemanaAyer);
+                try {
 
-                            JSONArray dataHoy = dayHoyJSONObject.getJSONArray("data");
-                            JSONArray dataAyer = dayAyerJSONObject.getJSONArray("data");
+                    JSONObject jsonObject = puestosServer.getJSONObject(i);
 
-                            if(dataAyer.getInt(0)==1 && esTurnoNoche(jsonObject.getString("PUES_DHOR"),jsonObject.getString("PUES_HHOR"))){
-                                PuestoDM puesto = new PuestoDM();
-                                puesto.setPUES_CODI(jsonObject.getInt("PUES_CODI"));
-                                puesto.setPUES_NOMB(jsonObject.getString("PUES_NOMB"));
-                                puesto.setPUES_DHOR(jsonObject.getString("PUES_DHOR"));
-                                puesto.setPUES_HHOR(jsonObject.getString("PUES_HHOR"));
-                                puesto.setPUES_OBJE(jsonObject.getInt("PUES_OBJE"));
-                                puesto.setPUES_FECH(dateFormat.format(ayer)); //Se deberia validar contra la fecha de inicio del puesto
-                                addPuestos(puesto,date);
-                            }
-                            if(dataHoy.getInt(0)==1){
-                                PuestoDM puesto = new PuestoDM();
-                                puesto.setPUES_CODI(jsonObject.getInt("PUES_CODI"));
-                                puesto.setPUES_NOMB(jsonObject.getString("PUES_NOMB"));
-                                puesto.setPUES_DHOR(jsonObject.getString("PUES_DHOR"));
-                                puesto.setPUES_HHOR(jsonObject.getString("PUES_HHOR"));
-                                puesto.setPUES_OBJE(jsonObject.getInt("PUES_OBJE"));
-                                puesto.setPUES_FECH(dateFormat.format(date));
-                                addPuestos(puesto,date);
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(IngresoActivity.this, "No se encontraron puestos", Toast.LENGTH_SHORT).show();
+                    boolean puestoFeriado = esPuestoFeriado(jsonObject);
+                    boolean puestoTurnoNoche = esTurnoNoche(jsonObject.getString("PUES_DHOR"), jsonObject.getString("PUES_HHOR"));
+
+                    PuestoDM puesto = new PuestoDM();
+                    puesto.setPUES_CODI(jsonObject.getInt("PUES_CODI"));
+                    puesto.setPUES_NOMB(jsonObject.getString("PUES_NOMB"));
+                    puesto.setPUES_DHOR(jsonObject.getString("PUES_DHOR"));
+                    puesto.setPUES_HHOR(jsonObject.getString("PUES_HHOR"));
+                    puesto.setPUES_OBJE(jsonObject.getInt("PUES_OBJE"));
+
+                    JSONObject dayHoyJSONObject = jsonObject.getJSONObject(diaSemanaHoy);
+                    JSONObject dayAyerJSONObject = jsonObject.getJSONObject(diaSemanaAyer);
+
+                    JSONArray dataHoy = dayHoyJSONObject.getJSONArray("data");
+                    JSONArray dataAyer = dayAyerJSONObject.getJSONArray("data");
+
+                    if (!feriadoCobertura) {
+                        if (dataAyer.getInt(0) == 1 && puestoTurnoNoche) {
+                            puesto.setPUES_FECH(dateFormat.format(ayer));
+                            addPuestos(puesto, ingresoDate);
+                        }
+                        if (dataHoy.getInt(0) == 1) {
+                            puesto.setPUES_FECH(dateFormat.format(ingresoDate));
+                            addPuestos(puesto, ingresoDate);
+                        }
+                    }else{
+                        if (hoyFeriado && puestoFeriado && diaCobertura(diasSemanaCobertura,ingresoDate)){
+                            puesto.setPUES_FECH(dateFormat.format(ingresoDate));
+                            addPuestos(puesto, ingresoDate);
+                        }else if(dataHoy.getInt(0) == 1 && !hoyFeriado){
+                            puesto.setPUES_FECH(dateFormat.format(ingresoDate));
+                            addPuestos(puesto, ingresoDate);
+                        }
+                        if(ayerFeriado && puestoFeriado && diaCobertura(diasSemanaCobertura,ayer) && puestoTurnoNoche){
+                            puesto.setPUES_FECH(dateFormat.format(ayer));
+                            addPuestos(puesto, ingresoDate);
+                        }else if(dataAyer.getInt(0) == 1 && !ayerFeriado && puestoTurnoNoche){
+                            puesto.setPUES_FECH(dateFormat.format(ayer));
+                            addPuestos(puesto, ingresoDate);
                         }
                     }
-                    cargarDatosPantallaIngreso(false);
-                }else{
-                    cargarDatosPantallaIngreso(false);
+                } catch (JSONException e) {
                     Toast.makeText(IngresoActivity.this, "No se encontraron puestos", Toast.LENGTH_SHORT).show();
                 }
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                cargarDatosPantallaIngreso(false);
-                Toast.makeText(IngresoActivity.this, "Error de conexion con el Servidor", Toast.LENGTH_SHORT).show();
-            }
-        });
-        requestQueue.add(jsonArrayRequest);
-    }
+            cargarDatosPantallaIngreso(false);
+        }else{
+            cargarDatosPantallaIngreso(false);
+            Toast.makeText(IngresoActivity.this, "No se encontraron puestos", Toast.LENGTH_SHORT).show();
+        }
 
-    public void buscarPuestos(Date ingresoDate, boolean feriadoCobertura, ArrayList<Integer> diasSemanaCobertura, boolean hoyFeriado, boolean ayerFeriado){
-
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
-        String idClienteLocal = prefs.getString(ID_CLIENTE,"");
-        String idObjetivoLocal = prefs.getString(ID_OBJETIVO,"");
-
-        RequestQueue requestQueue = Volley.newRequestQueue(IngresoActivity.this);
-        String url = Configurador.API_PATH + "puestos/test/" + idClienteLocal + "/" + idObjetivoLocal;
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                if (response != null) {
-
-                    listaDePuestos.clear();
-
-                    PuestoDM puestoInicial = new PuestoDM();
-                    puestoInicial.setPUES_NOMB("Seleccione un Puesto ...");
-                    listaDePuestos.add(puestoInicial);
-
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
-                    Date ayer = new Date(ingresoDate.getTime()-86400000);
-
-                    String diaSemanaHoy = campoSemana(ingresoDate);
-                    String diaSemanaAyer = campoSemana(ayer);
-
-                    for (int i = 0; i < response.length(); i++) {
-
-                        try {
-
-                            JSONObject jsonObject = response.getJSONObject(i);
-
-                            boolean puestoFeriado = esPuestoFeriado(jsonObject);
-                            boolean puestoTurnoNoche = esTurnoNoche(jsonObject.getString("PUES_DHOR"), jsonObject.getString("PUES_HHOR"));
-
-                            PuestoDM puesto = new PuestoDM();
-                            puesto.setPUES_CODI(jsonObject.getInt("PUES_CODI"));
-                            puesto.setPUES_NOMB(jsonObject.getString("PUES_NOMB"));
-                            puesto.setPUES_DHOR(jsonObject.getString("PUES_DHOR"));
-                            puesto.setPUES_HHOR(jsonObject.getString("PUES_HHOR"));
-                            puesto.setPUES_OBJE(jsonObject.getInt("PUES_OBJE"));
-
-                            JSONObject dayHoyJSONObject = jsonObject.getJSONObject(diaSemanaHoy);
-                            JSONObject dayAyerJSONObject = jsonObject.getJSONObject(diaSemanaAyer);
-
-                            JSONArray dataHoy = dayHoyJSONObject.getJSONArray("data");
-                            JSONArray dataAyer = dayAyerJSONObject.getJSONArray("data");
-
-                            if (!feriadoCobertura) {
-                                if (dataAyer.getInt(0) == 1 && puestoTurnoNoche) {
-                                    puesto.setPUES_FECH(dateFormat.format(ayer));
-                                    addPuestos(puesto, ingresoDate);
-                                }
-                                if (dataHoy.getInt(0) == 1) {
-                                    puesto.setPUES_FECH(dateFormat.format(ingresoDate));
-                                    addPuestos(puesto, ingresoDate);
-                                }
-                            }else{
-                                if (hoyFeriado && puestoFeriado && diaCobertura(diasSemanaCobertura,ingresoDate)){
-                                    puesto.setPUES_FECH(dateFormat.format(ingresoDate));
-                                    addPuestos(puesto, ingresoDate);
-                                }else if(dataHoy.getInt(0) == 1 && !hoyFeriado){
-                                    puesto.setPUES_FECH(dateFormat.format(ingresoDate));
-                                    addPuestos(puesto, ingresoDate);
-                                }
-                                if(ayerFeriado && puestoFeriado && diaCobertura(diasSemanaCobertura,ayer) && puestoTurnoNoche){
-                                    puesto.setPUES_FECH(dateFormat.format(ayer));
-                                    addPuestos(puesto, ingresoDate);
-                                }else if(dataAyer.getInt(0) == 1 && !ayerFeriado && puestoTurnoNoche){
-                                    puesto.setPUES_FECH(dateFormat.format(ayer));
-                                    addPuestos(puesto, ingresoDate);
-                                }
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(IngresoActivity.this, "No se encontraron puestos", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    cargarDatosPantallaIngreso(false);
-                }else{
-                    cargarDatosPantallaIngreso(false);
-                    Toast.makeText(IngresoActivity.this, "No se encontraron puestos", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                cargarDatosPantallaIngreso(false);
-                Toast.makeText(IngresoActivity.this, "Error de conexion con el Servidor", Toast.LENGTH_SHORT).show();
-            }
-        });
-        requestQueue.add(jsonArrayRequest);
     }
 
 
@@ -1303,7 +1197,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         }
     }
 
-    private void esFeriado(Date ingresoDate, boolean feriadoCobertura, ArrayList<Integer> diasSemanaCobertura){
+    private void esFeriado(Date ingresoDate, boolean feriadoCobertura, ArrayList<Integer> diasSemanaCobertura, JSONArray puestosServer){
         // Funcion que inicializa las variables "hoyFeriado" y "ayerFeriado" segun tabla de feriados
         Date ayer = new Date(ingresoDate.getTime()-86400000);
 
@@ -1323,7 +1217,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                             JSONObject jsonObject = response.getJSONObject(i);
                             feriados.add(jsonObject.getInt("FERI_DIA")+"-"+jsonObject.getInt("FERI_MES"));
                         } catch (JSONException e) {
-                            buscarPuestos(ingresoDate, feriadoCobertura,diasSemanaCobertura,hoyFeriado, ayerFeriado);
+                            buscarPuestos(ingresoDate, feriadoCobertura,diasSemanaCobertura,hoyFeriado, ayerFeriado, puestosServer);
                         }
                     }
 
@@ -1336,10 +1230,10 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                     hoyFeriado = feriados.contains(stHoy);
                     ayerFeriado = feriados.contains(stAyer);
 
-                    buscarPuestos(ingresoDate, feriadoCobertura,diasSemanaCobertura,hoyFeriado, ayerFeriado);
+                    buscarPuestos(ingresoDate, feriadoCobertura,diasSemanaCobertura,hoyFeriado, ayerFeriado, puestosServer);
 
                 }else{
-                    buscarPuestos(ingresoDate, feriadoCobertura,diasSemanaCobertura,hoyFeriado, ayerFeriado);
+                    buscarPuestos(ingresoDate, feriadoCobertura,diasSemanaCobertura,hoyFeriado, ayerFeriado, puestosServer);
                 }
             }
         }, new Response.ErrorListener() {
@@ -1354,13 +1248,13 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
     private void cargarPuestos(Date ingresoDate){
         // Funcion que indica si existe en la cobertura la carga de feriados
-        // Y genera un array de dias de cobertura de la semana
+        // Genera un array de dias de cobertura de la semana
         SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
         String idClienteLocal = prefs.getString(ID_CLIENTE,"");
         String idObjetivoLocal = prefs.getString(ID_OBJETIVO,"");
 
         RequestQueue requestQueue = Volley.newRequestQueue(IngresoActivity.this);
-        String url = Configurador.API_PATH + "puestos/test/" + idClienteLocal + "/" + idObjetivoLocal; // CAMBIAR PATH
+        String url = Configurador.API_PATH + "puestos/" + idClienteLocal + "/" + idObjetivoLocal;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray puestosServer) {
@@ -1412,7 +1306,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                             //cargarDatosPantallaIngreso(false);
                         }
                     }
-                    esFeriado(ingresoDate,feriadoCobertura,diasSemanaCobertura);
+                    esFeriado(ingresoDate,feriadoCobertura,diasSemanaCobertura,puestosServer);
                 }else{
                     cargarDatosPantallaIngreso(false);
                 }

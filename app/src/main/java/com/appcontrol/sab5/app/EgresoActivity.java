@@ -92,9 +92,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-//import com.bumptech.glide.request.RequestOptions;
-//import com.bumptech.glide.request.transition.Transition;
-
 public class EgresoActivity extends AppCompatActivity implements ResultListener<Date>{
 
     private static final String TAG = "Egreso_Activity_TAG";
@@ -715,30 +712,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
-    }
-
-    public void subirArchivoImageView(String path){
-        // Create a storage reference from our app
-        StorageReference storageRef = storage.getReference();
-        StorageReference photoRef = storageRef.child(path+"/"+photoURI.getLastPathSegment());
-        // Get the data from an ImageView as bytes
-        imageViewCamara.setDrawingCacheEnabled(true);
-        imageViewCamara.buildDrawingCache();
-        Bitmap bitmap = ((BitmapDrawable) imageViewCamara.getDrawable()).getBitmap();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] data = baos.toByteArray();
-
-        UploadTask uploadTask = photoRef.putBytes(data);
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-            }
-        });
     }
 
     public void showEarlyRetirement(String horaEgresoParametrizada,String fechaEgreso,String horaEgreso){

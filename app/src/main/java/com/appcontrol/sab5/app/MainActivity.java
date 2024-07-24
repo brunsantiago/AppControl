@@ -28,7 +28,6 @@ import com.google.android.material.navigation.NavigationView;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String ESTADO_SESION = "es";
-    private static final String NRO_LEGAJO = "nl";
     private AppBarConfiguration mAppBarConfiguration;
 
 
