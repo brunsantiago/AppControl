@@ -566,17 +566,17 @@ public class LoginActivity extends AppCompatActivity {
                     try {
                         if(response.getInt("result")==1){
                             // Si sale OK !
-                            Toast.makeText(LoginActivity.this, "versionNameServer: "+versionNameServer+"Android ID: "+androidId, Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(LoginActivity.this, "versionNameServer: "+versionNameServer+"Android ID: "+androidId, Toast.LENGTH_SHORT).show();
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        Toast.makeText(LoginActivity.this, "No se pudo cargar la version en el dispositivo", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(LoginActivity.this, "No se pudo cargar la version en el dispositivo", Toast.LENGTH_SHORT).show();
                     }
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(LoginActivity.this, "No se pudo cargar la version en el dispositivo", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(LoginActivity.this, "No se pudo cargar la version en el dispositivo", Toast.LENGTH_SHORT).show();
                 }
             }) {
                 @Override

@@ -1227,11 +1227,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                     String diaSemanaHoy = campoSemana(ingresoDate);
                     String diaSemanaAyer = campoSemana(ayer);
 
-                    //boolean ayerFeriado = false; // Vienen como parametro
-                    //boolean hoyFeriado = false; // Vienen como parametro
-
-                    //boolean feriadoCobertura = false;  // La Cobertura tiene feriados cargados
-
                     for (int i = 0; i < response.length(); i++) {
 
                         try {
@@ -1374,7 +1369,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                 for (int i = 0; i < 7; i++) {
                     diasSemanaCobertura.add(0);
                 }
-                boolean feriadoCobertura = false;
+                boolean feriadoCobertura = false; // Existe feriado en la cobertura ?
                 if (puestosServer != null) {
                     for (int i = 0; i < puestosServer.length(); i++) {
                         try {
@@ -1409,13 +1404,12 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                 diasSemanaCobertura.set(6, 1); // Sábado
                             }
 
-                            JSONArray feriado = jsonObject.getJSONObject("PUES_FERI").getJSONArray("data");
-                            if(feriado.getInt(0) == 1){
+                            if(esPuestoFeriado(jsonObject)){
                                 feriadoCobertura = true;
                             }
 
                         } catch (JSONException e) {
-                            cargarDatosPantallaIngreso(false);
+                            //cargarDatosPantallaIngreso(false);
                         }
                     }
                     esFeriado(ingresoDate,feriadoCobertura,diasSemanaCobertura);

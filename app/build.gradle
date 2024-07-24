@@ -16,8 +16,8 @@ android {
         applicationId "com.appcontrol.sab5.app"
         minSdkVersion 26 //Android 8 (nivel de API 26)
         targetSdkVersion 28 //Android 9 (nivel de API 28)
-        versionCode 6
-        versionName "1.3.4"
+        versionCode 7
+        versionName "1.3.5"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
