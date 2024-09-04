@@ -725,7 +725,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         }
     }
 
-    public void addPuestos(PuestoDM nuevoPuesto, Date fechaHoraIngreso){
+    public boolean addPuestos(PuestoDM nuevoPuesto, Date fechaHoraIngreso){
         SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
@@ -746,14 +746,19 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             //Si el Ingreso Real es mayor al Ingreso Puesto y los dias son iguales (Ingreso y Puesto)
             if(fechaHoraIngreso.getTime() > ingresoPuesto.getTime()-60*60*1000 && nuevoPuesto.getPUES_FECH().equals(fechaIngreso)) {
                 listaDePuestos.add(nuevoPuesto);
+                return true;
             }
-            // Si el Ingreso Real es menor al ingreso Puesto y los dias son distintos (Ingreso y Puesto)
+            // Si el Ingreso Real es menor al Egreso Puesto y los dias son distintos (Ingreso y Puesto)
             else if (fechaHoraIngreso.getTime() < egresoPuesto.getTime() && !nuevoPuesto.getPUES_FECH().equals(fechaIngreso)){
                 listaDePuestos.add(nuevoPuesto);
+                return true;
             }
         } else if (fechaHoraIngreso.getTime() > ingresoPuesto.getTime()-60*60*1000  && fechaHoraIngreso.getTime() < egresoPuesto.getTime()) {
             listaDePuestos.add(nuevoPuesto);
+            return true;
         }
+
+        return false;
 
     }
 
@@ -1137,6 +1142,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
                     boolean puestoFeriado = esPuestoFeriado(jsonObject);
                     boolean puestoTurnoNoche = esTurnoNoche(jsonObject.getString("PUES_DHOR"), jsonObject.getString("PUES_HHOR"));
+                    boolean puestoAgregado = false;
 
                     PuestoDM puesto = new PuestoDM();
                     puesto.setPUES_CODI(jsonObject.getInt("PUES_CODI"));
@@ -1152,28 +1158,28 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                     JSONArray dataAyer = dayAyerJSONObject.getJSONArray("data");
 
                     if (!feriadoCobertura) {
-                        if (dataAyer.getInt(0) == 1 && puestoTurnoNoche) {
-                            puesto.setPUES_FECH(dateFormat.format(ayer));
-                            addPuestos(puesto, ingresoDate);
-                        }
-                        if (dataHoy.getInt(0) == 1) {
+                        if (dataHoy.getInt(0) == 1 && !puestoAgregado) {
                             puesto.setPUES_FECH(dateFormat.format(ingresoDate));
-                            addPuestos(puesto, ingresoDate);
+                            puestoAgregado = addPuestos(puesto, ingresoDate);
+                        }
+                        if (dataAyer.getInt(0) == 1 && puestoTurnoNoche && !puestoAgregado) {
+                            puesto.setPUES_FECH(dateFormat.format(ayer));
+                            puestoAgregado = addPuestos(puesto, ingresoDate);
                         }
                     }else{
-                        if (hoyFeriado && puestoFeriado && diaCobertura(diasSemanaCobertura,ingresoDate)){
+                        if (hoyFeriado && puestoFeriado && diaCobertura(diasSemanaCobertura,ingresoDate) && !puestoAgregado){
                             puesto.setPUES_FECH(dateFormat.format(ingresoDate));
-                            addPuestos(puesto, ingresoDate);
+                            puestoAgregado = addPuestos(puesto, ingresoDate);
                         }else if(dataHoy.getInt(0) == 1 && !hoyFeriado){
                             puesto.setPUES_FECH(dateFormat.format(ingresoDate));
-                            addPuestos(puesto, ingresoDate);
+                            puestoAgregado = addPuestos(puesto, ingresoDate);
                         }
-                        if(ayerFeriado && puestoFeriado && diaCobertura(diasSemanaCobertura,ayer) && puestoTurnoNoche){
+                        if(ayerFeriado && puestoFeriado && diaCobertura(diasSemanaCobertura,ayer) && puestoTurnoNoche && !puestoAgregado){
                             puesto.setPUES_FECH(dateFormat.format(ayer));
-                            addPuestos(puesto, ingresoDate);
-                        }else if(dataAyer.getInt(0) == 1 && !ayerFeriado && puestoTurnoNoche){
+                            puestoAgregado = addPuestos(puesto, ingresoDate);
+                        }else if(dataAyer.getInt(0) == 1 && !ayerFeriado && puestoTurnoNoche && !puestoAgregado){
                             puesto.setPUES_FECH(dateFormat.format(ayer));
-                            addPuestos(puesto, ingresoDate);
+                            puestoAgregado = addPuestos(puesto, ingresoDate);
                         }
                     }
                 } catch (JSONException e) {
@@ -1259,9 +1265,10 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             @Override
             public void onResponse(JSONArray puestosServer) {
                 ArrayList<Integer> diasSemanaCobertura = new ArrayList<Integer>();
-                // Inicializa la lista con 7 ceros
+                // Inicializa la lista con 7 "1"(unos), si no quiero contemplar dias de cobertura
+                // y dejo sin efecto el recorrido de los puestos
                 for (int i = 0; i < 7; i++) {
-                    diasSemanaCobertura.add(0);
+                    diasSemanaCobertura.add(1);
                 }
                 boolean feriadoCobertura = false; // Existe feriado en la cobertura ?
                 if (puestosServer != null) {
@@ -1269,34 +1276,36 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                         try {
                             JSONObject jsonObject = puestosServer.getJSONObject(i);
 
-                            JSONArray domingo = jsonObject.getJSONObject("PUES_DOMI").getJSONArray("data");
-                            if(domingo.getInt(0) == 1){
-                                diasSemanaCobertura.set(0,1); // Domingo
-                            }
-                            JSONArray lunes = jsonObject.getJSONObject("PUES_LUNE").getJSONArray("data");
-                            if(lunes.getInt(0 ) == 1){
-                                diasSemanaCobertura.set(1,1); // Lunes
-                            }
-                            JSONArray martes = jsonObject.getJSONObject("PUES_MART").getJSONArray("data");
-                            if (martes.getInt(0) == 1) {
-                                diasSemanaCobertura.set(2, 1); // Martes
-                            }
-                            JSONArray miercoles = jsonObject.getJSONObject("PUES_MIER").getJSONArray("data");
-                            if (miercoles.getInt(0) == 1) {
-                                diasSemanaCobertura.set(3, 1); // Miércoles
-                            }
-                            JSONArray jueves = jsonObject.getJSONObject("PUES_JUEV").getJSONArray("data");
-                            if (jueves.getInt(0) == 1) {
-                                diasSemanaCobertura.set(4, 1); // Jueves
-                            }
-                            JSONArray viernes = jsonObject.getJSONObject("PUES_VIER").getJSONArray("data");
-                            if (viernes.getInt(0) == 1) {
-                                diasSemanaCobertura.set(5, 1); // Viernes
-                            }
-                            JSONArray sabado = jsonObject.getJSONObject("PUES_SABA").getJSONArray("data");
-                            if (sabado.getInt(0) == 1) {
-                                diasSemanaCobertura.set(6, 1); // Sábado
-                            }
+                            //VERIFICACION DE COBERTURA ANULADA
+
+//                            JSONArray domingo = jsonObject.getJSONObject("PUES_DOMI").getJSONArray("data");
+//                            if(domingo.getInt(0) == 1){
+//                                diasSemanaCobertura.set(0,1); // Domingo
+//                            }
+//                            JSONArray lunes = jsonObject.getJSONObject("PUES_LUNE").getJSONArray("data");
+//                            if(lunes.getInt(0 ) == 1){
+//                                diasSemanaCobertura.set(1,1); // Lunes
+//                            }
+//                            JSONArray martes = jsonObject.getJSONObject("PUES_MART").getJSONArray("data");
+//                            if (martes.getInt(0) == 1) {
+//                                diasSemanaCobertura.set(2, 1); // Martes
+//                            }
+//                            JSONArray miercoles = jsonObject.getJSONObject("PUES_MIER").getJSONArray("data");
+//                            if (miercoles.getInt(0) == 1) {
+//                                diasSemanaCobertura.set(3, 1); // Miércoles
+//                            }
+//                            JSONArray jueves = jsonObject.getJSONObject("PUES_JUEV").getJSONArray("data");
+//                            if (jueves.getInt(0) == 1) {
+//                                diasSemanaCobertura.set(4, 1); // Jueves
+//                            }
+//                            JSONArray viernes = jsonObject.getJSONObject("PUES_VIER").getJSONArray("data");
+//                            if (viernes.getInt(0) == 1) {
+//                                diasSemanaCobertura.set(5, 1); // Viernes
+//                            }
+//                            JSONArray sabado = jsonObject.getJSONObject("PUES_SABA").getJSONArray("data");
+//                            if (sabado.getInt(0) == 1) {
+//                                diasSemanaCobertura.set(6, 1); // Sábado
+//                            }
 
                             if(esPuestoFeriado(jsonObject)){
                                 feriadoCobertura = true;
@@ -1306,6 +1315,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                             //cargarDatosPantallaIngreso(false);
                         }
                     }
+
                     esFeriado(ingresoDate,feriadoCobertura,diasSemanaCobertura,puestosServer);
                 }else{
                     cargarDatosPantallaIngreso(false);

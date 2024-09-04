@@ -44,7 +44,6 @@ import com.appcontrol.sab5.app.Configurador;
 import com.appcontrol.sab5.app.EgresoActivity;
 import com.appcontrol.sab5.app.IngresoActivity;
 import com.appcontrol.sab5.app.MainActivity;
-import com.appcontrol.sab5.app.POJO.Cliente_Old;
 import com.appcontrol.sab5.app.POJO.UltimaSesionDM;
 import com.appcontrol.sab5.app.R;
 import com.appcontrol.sab5.app.ResultListener;
@@ -473,7 +472,7 @@ public class HomeFragment extends Fragment implements ResultListener<Date> {
             editor.putString(INGRESO_PUESTO,ultimaSesion.getLAST_DHOR());
             editor.putString(HORA_INGRESO,ultimaSesion.getLAST_DHRE());
             editor.putString(HORA_INGRESO_TIMESTAMP,ultimaSesion.getLAST_TIME());
-            editor.putString(FECHA_INGRESO,dateToString(ultimaSesion.getLAST_FECH())); // Deberia ir la fecha de ingreso real, se coloca la FECHA PUESTO
+            editor.putString(FECHA_INGRESO,dateToString(ultimaSesion.getLAST_TIME()));
             editor.putString(HORA_EGRESO,ultimaSesion.getLAST_HHOR());
             editor.putString(EGRESO_PUESTO,ultimaSesion.getLAST_HHOR());
             editor.putBoolean(TURNO_NOCHE,esTurnoNoche(ultimaSesion.getLAST_DHOR(),ultimaSesion.getLAST_HHOR()));
