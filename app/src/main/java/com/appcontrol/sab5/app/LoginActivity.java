@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
@@ -88,6 +89,10 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         androidId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        NetworkUtil netInfo = new NetworkUtil(this);
+        int buildVersion = Build.VERSION.SDK_INT;
+        Toast.makeText(this, "Tipo de conexiones habilitadas: " + netInfo.getConnectionType() + " Intensidad de la señal: " + netInfo.getSignalStrength() + " Build Version: " + buildVersion, Toast.LENGTH_SHORT).show();
 
         textViewNroLegajo = findViewById(R.id.nrolegajo);
         textViewClave = findViewById(R.id.clave);

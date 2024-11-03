@@ -46,12 +46,6 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.BaseTarget;
-import com.bumptech.glide.request.target.SizeReadyCallback;
-import com.bumptech.glide.request.transition.Transition;
 import com.appcontrol.sab5.app.AlertDialog.FaceDetectionError;
 import com.appcontrol.sab5.app.AlertDialog.FaceRecognitionError;
 import com.appcontrol.sab5.app.AlertDialog.FacesDetectionError;
@@ -60,15 +54,20 @@ import com.appcontrol.sab5.app.AlertDialog.RegisterAlertError;
 import com.appcontrol.sab5.app.FaceRecognition.FaceClassifier;
 import com.appcontrol.sab5.app.FaceRecognition.TFLiteFaceRecognition;
 import com.appcontrol.sab5.app.POJO.HoraRegistrada;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.BaseTarget;
+import com.bumptech.glide.request.target.SizeReadyCallback;
+import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceDetection;
@@ -80,7 +79,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -89,8 +87,10 @@ import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class EgresoActivity extends AppCompatActivity implements ResultListener<Date>{
 
@@ -162,6 +162,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_egreso);
 
+        database = FirebaseFirestore.getInstance();
+
         Toolbar toolbar = findViewById(R.id.toolbarEgreso);
         setSupportActionBar(toolbar);
 
@@ -216,6 +218,30 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
 
         faceRegistration();
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        deleteCache(this);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
+            cargarImagen();
+        }else{
+            btnRegistrarSalida.setAlpha(1.0f);
+            btnRegistrarSalida.setClickable(true);
+        }
     }
 
     private Bitmap loadImageFromStorage(){
@@ -424,13 +450,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         }
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
-
-
     private void registrarSalida(String fechaEgreso,String horaEgreso) {
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
@@ -461,12 +480,14 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                     } catch (JSONException e) {
                         e.printStackTrace();
                         Toast.makeText(EgresoActivity.this, "No se pudo registrar la salida del servicio, por favor contactese con la Central de Operaciones", Toast.LENGTH_SHORT).show();
+
                     }
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     Toast.makeText(EgresoActivity.this, "No se pudo registrar la salida del servicio, por favor contactese con la Central de Operaciones", Toast.LENGTH_SHORT).show();
+
                 }
             }) {
                 @Override
@@ -549,6 +570,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                Toast.makeText(EgresoActivity.this, "No se pudo cerrar el estado de la Sesion", Toast.LENGTH_SHORT).show();
             }
         });
         requestQueue.add(jsonObjectRequest);
@@ -600,6 +622,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
             }
         } else{
             Toast.makeText(this, "No esta conectado a Internet", Toast.LENGTH_SHORT).show();
+            btnRegistrarSalida.setAlpha(1.0f);
+            btnRegistrarSalida.setClickable(true);
         }
     }
 
@@ -777,7 +801,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                         imageViewCamara.setImageDrawable(resource);
                         Bitmap bitmap = ((BitmapDrawable) resource).getBitmap();
                         faceVerification(bitmap);
-                        //initTrueTime();
                     }
                     @Override
                     public void getSize(@NonNull SizeReadyCallback cb) {
@@ -790,17 +813,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         ;
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-            cargarImagen();
-        }else{
-            btnRegistrarSalida.setAlpha(1.0f);
-            btnRegistrarSalida.setClickable(true);
-        }
-    }
 
     public Boolean sesionVencida(String fechaEgreso, String horaEgreso){
         Date now = armarDate(fechaEgreso,horaEgreso);
@@ -874,7 +887,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         t.start();
     }
 
-
     public void chequearEstadoSesionServer(String fechaEgreso, String horaEgreso){
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
@@ -895,7 +907,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                             try {
                                 jsonObject = response.getJSONObject(0);
                                 if(jsonObject.getInt("LAST_ESTA")==1){
-                                    //registrarSalida(fechaEgreso,horaEgreso);
                                     egresoAnticipado(fechaEgreso,horaEgreso);
                                 }else{
                                     cerrarEstadoSesionApp();
@@ -918,15 +929,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                     }
                 }
         );
-
         requestQueue.add(jsonArrayRequest);
-
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        deleteCache(this);
     }
 
     public void deleteCache(Context context) {
@@ -955,5 +958,28 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         }
     }
 
-
+    public void uploadError(){
+        Map<String, Object> dataError = new HashMap<>();
+        dataError.put("pers_codi", "3");
+        dataError.put("an", "BRUN SANTIAGO");
+        dataError.put("nombreObjetivo", "BASE TÉCNICA");
+        dataError.put("nombreCliente", "SDI - Seguridad Electrónica");
+        dataError.put("idCliente", "6545");
+        dataError.put("idObjetivo", "   875");
+        dataError.put("androidId", "c1236434d400120f");
+        database.collection("data").document("error").collection("list")
+                .add(dataError)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document", e);
+                    }
+                });
+    }
 }
