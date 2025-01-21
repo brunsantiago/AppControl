@@ -30,6 +30,9 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.appcontrol.sab5.app.AlertDialog.DeviceAlertError;
+import com.appcontrol.sab5.app.AlertDialog.ConnectionAlert;
+import com.appcontrol.sab5.app.AlertDialog.InternetConnectionAlert;
+import com.appcontrol.sab5.app.AlertDialog.ServerAlertError;
 import com.appcontrol.sab5.app.AlertDialog.UpdateAlert;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
@@ -80,8 +83,6 @@ public class LoginActivity extends AppCompatActivity {
     private int versionPriority;
     private String androidId;
 
-    UpdateAlert myAlert;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,10 +90,6 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         androidId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        NetworkUtil netInfo = new NetworkUtil(this);
-        int buildVersion = Build.VERSION.SDK_INT;
-        Toast.makeText(this, "Tipo de conexiones habilitadas: " + netInfo.getConnectionType() + " Intensidad de la señal: " + netInfo.getSignalStrength() + " Build Version: " + buildVersion, Toast.LENGTH_SHORT).show();
 
         textViewNroLegajo = findViewById(R.id.nrolegajo);
         textViewClave = findViewById(R.id.clave);
@@ -107,20 +104,19 @@ public class LoginActivity extends AppCompatActivity {
         progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         progressDialog.setCancelable(false);
 
-        myAlert = null;
-
         textViewVersion.setText("Version "+versionNameApp);
 
         botonIngresar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                botonIngresar.setClickable(false);
                 String nroLegajo = textViewNroLegajo.getText().toString();
                 String clave = textViewClave.getText().toString();
                 if((nroLegajo!=null && !nroLegajo.equals(""))&&(clave!=null && !clave.equals(""))){
-                    signIn(nroLegajo,clave);
-                    botonIngresar.setClickable(false);
+                    checkConnections(nroLegajo,clave);
                 } else {
-                 Toast.makeText(LoginActivity.this, "Por favor ingrese un Numero de Legajo y/o Clave valida", Toast.LENGTH_SHORT).show();
+                    botonIngresar.setClickable(true);
+                    Toast.makeText(LoginActivity.this, "Por favor ingrese un Numero de Legajo y/o Clave valida", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -255,9 +251,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private void signIn(String nroLegajo, String clave) {
 
-        progressDialog.show();
-        progressDialog.setContentView(R.layout.custom_progressdialog);
-
         try {
             RequestQueue requestQueue = Volley.newRequestQueue(this);
             String URL = Configurador.API_PATH + "login/"+Configurador.ID_EMPRESA;
@@ -314,6 +307,8 @@ public class LoginActivity extends AppCompatActivity {
             };
             requestQueue.add(jsonObjectRequest);
         } catch (JSONException e) {
+            botonIngresar.setClickable(true);
+            progressDialog.dismiss();
             e.printStackTrace();
         }
     }
@@ -404,11 +399,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private void loadLoginActivity(){
         downloadProfilePhoto();
-    }
-
-    private void showDeviceErrorAlert(){
-        DeviceAlertError myAlert = new DeviceAlertError();
-        myAlert.show(getSupportFragmentManager(),"Device Error");
     }
 
     private void resetFormLogin(){
@@ -542,18 +532,12 @@ public class LoginActivity extends AppCompatActivity {
                 new Response.ErrorListener(){
                     @Override
                     public void onErrorResponse(VolleyError error){
-                        Toast.makeText(LoginActivity.this, "Error de Servidor", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(LoginActivity.this, "Error de Servidor", Toast.LENGTH_SHORT).show();
                     }
                 }
         );
         requestQueue.add(jsonArrayRequest);
 
-    }
-
-    public void showUpdateAlert(String versionNameServer){
-        myAlert = new UpdateAlert();
-        myAlert.versionNameServer(versionNameServer);
-        myAlert.show(getSupportFragmentManager(),"Update Alert");
     }
 
     private void updateVersionDevice(){
@@ -605,19 +589,82 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     protected void onDestroy() {
         deleteCache(this);
         super.onDestroy();
     }
 
-    @Override
-    protected void onStop() {
-        if(myAlert!=null){
-            myAlert.dismiss();
+    private void checkConnections(String nroLegajo, String clave){
+        progressDialog.show();
+        progressDialog.setContentView(R.layout.custom_progressdialog);
+        if (NetworkUtil.isInternetAvailable(this)) {
+            // Verificar si la conexión es activa realizando una solicitud
+            new Thread(() -> {
+                boolean activeConnection = NetworkUtil.isConnectionActive("https://www.google.com");
+                runOnUiThread(() -> {
+                    if (activeConnection) {
+                        //Conexión a Internet activa
+                        serverConnection(nroLegajo,clave);
+                    } else {
+                        //Conexión a Internet inactiva
+                        botonIngresar.setClickable(true);
+                        progressDialog.dismiss();
+                        showInternetConectionAlert();
+                    }
+                });
+            }).start();
+        } else {
+            //Sin conexión a Internet
+            botonIngresar.setClickable(true);
+            progressDialog.dismiss();
+            showConectionAlert();
         }
-        super.onStop();
+    }
+
+    public void showUpdateAlert(String versionNameServer){
+        UpdateAlert myUpdateAlert = new UpdateAlert();
+        myUpdateAlert.versionNameServer(versionNameServer);
+        myUpdateAlert.show(getSupportFragmentManager(),"Update Alert");
+    }
+
+    private void showDeviceErrorAlert(){
+        DeviceAlertError myDeviceAlertError = new DeviceAlertError();
+        myDeviceAlertError.show(getSupportFragmentManager(),"Device Error");
+    }
+
+    private void showInternetConectionAlert(){
+        InternetConnectionAlert myInternetConnectionAlert = new InternetConnectionAlert();
+        myInternetConnectionAlert.show(getSupportFragmentManager(),"Internet Connection Error");
+    }
+
+    private void showConectionAlert(){
+        ConnectionAlert myConnectionAlert = new ConnectionAlert();
+        myConnectionAlert.show(getSupportFragmentManager(),"Connection Error");
+    }
+
+    private void showServerErrorAlert(){
+        ServerAlertError myServerAlertError = new ServerAlertError();
+        myServerAlertError.show(getSupportFragmentManager(),"Server Error");
+    }
+
+    private void serverConnection(String nroLegajo, String clave){
+        // Verificar si el servidor esta activo realizando una solicitud
+        Thread serverConnectionThread = new Thread(() -> {
+            boolean serverConnection = NetworkUtil.isConnectionActive(Configurador.URL_SERVER);
+            runOnUiThread(() -> {
+                if (serverConnection) {
+                    //Conexión al servidor correcta
+                    signIn(nroLegajo,clave);
+                } else {
+                    //Conexión al servidor inactiva
+                    botonIngresar.setClickable(true);
+                    progressDialog.dismiss();
+                    showServerErrorAlert();
+                }
+            });
+        });
+        serverConnectionThread.start();
     }
 }
 
