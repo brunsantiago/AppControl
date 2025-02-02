@@ -473,21 +473,20 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                 public void onResponse(JSONObject response) {
                     try {
                         if(response.getInt("result")==1){
-                            showRegisterAlert();
                             actualizarEstadoPersonal(fechaEgreso,horaEgreso);
-                            servicioFinalizado();
+                        }else{
+                            //Sin cambios en la tabla asigvigi
+                            actualizarEstadoPersonal(fechaEgreso,horaEgreso);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        Toast.makeText(EgresoActivity.this, "No se pudo registrar la salida del servicio, por favor contactese con la Central de Operaciones", Toast.LENGTH_SHORT).show();
-
+                        Toast.makeText(EgresoActivity.this, "No se pudo registrar la salida del servicio, por favor intente nuevamente", Toast.LENGTH_SHORT).show();
                     }
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(EgresoActivity.this, "No se pudo registrar la salida del servicio, por favor contactese con la Central de Operaciones", Toast.LENGTH_SHORT).show();
-
+                    Toast.makeText(EgresoActivity.this, "No se pudo registrar la salida del servicio, por favor intente nuevamente", Toast.LENGTH_SHORT).show();
                 }
             }) {
                 @Override
@@ -566,6 +565,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PATCH, URL, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                showRegisterAlert();
+                servicioFinalizado();
             }
         }, new Response.ErrorListener() {
             @Override
@@ -813,8 +814,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         ;
     }
 
-
-
     public Boolean sesionVencida(String fechaEgreso, String horaEgreso){
         Date now = armarDate(fechaEgreso,horaEgreso);
         Configurador miConf = Configurador.getInstance();
@@ -958,28 +957,4 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         }
     }
 
-    public void uploadError(){
-        Map<String, Object> dataError = new HashMap<>();
-        dataError.put("pers_codi", "3");
-        dataError.put("an", "BRUN SANTIAGO");
-        dataError.put("nombreObjetivo", "BASE TÉCNICA");
-        dataError.put("nombreCliente", "SDI - Seguridad Electrónica");
-        dataError.put("idCliente", "6545");
-        dataError.put("idObjetivo", "   875");
-        dataError.put("androidId", "c1236434d400120f");
-        database.collection("data").document("error").collection("list")
-                .add(dataError)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error adding document", e);
-                    }
-                });
-    }
 }
