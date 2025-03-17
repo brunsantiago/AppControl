@@ -229,7 +229,7 @@ public class RegistroActivity extends AppCompatActivity {
         //String path = "BROUCLEAN/USERS/PROFILE_PHOTO/"+editTextNroLegajo.getText();
         String path = "USERS/PROFILE_PHOTO/"+editTextNroLegajo.getText(); //SAB-5 Directorio raiz
         StorageReference storageRef = storage.getReference();
-        StorageReference photoRef = storageRef.child(path+"/"+photoURI.getLastPathSegment());
+        StorageReference photoRef = storageRef.child(path+"/"+editTextNroLegajo.getText()+"_profile_photo.jpg");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data = baos.toByteArray();
@@ -237,10 +237,12 @@ public class RegistroActivity extends AppCompatActivity {
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
+                Toast.makeText(RegistroActivity.this, "No se pudo cargar la foto", Toast.LENGTH_SHORT).show();
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
             }
         });
     }
