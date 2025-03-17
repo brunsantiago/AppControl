@@ -362,7 +362,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                                 Bitmap bitmap = croppedFace(bounds,input);
                                                 FaceClassifier.Recognition recognitionVerification = faceClassifier.recognizeImage(bitmap,false);
                                                 if(recognitionVerification.getDistance()<=0.85){
-                                                    registrarIngreso();
+                                                    //registrarIngreso();
+                                                    registrarIngresoCompleto();
                                                     //Toast.makeText(IngresoActivity.this, "Distancia del modelo = "+recognitionVerification.getDistance(), Toast.LENGTH_SHORT).show();
                                                 }else{
                                                     //Toast.makeText(IngresoActivity.this, "No se pudo reconocer el rostro. Por favor vuelva a intentarlo ", Toast.LENGTH_SHORT).show();
@@ -500,6 +501,112 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
+    }
+
+    // En la clase IngresoActivity.java
+    private void registrarIngresoCompleto() {
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+
+        try {
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+            String URL = Configurador.API_PATH + "registro_completo/" + Configurador.ID_EMPRESA;
+            JSONObject jsonBody = new JSONObject();
+
+            // Datos para asigvigi
+            jsonBody.put("asig_obje", prefs.getInt(ASIG_OBJE, 0));
+            jsonBody.put("asig_vigi", prefs.getString(PERS_CODI, ""));
+            jsonBody.put("asig_fech", prefs.getString(ASIG_FECH, ""));
+            jsonBody.put("asig_dhor", prefs.getString(HORA_INGRESO_PARAM, ""));
+            jsonBody.put("asig_visa", prefs.getInt(ASIG_VISA, 0));
+            jsonBody.put("asig_usua", prefs.getInt(ASIG_USUA, 0));
+            jsonBody.put("asig_time", prefs.getString(HORA_INGRESO_TIMESTAMP, ""));
+            jsonBody.put("asig_pues", prefs.getInt(ASIG_PUES, 0));
+            jsonBody.put("asig_bloq", prefs.getInt(ASIG_BLOQ, 0));
+            jsonBody.put("asig_facm", prefs.getInt(ASIG_FACM, 0));
+            jsonBody.put("asig_venc", prefs.getString(ASIG_VENC, ""));
+            jsonBody.put("asig_empr", Configurador.ID_EMPRESA);
+
+            // Datos para last_session
+            jsonBody.put("last_cper", prefs.getString(PERS_CODI, ""));
+            jsonBody.put("last_ccli", prefs.getInt(ASIG_OBJE, 0));
+            jsonBody.put("last_cobj", prefs.getString(ID_OBJETIVO, ""));
+            jsonBody.put("last_fech", prefs.getString(ASIG_FECH, ""));
+            jsonBody.put("last_dhor", prefs.getString(ASIG_DHOR, ""));
+            jsonBody.put("last_hhor", prefs.getString(ASIG_HHOR, ""));
+            jsonBody.put("last_usua", prefs.getInt(ASIG_USUA, 0));
+            jsonBody.put("last_time", prefs.getString(HORA_INGRESO_TIMESTAMP, ""));
+            jsonBody.put("last_pues", prefs.getInt(ASIG_PUES, 0));
+            jsonBody.put("last_npue", prefs.getString(NOMBRE_PUESTO, ""));
+            jsonBody.put("last_ncli", prefs.getString(NOMBRE_CLIENTE, ""));
+            jsonBody.put("last_nobj", prefs.getString(NOMBRE_OBJETIVO, ""));
+            jsonBody.put("last_dhre", prefs.getString(HORA_INGRESO, ""));
+            jsonBody.put("idEmpresa", Configurador.ID_EMPRESA);
+
+            final String requestBody = jsonBody.toString();
+
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                    Request.Method.POST, URL, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                boolean success = response.getBoolean("success");
+                                if (success) {
+                                    String asigId = response.getString("asigId");
+                                    SharedPreferences.Editor editor = prefs.edit();
+                                    editor.putString(ASIG_ID, asigId);
+                                    editor.putBoolean(ESTADO_SESION, true);
+                                    editor.apply();
+                                    chequearEstadoSesion();
+                                    showRegisterAlert();
+                                } else {
+                                    Toast.makeText(IngresoActivity.this,
+                                            "Error al cargar ingreso: " + response.getString("message"),
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            } catch (JSONException e) {
+                                Toast.makeText(IngresoActivity.this,
+                                        "Error al procesar la respuesta",
+                                        Toast.LENGTH_SHORT).show();
+                                e.printStackTrace();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Toast.makeText(IngresoActivity.this,
+                                    "Error de conexión con el servidor",
+                                    Toast.LENGTH_SHORT).show();
+                            Log.e("API_ERROR", "Error: " + error.toString());
+                        }
+                    }
+            ) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s",
+                                requestBody, "utf-8");
+                        return null;
+                    }
+                }
+            };
+
+            requestQueue.add(jsonObjectRequest);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(IngresoActivity.this,
+                    "Error al preparar los datos",
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void registrarIngreso() {
