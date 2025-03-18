@@ -53,6 +53,7 @@ import com.appcontrol.sab5.app.AlertDialog.FaceRecognitionError;
 import com.appcontrol.sab5.app.AlertDialog.FacesDetectionError;
 import com.appcontrol.sab5.app.AlertDialog.PuestoVencidoAlert;
 import com.appcontrol.sab5.app.AlertDialog.RegisterAlert;
+import com.appcontrol.sab5.app.AlertDialog.RegistroIngresoError;
 import com.appcontrol.sab5.app.FaceRecognition.FaceClassifier;
 import com.appcontrol.sab5.app.FaceRecognition.TFLiteFaceRecognition;
 import com.appcontrol.sab5.app.POJO.HoraRegistrada;
@@ -503,7 +504,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         return true;
     }
 
-    // En la clase IngresoActivity.java
     private void registrarIngresoCompleto() {
         SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
 
@@ -560,11 +560,13 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                     chequearEstadoSesion();
                                     showRegisterAlert();
                                 } else {
+                                    showRegistroIngresoError();
                                     Toast.makeText(IngresoActivity.this,
                                             "Error al cargar ingreso: " + response.getString("message"),
                                             Toast.LENGTH_SHORT).show();
                                 }
                             } catch (JSONException e) {
+                                showRegistroIngresoError();
                                 Toast.makeText(IngresoActivity.this,
                                         "Error al procesar la respuesta",
                                         Toast.LENGTH_SHORT).show();
@@ -575,6 +577,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
+                            showRegistroIngresoError();
                             Toast.makeText(IngresoActivity.this,
                                     "Error de conexión con el servidor",
                                     Toast.LENGTH_SHORT).show();
@@ -603,150 +606,10 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
         } catch (JSONException e) {
             e.printStackTrace();
+            showRegistroIngresoError();
             Toast.makeText(IngresoActivity.this,
                     "Error al preparar los datos",
                     Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void registrarIngreso() {
-
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-
-        try {
-            RequestQueue requestQueue = Volley.newRequestQueue(this);
-            String URL = Configurador.API_PATH + "asigvigi";
-            JSONObject jsonBody = new JSONObject();
-            jsonBody.put("asig_obje", prefs.getInt(ASIG_OBJE,0));
-            jsonBody.put("asig_vigi", prefs.getString(PERS_CODI,""));
-            jsonBody.put("asig_fech", prefs.getString(ASIG_FECH,""));
-            jsonBody.put("asig_dhor", prefs.getString(HORA_INGRESO_PARAM,""));
-            jsonBody.put("asig_hhor", "");
-            jsonBody.put("asig_ause", "");
-            jsonBody.put("asig_deta", "");
-            jsonBody.put("asig_visa", prefs.getInt(ASIG_VISA,0));
-            jsonBody.put("asig_obse", "");
-            jsonBody.put("asig_usua", prefs.getInt(ASIG_USUA,0));
-            jsonBody.put("asig_time", prefs.getString(HORA_INGRESO_TIMESTAMP,""));
-            jsonBody.put("asig_fact", "");
-            jsonBody.put("asig_pues", prefs.getInt(ASIG_PUES,0));
-            jsonBody.put("asig_bloq", prefs.getInt(ASIG_BLOQ,0));
-            jsonBody.put("asig_esta", prefs.getInt(ASIG_BLOQ,0));
-            jsonBody.put("asig_facm", prefs.getInt(ASIG_FACM,0));
-            jsonBody.put("asig_venc", prefs.getString(ASIG_VENC,""));
-
-            jsonBody.put("asig_empr", Configurador.ID_EMPRESA); // Se agrega el campo empresa
-
-            final String requestBody = jsonBody.toString();
-
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL, null, new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    String result;
-                    String asigId;
-                    try {
-                        result = response.getString("result");
-                        asigId = response.getString("asigId");
-                        if(result.equals("1")){
-                            SharedPreferences.Editor editor = prefs.edit();
-                            editor.putString(ASIG_ID, asigId);
-                            editor.putBoolean(ESTADO_SESION,true);
-                            editor.apply();
-                            chequearEstadoSesion();
-                            showRegisterAlert();
-                            registrarUltimaSesion();
-                        }else{
-                            Toast.makeText(IngresoActivity.this, "Error al cargar ingreso", Toast.LENGTH_SHORT).show();
-                        }
-
-                    } catch (JSONException e) {
-                        Toast.makeText(IngresoActivity.this, "Error al cargar ingreso", Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    }
-
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(IngresoActivity.this, "Error al cargar ingreso en la base de datos", Toast.LENGTH_SHORT).show();
-                }
-            }) {
-                @Override
-                public String getBodyContentType() {
-                    return "application/json; charset=utf-8";
-                }
-
-                @Override
-                public byte[] getBody() {
-                    try {
-                        return requestBody == null ? null : requestBody.getBytes("utf-8");
-                    } catch (UnsupportedEncodingException uee) {
-                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                        return null;
-                    }
-                }
-            };
-            requestQueue.add(jsonObjectRequest);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void registrarUltimaSesion() {
-
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String URL = Configurador.API_PATH + "last_session/"+Configurador.ID_EMPRESA;
-        JSONObject jsonBody = new JSONObject();
-
-        try {
-            jsonBody.put("last_cper", prefs.getString(PERS_CODI,"")); // Primary Key
-            jsonBody.put("last_ccli", prefs.getInt(ASIG_OBJE,0));
-            jsonBody.put("last_cobj", prefs.getString(ID_OBJETIVO,""));
-            jsonBody.put("last_fech", prefs.getString(ASIG_FECH,""));
-            jsonBody.put("last_dhor", prefs.getString(ASIG_DHOR,""));
-            jsonBody.put("last_hhor", prefs.getString(ASIG_HHOR,""));
-            jsonBody.put("last_usua", prefs.getInt(ASIG_USUA,0));
-            jsonBody.put("last_time", prefs.getString(HORA_INGRESO_TIMESTAMP,""));
-            jsonBody.put("last_pues", prefs.getInt(ASIG_PUES,0));
-            jsonBody.put("last_npue", prefs.getString(NOMBRE_PUESTO,""));
-            jsonBody.put("last_esta", true);
-            jsonBody.put("last_ncli", prefs.getString(NOMBRE_CLIENTE,""));
-            jsonBody.put("last_nobj", prefs.getString(NOMBRE_OBJETIVO,""));
-            jsonBody.put("last_dhre", prefs.getString(HORA_INGRESO,""));
-            jsonBody.put("last_asid", prefs.getString(ASIG_ID,""));
-            final String requestBody = jsonBody.toString();
-
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL, null, new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    //showRegisterAlert();
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(IngresoActivity.this, "Error al cargar ultima sesion", Toast.LENGTH_SHORT).show();
-                }
-            }) {
-                @Override
-                public String getBodyContentType() {
-                    return "application/json; charset=utf-8";
-                }
-
-                @Override
-                public byte[] getBody() {
-                    try {
-                        return requestBody == null ? null : requestBody.getBytes("utf-8");
-                    } catch (UnsupportedEncodingException uee) {
-                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                        return null;
-                    }
-                }
-            };
-            requestQueue.add(jsonObjectRequest);
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
 
@@ -948,6 +811,11 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         RegisterAlert myAlert = new RegisterAlert();
         myAlert.setTipoRegistro("ingreso");
         myAlert.show(getSupportFragmentManager(),"Register Alert");
+    }
+
+    public void showRegistroIngresoError(){
+        RegistroIngresoError myAlert = new RegistroIngresoError();
+        myAlert.show(getSupportFragmentManager(),"Registro Ingreso Error");
     }
 
     public void showFaceRecognitionError(){

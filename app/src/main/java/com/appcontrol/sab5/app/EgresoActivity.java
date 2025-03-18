@@ -51,6 +51,7 @@ import com.appcontrol.sab5.app.AlertDialog.FaceRecognitionError;
 import com.appcontrol.sab5.app.AlertDialog.FacesDetectionError;
 import com.appcontrol.sab5.app.AlertDialog.RegisterAlert;
 import com.appcontrol.sab5.app.AlertDialog.RegisterAlertError;
+import com.appcontrol.sab5.app.AlertDialog.RegistroEgresoError;
 import com.appcontrol.sab5.app.FaceRecognition.FaceClassifier;
 import com.appcontrol.sab5.app.FaceRecognition.TFLiteFaceRecognition;
 import com.appcontrol.sab5.app.POJO.HoraRegistrada;
@@ -450,45 +451,52 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         }
     }
 
-    private void registrarSalida(String fechaEgreso,String horaEgreso) {
-
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-
-        String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
-        String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
-        Boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE,false);
-        String asigId = prefs.getString(ASIG_ID,"");
-
-        String horaEgresoParametrizado = HoraRegistrada.egresoParametrizado(egresoPuesto,fechaPuesto,horaEgreso,fechaEgreso,turnoNoche);
+    private void registrarSalidaCompleta(String fechaEgreso, String horaEgreso) {
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        String asigId = prefs.getString(ASIG_ID, "");
+        String persCodi = prefs.getString(PERS_CODI, "");
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String URL = Configurador.API_PATH + "asigvigi/"+asigId;
+        String URL = Configurador.API_PATH + "registro_salida/" + asigId + "/" + Configurador.ID_EMPRESA;
         JSONObject jsonBody = new JSONObject();
 
         try {
-            jsonBody.put("horaEgreso", horaEgresoParametrizado);
+            jsonBody.put("horaEgreso", horaEgreso);
+            jsonBody.put("persCodi", persCodi);
             final String requestBody = jsonBody.toString();
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PATCH, URL, null, new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    try {
-                        if(response.getInt("result")==1){
-                            actualizarEstadoPersonal(fechaEgreso,horaEgreso);
-                        }else{
-                            //Sin cambios en la tabla asigvigi
-                            actualizarEstadoPersonal(fechaEgreso,horaEgreso);
+
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PATCH, URL, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                if (response.getBoolean("success")) {
+                                    // Actualizar la UI y las preferencias
+                                    actualizarEstadoPersonal(fechaEgreso, horaEgreso);
+                                } else {
+                                    showRegistroEgresoError();
+                                    btnRegistrarSalida.setAlpha(1.0f);
+                                    btnRegistrarSalida.setClickable(true);
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                showRegistroEgresoError();
+                                Toast.makeText(EgresoActivity.this,
+                                        "Error al procesar la respuesta",
+                                        Toast.LENGTH_SHORT).show();
+                                btnRegistrarSalida.setAlpha(1.0f);
+                                btnRegistrarSalida.setClickable(true);
+                            }
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Toast.makeText(EgresoActivity.this, "No se pudo registrar la salida del servicio, por favor intente nuevamente", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(EgresoActivity.this, "No se pudo registrar la salida del servicio, por favor intente nuevamente", Toast.LENGTH_SHORT).show();
-                }
-            }) {
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            showRegistroEgresoError();
+                            btnRegistrarSalida.setAlpha(1.0f);
+                            btnRegistrarSalida.setClickable(true);
+                        }
+                    }) {
                 @Override
                 public String getBodyContentType() {
                     return "application/json; charset=utf-8";
@@ -499,7 +507,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                     try {
                         return requestBody == null ? null : requestBody.getBytes("utf-8");
                     } catch (UnsupportedEncodingException uee) {
-                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s",
+                                requestBody, "utf-8");
                         return null;
                     }
                 }
@@ -507,26 +516,22 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
             requestQueue.add(jsonObjectRequest);
         } catch (JSONException e) {
             e.printStackTrace();
+            showRegistroEgresoError();
+            btnRegistrarSalida.setAlpha(1.0f);
+            btnRegistrarSalida.setClickable(true);
         }
     }
 
     private void egresoAnticipado(String fechaEgreso,String horaEgreso) {
-
         Date horaEgresoReal = null;
         Date horaEgresoPuesto = null;
-
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-
         SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-
         String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
         String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
         Boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE,false);
         String asigId = prefs.getString(ASIG_ID,"");
-
         String horaEgresoParametrizado = HoraRegistrada.egresoParametrizado(egresoPuesto,fechaPuesto,horaEgreso,fechaEgreso,turnoNoche);
-
-
         try {
             horaEgresoReal = dateFormat.parse(fechaEgreso+" "+horaEgreso);
             horaEgresoPuesto = dateFormat.parse(fechaPuesto+" "+egresoPuesto);
@@ -536,13 +541,11 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
         Long diferenciaEnMinutos = (horaEgresoPuesto.getTime() - horaEgresoReal.getTime())/60/1000;
-
         if(diferenciaEnMinutos>=15){
             showEarlyRetirement(horaEgresoParametrizado,fechaEgreso,horaEgreso);
         }else{
-            registrarSalida(fechaEgreso,horaEgreso);
+            registrarSalidaCompleta(fechaEgreso,horaEgreso);
         }
     }
 
@@ -553,28 +556,9 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         editor.putString(HORA_EGRESO, horaEgreso);
         editor.putBoolean(ESTADO_SESION,false);
         editor.apply();
-        int persCodi = Integer.parseInt(prefs.getString(PERS_CODI,""));
-        cerrarEstadoSesion(persCodi);
-    }
 
-    private void cerrarEstadoSesion(int persCodi){
-
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String URL = Configurador.API_PATH + "last_session/"+persCodi+"/"+Configurador.ID_EMPRESA;
-
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PATCH, URL, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                showRegisterAlert();
-                servicioFinalizado();
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(EgresoActivity.this, "No se pudo cerrar el estado de la Sesion", Toast.LENGTH_SHORT).show();
-            }
-        });
-        requestQueue.add(jsonObjectRequest);
+        showRegisterAlert();
+        servicioFinalizado();
     }
 
     private void chequearEstadoSesion(){
@@ -748,7 +732,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         builder.setView(dialogLayout)
                 .setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        registrarSalida(fechaEgreso,horaEgreso);
+                        registrarSalidaCompleta(fechaEgreso,horaEgreso);
                     }
                 })
                 .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
@@ -770,6 +754,11 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     public void showRegisterAlertError(){
         RegisterAlertError myAlert = new RegisterAlertError();
         myAlert.show(getSupportFragmentManager(),"Register Alert Error");
+    }
+
+    public void showRegistroEgresoError(){
+        RegistroEgresoError myAlert = new RegistroEgresoError();
+        myAlert.show(getSupportFragmentManager(),"Registro Ingreso Error");
     }
 
     public void showFaceRecognitionError(){
