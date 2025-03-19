@@ -23,6 +23,7 @@
         android:layout_marginBottom="40dp"
         android:fontFamily="@font/hpsimplified_rg"
         android:text="No se pudo registrar el ingreso al servicio, por favor intente nuevamente"
+        android:textAlignment="center"
         android:textColor="@android:color/white"
         android:textSize="20dp" />
 
