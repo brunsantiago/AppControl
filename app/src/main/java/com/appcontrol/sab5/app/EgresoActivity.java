@@ -455,13 +455,19 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
         String asigId = prefs.getString(ASIG_ID, "");
         String persCodi = prefs.getString(PERS_CODI, "");
+        String fechaPuesto = prefs.getString(FECHA_PUESTO, "");
+        String egresoPuesto = prefs.getString(EGRESO_PUESTO, "");
+        Boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE, false);
+
+        // Calcular la hora parametrizada para el registro en asigvigi
+        String horaEgresoParametrizado = HoraRegistrada.egresoParametrizado(egresoPuesto, fechaPuesto, horaEgreso, fechaEgreso, turnoNoche);
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         String URL = Configurador.API_PATH + "registro_salida/" + asigId + "/" + Configurador.ID_EMPRESA;
         JSONObject jsonBody = new JSONObject();
 
         try {
-            jsonBody.put("horaEgreso", horaEgreso);
+            jsonBody.put("horaEgreso", horaEgresoParametrizado);
             jsonBody.put("persCodi", persCodi);
             final String requestBody = jsonBody.toString();
 
@@ -471,7 +477,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                         public void onResponse(JSONObject response) {
                             try {
                                 if (response.getBoolean("success")) {
-                                    // Actualizar la UI y las preferencias
                                     actualizarEstadoPersonal(fechaEgreso, horaEgreso);
                                 } else {
                                     showRegistroEgresoError();
