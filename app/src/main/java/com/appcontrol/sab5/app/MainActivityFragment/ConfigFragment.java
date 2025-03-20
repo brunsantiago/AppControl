@@ -312,7 +312,9 @@ public class ConfigFragment extends Fragment implements AdapterView.OnItemSelect
             String URL = Configurador.API_PATH + "request_device/"+Configurador.ID_EMPRESA;
             JSONObject jsonBody = new JSONObject();
             jsonBody.put("rdev_anid",solicitudDispositivo.getAndroidId());
-            jsonBody.put("rdev_date",solicitudDispositivo.getDate());
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String formattedDate = dateFormat.format(solicitudDispositivo.getDate());
+            jsonBody.put("rdev_date",formattedDate);
             jsonBody.put("rdev_esta",solicitudDispositivo.getEstado());
             jsonBody.put("rdev_ccli",solicitudDispositivo.getIdCliente());
             jsonBody.put("rdev_cobj",solicitudDispositivo.getIdObjetivo());
