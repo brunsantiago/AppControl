@@ -523,7 +523,7 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             jsonBody.put("asig_pues", prefs.getInt(ASIG_PUES, 0));
             jsonBody.put("asig_bloq", prefs.getInt(ASIG_BLOQ, 0));
             jsonBody.put("asig_facm", prefs.getInt(ASIG_FACM, 0));
-            jsonBody.put("asig_venc", prefs.getString(ASIG_VENC, ""));
+            //jsonBody.put("asig_venc", prefs.getString(ASIG_VENC, ""));
             jsonBody.put("asig_empr", Configurador.ID_EMPRESA);
 
             // Datos para last_session
@@ -915,7 +915,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
 
         SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-
         String vencimientoPuesto = timestampFormat.format(fechaVence);
 
         SharedPreferences.Editor editor = prefs.edit();

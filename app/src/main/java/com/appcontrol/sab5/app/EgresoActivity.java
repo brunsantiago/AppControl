@@ -125,7 +125,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
 
     private static final String PERS_CODI = "pers_codi";
     private static final String ASIG_PUES = "asig_pues";
-    private static final String HORA_INGRESO_TIMESTAMP = "hit";
+    private static final String HORA_EGRESO_TIMESTAMP = "het";
     private static final String DEVI_UBIC = "devi_ubic";
     private static final String ASIG_ID = "asig_id";
 
@@ -458,8 +458,8 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         String fechaPuesto = prefs.getString(FECHA_PUESTO, "");
         String egresoPuesto = prefs.getString(EGRESO_PUESTO, "");
         Boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE, false);
+        String horaEgresoReal = prefs.getString(HORA_EGRESO_TIMESTAMP, "");
 
-        // Calcular la hora parametrizada para el registro en asigvigi
         String horaEgresoParametrizado = HoraRegistrada.egresoParametrizado(egresoPuesto, fechaPuesto, horaEgreso, fechaEgreso, turnoNoche);
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
@@ -469,6 +469,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         try {
             jsonBody.put("horaEgreso", horaEgresoParametrizado);
             jsonBody.put("persCodi", persCodi);
+            jsonBody.put("horaEgresoReal", horaEgresoReal);
             final String requestBody = jsonBody.toString();
 
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PATCH, URL, null,
@@ -642,6 +643,11 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
             textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorNaranja));
             showRegisterAlertError();
         } else {
+            SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            editor.putString(HORA_EGRESO_TIMESTAMP,timestampFormat.format(fecha));
+            editor.apply();
             chequearEstadoSesionServer(fechaEgreso,horaEgreso);
         }
     }
@@ -908,17 +914,20 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                                     showRegisterAlertError();
                                 }
                             } catch (JSONException e) {
-                                Log.d(TAG, "No se pudo extraer estado de la ultima sesion");
+                                //Log.d(TAG, "No se pudo extraer estado de la ultima sesion");
+                                Toast.makeText(EgresoActivity.this, "No se pudo extraer estado de la ultima sesion", Toast.LENGTH_SHORT).show();
                             }
                         }else{
-                            Log.d(TAG, "No se encontro personal");
+                            //Log.d(TAG, "No se encontro personal");
+                            Toast.makeText(EgresoActivity.this, "No se encontro personal", Toast.LENGTH_SHORT).show();
                         }
                     }
                 },
                 new Response.ErrorListener(){
                     @Override
                     public void onErrorResponse(VolleyError error){
-                        Log.d(TAG, "Error en el servidor");
+                        //Log.d(TAG, "Error en el servidor");
+                        Toast.makeText(EgresoActivity.this, "Error en el servidor", Toast.LENGTH_SHORT).show();
                     }
                 }
         );
