@@ -328,7 +328,6 @@ public class LoginActivity extends AppCompatActivity {
     private void loadDevice(){
         String idAndroid = getAndroidID();
         if(idAndroid!=null){
-            //TODO Se optimizo la solicitud de busqueda
             RequestQueue requestQueue = Volley.newRequestQueue(this);
             String mJSONURLString = Configurador.API_PATH + "devices/"+idAndroid+"/"+Configurador.ID_EMPRESA;
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(

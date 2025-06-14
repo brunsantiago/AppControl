@@ -64,11 +64,6 @@ import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceDetection;
@@ -88,10 +83,8 @@ import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 public class EgresoActivity extends AppCompatActivity implements ResultListener<Date>{
 
@@ -99,8 +92,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
 
     private static final String NOMBRE_OBJETIVO = "nombreObjetivo";
     private static final String NOMBRE_CLIENTE = "nombreCliente";
-    private static final String ID_CLIENTE = "idCliente";
-    private static final String ID_OBJETIVO = "idObjetivo";
 
     private static final String MAP_COOR = "map_coor";
     private static final String MAP_RADIO = "map_radio";
@@ -116,31 +107,21 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
     private static final String EGRESO_PUESTO = "ep";
     private static final String TURNO_NOCHE = "tn";
     private static final String INGRESO_PUESTO = "ip";
-    private static final String IMAGE_PATH = "im";
-    private static final String HORA_EGRESO_PARAM = "hep";
     private static final String NOMBRE_PERSONAL = "an";
     private static final String ESTADO_SESION = "es";
-    private static final String SESION_ID = "si";
     private static final String NRO_LEGAJO = "nl";
 
     private static final String PERS_CODI = "pers_codi";
-    private static final String ASIG_PUES = "asig_pues";
     private static final String HORA_EGRESO_TIMESTAMP = "het";
     private static final String DEVI_UBIC = "devi_ubic";
     private static final String ASIG_ID = "asig_id";
 
-    private FirebaseFirestore database;
-    private FirebaseStorage storage;
     private Button btnRegistrarSalida;
     private TextView textViewStatus;
     private TextView textViewUbicacion;
     private Uri photoURI;
     private ImageView imageViewCamara;
     private String currentPhotoPath;
-    private String idCliente;
-    private String idObjetivo;
-    private TextView estadoDelIngreso;
-    private FirebaseUser userAuth;
 
     private double branchRadio;
     private double branchLatitud;
@@ -163,8 +144,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_egreso);
 
-        database = FirebaseFirestore.getInstance();
-
         Toolbar toolbar = findViewById(R.id.toolbarEgreso);
         setSupportActionBar(toolbar);
 
@@ -173,16 +152,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
 
         synchronizeClock();
 
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-        idCliente = prefs.getString(ID_CLIENTE,"");
-        idObjetivo = prefs.getString(ID_OBJETIVO,"");
-
-        database = FirebaseFirestore.getInstance();
-        userAuth = FirebaseAuth.getInstance().getCurrentUser();
-        storage = FirebaseStorage.getInstance();
-
         btnRegistrarSalida = findViewById(R.id.buttonRegistrarEgreso);
-        estadoDelIngreso = findViewById(R.id.textViewStatus);
         imageViewCamara = findViewById(R.id.imageViewCamara);
         textViewStatus = findViewById(R.id.textViewStatus);
         textViewUbicacion = findViewById(R.id.textViewUbicacion);
@@ -536,7 +506,7 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
         String fechaPuesto = prefs.getString(FECHA_PUESTO,"");
         String egresoPuesto = prefs.getString(EGRESO_PUESTO,"");
         Boolean turnoNoche = prefs.getBoolean(TURNO_NOCHE,false);
-        String asigId = prefs.getString(ASIG_ID,"");
+
         String horaEgresoParametrizado = HoraRegistrada.egresoParametrizado(egresoPuesto,fechaPuesto,horaEgreso,fechaEgreso,turnoNoche);
         try {
             horaEgresoReal = dateFormat.parse(fechaEgreso+" "+horaEgreso);
@@ -914,11 +884,9 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                                     showRegisterAlertError();
                                 }
                             } catch (JSONException e) {
-                                //Log.d(TAG, "No se pudo extraer estado de la ultima sesion");
                                 Toast.makeText(EgresoActivity.this, "No se pudo extraer estado de la ultima sesion", Toast.LENGTH_SHORT).show();
                             }
                         }else{
-                            //Log.d(TAG, "No se encontro personal");
                             Toast.makeText(EgresoActivity.this, "No se encontro personal", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -926,7 +894,6 @@ public class EgresoActivity extends AppCompatActivity implements ResultListener<
                 new Response.ErrorListener(){
                     @Override
                     public void onErrorResponse(VolleyError error){
-                        //Log.d(TAG, "Error en el servidor");
                         Toast.makeText(EgresoActivity.this, "Error en el servidor", Toast.LENGTH_SHORT).show();
                     }
                 }

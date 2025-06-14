@@ -68,10 +68,6 @@ import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceDetection;
@@ -130,7 +126,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String ASIG_HHOR = "asig_hhor";
     private static final String ASIG_VISA = "asig_visa";
     private static final String ASIG_USUA = "asig_usua";
-    private static final String ASIG_TIME = "asig_time";
     private static final String ASIG_PUES = "asig_pues";
     private static final String ASIG_BLOQ = "asig_bloq";
     private static final String ASIG_ESTA = "asig_esta";
@@ -139,26 +134,16 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     private static final String HORA_INGRESO_TIMESTAMP = "hit";
     private static final String DEVI_UBIC = "devi_ubic";
     private static final String ASIG_ID = "asig_id";
-    private static final String ASIG_VENC = "asig_venc";
 
-    private FirebaseFirestore database;
-    private FirebaseStorage storage;
-    private FirebaseUser userAuth;
     private Button btnRegistrarIngreso;
     private TextView textViewUbicacion;
     private Uri photoURI;
     private String currentPhotoPath;
     private ImageView imageViewCamara;
-    private ImageView imageViewDownload;
-    private ArrayList<String> nombrePuestos;
     private ArrayList<PuestoDM> listaDePuestos;
 
     private Boolean puestoSeleccionado;
     private ProgressDialog progressDialog=null;
-
-    private String idCliente;
-    private String idObjetivo;
-    private Spinner spinnerPuesto;
 
     private double branchRadio;
     private double branchLatitud;
@@ -189,18 +174,8 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
         synchronizeClock();
 
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias",MODE_PRIVATE);
-        idCliente = prefs.getString(ID_CLIENTE,"");
-        idObjetivo = prefs.getString(ID_OBJETIVO,"");
-        spinnerPuesto = findViewById(R.id.spinnerPuesto);
-
-        nombrePuestos = new ArrayList<>();
         listaDePuestos = new ArrayList<>();
         puestoSeleccionado = false;
-
-        database = FirebaseFirestore.getInstance();
-        userAuth = FirebaseAuth.getInstance().getCurrentUser();
-        storage = FirebaseStorage.getInstance();
 
         textViewUbicacion = findViewById(R.id.textViewUbicacion);
         btnRegistrarIngreso = findViewById(R.id.buttonRegistrarIngreso);
@@ -363,7 +338,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                                 Bitmap bitmap = croppedFace(bounds,input);
                                                 FaceClassifier.Recognition recognitionVerification = faceClassifier.recognizeImage(bitmap,false);
                                                 if(recognitionVerification.getDistance()<=0.85){
-                                                    //registrarIngreso();
                                                     registrarIngresoCompleto();
                                                     //Toast.makeText(IngresoActivity.this, "Distancia del modelo = "+recognitionVerification.getDistance(), Toast.LENGTH_SHORT).show();
                                                 }else{
@@ -523,7 +497,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
             jsonBody.put("asig_pues", prefs.getInt(ASIG_PUES, 0));
             jsonBody.put("asig_bloq", prefs.getInt(ASIG_BLOQ, 0));
             jsonBody.put("asig_facm", prefs.getInt(ASIG_FACM, 0));
-            //jsonBody.put("asig_venc", prefs.getString(ASIG_VENC, ""));
             jsonBody.put("asig_empr", Configurador.ID_EMPRESA);
 
             // Datos para last_session
@@ -847,7 +820,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                         imageViewCamara.setImageDrawable(resource);
                         Bitmap bitmap = ((BitmapDrawable) resource).getBitmap();
                         faceVerification(bitmap);
-                        //registrarIngreso();
                     }
                     @Override
                     public void getSize(@NonNull SizeReadyCallback cb) {
@@ -904,21 +876,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         editor.putString(HORA_INGRESO,horaIngreso);
         editor.putString(HORA_INGRESO_PARAM, HoraRegistrada.ingresoParametrizado(ingresoPuesto,fechaPuesto,horaIngreso,fechaIngreso));
         editor.putString(HORA_INGRESO_TIMESTAMP,horaIngresoTimestamp);
-        editor.apply();
-
-    }
-
-    private void setVencimientoPuesto(Date fecha){
-
-        Date fechaVence = new Date(fecha.getTime()+60*60*1000);
-
-        SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
-
-        SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        String vencimientoPuesto = timestampFormat.format(fechaVence);
-
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(ASIG_VENC,vencimientoPuesto);
         editor.apply();
 
     }
@@ -1013,8 +970,6 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
 
         Configurador miConf = Configurador.getInstance();
         miConf.setFinSesion(fechaVence);
-
-        setVencimientoPuesto(fechaVence);
 
         return initTrueTimeVigente(fechaVence);
 
@@ -1249,44 +1204,12 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                     for (int i = 0; i < puestosServer.length(); i++) {
                         try {
                             JSONObject jsonObject = puestosServer.getJSONObject(i);
-
-                            //VERIFICACION DE COBERTURA ANULADA
-
-//                            JSONArray domingo = jsonObject.getJSONObject("PUES_DOMI").getJSONArray("data");
-//                            if(domingo.getInt(0) == 1){
-//                                diasSemanaCobertura.set(0,1); // Domingo
-//                            }
-//                            JSONArray lunes = jsonObject.getJSONObject("PUES_LUNE").getJSONArray("data");
-//                            if(lunes.getInt(0 ) == 1){
-//                                diasSemanaCobertura.set(1,1); // Lunes
-//                            }
-//                            JSONArray martes = jsonObject.getJSONObject("PUES_MART").getJSONArray("data");
-//                            if (martes.getInt(0) == 1) {
-//                                diasSemanaCobertura.set(2, 1); // Martes
-//                            }
-//                            JSONArray miercoles = jsonObject.getJSONObject("PUES_MIER").getJSONArray("data");
-//                            if (miercoles.getInt(0) == 1) {
-//                                diasSemanaCobertura.set(3, 1); // Miércoles
-//                            }
-//                            JSONArray jueves = jsonObject.getJSONObject("PUES_JUEV").getJSONArray("data");
-//                            if (jueves.getInt(0) == 1) {
-//                                diasSemanaCobertura.set(4, 1); // Jueves
-//                            }
-//                            JSONArray viernes = jsonObject.getJSONObject("PUES_VIER").getJSONArray("data");
-//                            if (viernes.getInt(0) == 1) {
-//                                diasSemanaCobertura.set(5, 1); // Viernes
-//                            }
-//                            JSONArray sabado = jsonObject.getJSONObject("PUES_SABA").getJSONArray("data");
-//                            if (sabado.getInt(0) == 1) {
-//                                diasSemanaCobertura.set(6, 1); // Sábado
-//                            }
-
                             if(esPuestoFeriado(jsonObject)){
                                 feriadoCobertura = true;
                             }
 
                         } catch (JSONException e) {
-                            //cargarDatosPantallaIngreso(false);
+
                         }
                     }
 
