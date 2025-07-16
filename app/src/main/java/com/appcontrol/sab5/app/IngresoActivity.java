@@ -1,4 +1,3 @@
-
 package com.appcontrol.sab5.app;
 
 import android.Manifest;
@@ -60,10 +59,14 @@ import com.appcontrol.sab5.app.POJO.HoraRegistrada;
 import com.appcontrol.sab5.app.POJO.PuestoAdapter;
 import com.appcontrol.sab5.app.POJO.PuestoDM;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
+import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -191,17 +194,25 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         btnRegistrarIngreso.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // BLOQUEAR INMEDIATAMENTE
+                btnRegistrarIngreso.setClickable(false);
+                btnRegistrarIngreso.setAlpha(0.5f);
+                
                 String ubicacion = (String) textViewUbicacion.getText();
-                if(ubicacion.equals("Dentro del Rango")  || ubicacion.equals("Desactivada")){
+                if(ubicacion.equals("Dentro del Rango") || ubicacion.equals("Desactivada")){
                     if (puestoSeleccionado) {
                         dispatchTakePictureIntent();
-                        btnRegistrarIngreso.setClickable(false);
-                        btnRegistrarIngreso.setAlpha(0.5f);
                     } else {
+                        // Reactivar si no hay puesto seleccionado
                         Toast.makeText(IngresoActivity.this, "Debe seleccionar un Puesto", Toast.LENGTH_SHORT).show();
+                        btnRegistrarIngreso.setClickable(true);
+                        btnRegistrarIngreso.setAlpha(1.0f);
                     }
                 }else{
+                    // Reactivar si está fuera de rango
                     Toast.makeText(IngresoActivity.this, "Por favor verifique que este dentro del rango de ubicacion", Toast.LENGTH_SHORT).show();
+                    btnRegistrarIngreso.setClickable(true);
+                    btnRegistrarIngreso.setAlpha(1.0f);
                 }
             }
         });
@@ -355,8 +366,12 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
                                         // Task failed with an exception
-                                        // ...
-
+                                        // Agregar reactivación en caso de fallo del detector
+                                        Toast.makeText(IngresoActivity.this, 
+                                            "Error en el detector facial", 
+                                            Toast.LENGTH_SHORT).show();
+                                        btnRegistrarIngreso.setAlpha(1.0f);
+                                        btnRegistrarIngreso.setClickable(true);
                                     }
                                 });
 
@@ -532,14 +547,21 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                                     editor.apply();
                                     chequearEstadoSesion();
                                     showRegisterAlert();
+                                    // NO reactivar el botón aquí - debe quedar bloqueado
                                 } else {
                                     showRegistroIngresoError();
+                                    // Reactivar botón en caso de error
+                                    btnRegistrarIngreso.setClickable(true);
+                                    btnRegistrarIngreso.setAlpha(1.0f);
                                     Toast.makeText(IngresoActivity.this,
                                             "Error al cargar ingreso: " + response.getString("message"),
                                             Toast.LENGTH_SHORT).show();
                                 }
                             } catch (JSONException e) {
                                 showRegistroIngresoError();
+                                // Reactivar botón en caso de excepción
+                                btnRegistrarIngreso.setClickable(true);
+                                btnRegistrarIngreso.setAlpha(1.0f);
                                 Toast.makeText(IngresoActivity.this,
                                         "Error al procesar la respuesta",
                                         Toast.LENGTH_SHORT).show();
@@ -551,6 +573,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
                         @Override
                         public void onErrorResponse(VolleyError error) {
                             showRegistroIngresoError();
+                            // Reactivar botón en caso de error de red
+                            btnRegistrarIngreso.setClickable(true);
+                            btnRegistrarIngreso.setAlpha(1.0f);
                             Toast.makeText(IngresoActivity.this,
                                     "Error de conexión con el servidor",
                                     Toast.LENGTH_SHORT).show();
@@ -580,6 +605,9 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         } catch (JSONException e) {
             e.printStackTrace();
             showRegistroIngresoError();
+            // Reactivar botón si falla la preparación de datos
+            btnRegistrarIngreso.setClickable(true);
+            btnRegistrarIngreso.setAlpha(1.0f);
             Toast.makeText(IngresoActivity.this,
                     "Error al preparar los datos",
                     Toast.LENGTH_SHORT).show();
@@ -814,6 +842,26 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
         Glide.with(getApplicationContext())
                 .load(currentPhotoPath)
                 .apply(requestOptions)
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, 
+                                              Target<Drawable> target, boolean isFirstResource) {
+                        // Error al cargar la imagen
+                        Toast.makeText(IngresoActivity.this, 
+                            "Error al cargar la imagen", 
+                            Toast.LENGTH_SHORT).show();
+                        btnRegistrarIngreso.setAlpha(1.0f);
+                        btnRegistrarIngreso.setClickable(true);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, 
+                                                 Target<Drawable> target, DataSource dataSource, 
+                                                 boolean isFirstResource) {
+                        return false;
+                    }
+                })
                 .into(new BaseTarget<Drawable>() {
                     @Override
                     public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
@@ -884,13 +932,21 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-
-            if(sesionVigente()){
-                cargarImagen();
-            }else{
-                showSesionVencidaAlert();
-                initTrueTime();
+        if(requestCode == REQUEST_TAKE_PHOTO) {
+            if(resultCode == RESULT_OK) {
+                if(sesionVigente()){
+                    cargarImagen();
+                }else{
+                    showSesionVencidaAlert();
+                    initTrueTime();
+                    // Reactivar botón si la sesión venció
+                    btnRegistrarIngreso.setClickable(true);
+                    btnRegistrarIngreso.setAlpha(1.0f);
+                }
+            } else {
+                // Usuario canceló la cámara - reactivar botón
+                btnRegistrarIngreso.setClickable(true);
+                btnRegistrarIngreso.setAlpha(1.0f);
             }
         }
     }
@@ -1277,4 +1333,3 @@ public class IngresoActivity extends AppCompatActivity implements AdapterView.On
     }
 
 }
-
