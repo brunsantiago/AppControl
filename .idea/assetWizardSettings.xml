@@ -331,7 +331,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="file:/$USER_HOME$/AppData/Local/Android/Sdk/icons/material/materialicons/contact_emergency/baseline_contact_emergency_24.xml" />
+                                      <entry key="url" value="file:/$USER_HOME$/AppData/Local/Android/Sdk/icons/material/materialicons/vpn_key/baseline_vpn_key_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -341,8 +341,8 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="assetSourceType" value="FILE" />
-                            <entry key="outputName" value="ic_face" />
+                            <entry key="color" value="ffffff" />
+                            <entry key="outputName" value="ic_key" />
                             <entry key="sourceFile" value="C:\Users\Sata\Downloads\face.svg" />
                           </map>
                         </option>

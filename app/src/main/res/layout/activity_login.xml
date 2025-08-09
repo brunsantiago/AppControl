@@ -92,26 +92,53 @@
         android:textColor="@android:color/white"
         android:textSize="18sp" />
 
-    <TextView
-        android:id="@+id/recoverKey"
+    <!-- LinearLayout para los TextViews horizontales -->
+    <LinearLayout
+        android:id="@+id/options_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/ingresar"
+        android:layout_above="@+id/version"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
-        android:text="¿Olvido su clave o desea cambiarla?"
-        android:textColor="@color/gris"
-        android:textSize="14sp" />
+        android:layout_marginBottom="15dp"
+        android:orientation="horizontal"
+        android:gravity="center">
 
-    <TextView
-        android:id="@+id/registrarse"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="40dp"
-        android:text="¿No estas registrado? Registrarse"
-        android:textColor="@color/description" />
+        <TextView
+            android:id="@+id/registrarse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:text="Registrarse"
+            android:textColor="@color/description"
+            android:textSize="14sp"
+            android:fontFamily="@font/hpsimplified_rg"
+            android:drawableStart="@drawable/ic_person_add"
+            android:drawablePadding="4dp"
+            android:gravity="center_vertical" />
+
+        <!-- Separador -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:text="|"
+            android:textColor="@color/gris"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/recoverKey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cambiar Clave"
+            android:textColor="@color/description"
+            android:textSize="14sp"
+            android:fontFamily="@font/hpsimplified_rg"
+            android:drawableStart="@drawable/ic_key"
+            android:drawablePadding="4dp"
+            android:gravity="center_vertical" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/version"
